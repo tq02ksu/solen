@@ -1,5 +1,6 @@
 package com.neusoft.solen.server;
 
+import com.neusoft.solen.slotmachine.ConnectionManager;
 import com.neusoft.solen.slotmachine.SlotMachineInBoundHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -24,10 +25,14 @@ public class NettyServer {
     private static final Logger logger = LoggerFactory.getLogger(NettyServer.class);
 
     private final ServerProperties serverProperties;
+
+    private final ConnectionManager connectionManager;
+
     private ChannelFuture channelFuture;
 
-    public NettyServer(ServerProperties serverProperties) {
+    public NettyServer(ServerProperties serverProperties, ConnectionManager connectionManager) {
         this.serverProperties = serverProperties;
+        this.connectionManager = connectionManager;
     }
 
     @PostConstruct
