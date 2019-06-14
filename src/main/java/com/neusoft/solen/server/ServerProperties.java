@@ -8,7 +8,7 @@ import static com.neusoft.solen.server.ServerProperties.PREFIX;
 public class ServerProperties {
     static final String PREFIX = "solen.server";
 
-    private int port = 6666;
+    private int port = 7889;
 
     private int ioThreads = 2;
 

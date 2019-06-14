@@ -3,9 +3,12 @@ package com.neusoft.solen.slotmachine;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
+    private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
 
     private final ConnectionManager connectionManager;
 
@@ -59,7 +62,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             calc ^= msg.readByte();
         }
 
-        Assert.isTrue(calc == checksum, "checksum failed");
+        if (calc != checksum) {
+            logger.warn("checksum failed, left is {}, right is {}", calc, checksum);
+        }
 
         return SoltMachineMessage.builder()
                 .header(header)

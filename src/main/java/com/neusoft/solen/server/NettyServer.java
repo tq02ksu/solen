@@ -97,7 +97,7 @@ public class NettyServer {
         }
 
         if (logger.isInfoEnabled()) {
-            logger.info("netty server started on port={} success", serverProperties.getPort());
+            logger.info("netty server started on port = {} success", serverProperties.getPort());
         }
     }
 }
