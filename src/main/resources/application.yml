@@ -1,0 +1,8 @@
+spring:
+  application:
+    name: solen
+
+solen:
+  server:
+    port: 6666
+
