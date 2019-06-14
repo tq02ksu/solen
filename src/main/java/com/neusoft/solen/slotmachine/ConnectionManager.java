@@ -23,7 +23,7 @@ public class ConnectionManager {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public class Connection {
+    public static class Connection {
         private String serverHost;
         private String serverPort;
         private String location;
