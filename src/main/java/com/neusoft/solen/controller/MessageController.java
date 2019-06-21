@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
 @RestController
@@ -19,10 +21,14 @@ public class MessageController {
 
     @RequestMapping("/sendAll")
     public Object sendAll(@RequestParam String data) throws ExecutionException, InterruptedException {
-        for (ConnectionManager.Connection conn : connectionManager.getStore().values()) {
-            Channel ch = conn.getChannel();
-            ch.writeAndFlush("test send message ").get();
+
+        Map<String, String> result = new HashMap<>();
+
+        for (Map.Entry<String, ConnectionManager.Connection> entry : connectionManager.getStore().entrySet()) {
+            Channel ch = entry.getValue().getChannel();
+            ch.writeAndFlush("test send message").get();
+            result.put(entry.getKey(), "test send message");
         }
-        return "ok: " + data;
+        return result;
     }
 }
