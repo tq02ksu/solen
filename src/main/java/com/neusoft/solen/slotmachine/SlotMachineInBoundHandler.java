@@ -27,7 +27,8 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         if (message.getType() == 0) {
             byte[] data = message.getData();
-            Assert.isTrue(data.length == 19, "register packet length illegal");
+            Assert.isTrue(data.length == 19,
+                    "register packet length expect to 19, but is " + data.length);
 
             String id = new String(data, 0, 11);
             String location = new String(data, 11, 8);
