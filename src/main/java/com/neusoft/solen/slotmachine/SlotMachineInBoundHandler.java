@@ -50,7 +50,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         long idCode = msg.readLongLE();
 
-        byte[] data = new byte[length - 14];
+        byte[] data = new byte[length - 15];
         msg.readBytes(data);
 
         byte checksum = msg.readByte();
