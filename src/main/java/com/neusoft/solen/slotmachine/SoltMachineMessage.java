@@ -28,6 +28,8 @@ public class SoltMachineMessage {
     @Builder.Default
     private long idCode = 0x230363E656775797L;
 
+    private String deviceId;
+
     private int type;
 
     private byte[] data;

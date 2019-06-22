@@ -1,6 +1,7 @@
 package com.neusoft.solen.slotmachine;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -37,6 +38,16 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     .channel(ctx.channel())
                     .location(location)
                     .build());
+
+            synchronized (ctx.channel()) {
+                ctx.channel().writeAndFlush(encode(SoltMachineMessage.builder()
+                        .header(message.getHeader())
+                        .index(message.getIndex() + 1)
+                        .idCode(message.getIdCode())
+                        .deviceId(message.getDeviceId())
+                        .data(new byte[0])
+                        .build())).get();
+            }
         }
 
         System.out.println("message received: " + message);
@@ -50,7 +61,12 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         long idCode = msg.readLongLE();
 
-        byte[] data = new byte[length - 15];
+        byte[] buffer = new byte[11];
+        msg.readBytes(buffer);
+
+        String deviceId = new String(buffer);
+
+        byte[] data = new byte[length - 26];
         msg.readBytes(data);
 
         byte checksum = msg.readByte();
@@ -71,7 +87,29 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 .header(header)
                 .index(index)
                 .idCode(idCode)
+                .deviceId(deviceId)
                 .data(data)
                 .build();
+    }
+
+    private ByteBuf encode(SoltMachineMessage message) {
+        ByteBuf byteBuf = Unpooled.buffer();
+        byteBuf.writeShortLE(message.getHeader());
+        byteBuf.writeShortLE(message.getData().length + 26);
+        byteBuf.writeByte(message.getIndex());
+        byteBuf.writeLongLE(message.getIdCode());
+        byteBuf.writeBytes(message.getDeviceId().getBytes());
+        byteBuf.writeBytes(message.getDeviceId().getBytes());
+        byteBuf.writeByte(message.getType());
+        byteBuf.writeBytes(message.getData());
+
+        byte checksum = 0;
+        for (int i = 0; i < message.getData().length + 26 - 1; i ++) {
+            checksum ^= byteBuf.readByte();
+        }
+        byteBuf.resetReaderIndex();
+        byteBuf.writeByte(checksum);
+
+        return byteBuf;
     }
 }
