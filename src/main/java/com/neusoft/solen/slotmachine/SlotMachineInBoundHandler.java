@@ -28,15 +28,17 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         if (message.getType() == 0) {
             byte[] data = message.getData();
-            Assert.isTrue(data.length == 19,
-                    "register packet length expect to 19, but is " + data.length);
+            Assert.isTrue(data.length == 8,
+                    "register packet length expect to 8, but is " + data.length);
 
-            String id = new String(data, 0, 11);
-            String location = new String(data, 11, 8);
+            ByteBuf location = Unpooled.wrappedBuffer(data);
+            int lac = location.readIntLE();
+            int ci  = location.readIntLE();
 
-            connectionManager.getStore().put(id, ConnectionManager.Connection.builder()
+            connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
-                    .location(location)
+                    .lac(lac)
+                    .ci(ci)
                     .build());
 
             synchronized (ctx.channel()) {

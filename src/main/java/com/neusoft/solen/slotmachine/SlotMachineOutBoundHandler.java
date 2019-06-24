@@ -9,6 +9,4 @@ public class SlotMachineOutBoundHandler extends ChannelOutboundHandlerAdapter {
     public SlotMachineOutBoundHandler(ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
     }
-
-
 }

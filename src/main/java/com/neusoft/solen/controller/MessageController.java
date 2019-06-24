@@ -6,11 +6,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
@@ -34,5 +35,33 @@ public class MessageController {
             result.put(entry.getKey(), "test send message");
         }
         return result;
+    }
+
+    @RequestMapping("/detail/{deviceId}")
+    public ResponseEntity<Object> detail(@PathVariable ("deviceId") String deviceId) {
+        if (!connectionManager.getStore().containsKey(deviceId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        return ResponseEntity.ok(connectionManager.getStore().get(deviceId));
+    }
+
+    @RequestMapping("/list")
+    public Collection<String> list() {
+        return connectionManager.getStore().keySet();
+    }
+
+    @PostMapping("send")
+    public ResponseEntity<Object> send( String deviceId,  String data) throws ExecutionException, InterruptedException {
+        if (!connectionManager.getStore().containsKey(deviceId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Channel ch = connectionManager.getStore().get(deviceId).getChannel();
+        synchronized (ch) {
+            ByteBuf buf = Unpooled.wrappedBuffer(data.getBytes());
+            ch.writeAndFlush(buf).get();
+            return ResponseEntity.ok("Message sent: " + data);
+        }
     }
 }

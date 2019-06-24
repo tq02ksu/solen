@@ -26,7 +26,8 @@ public class ConnectionManager {
     public static class Connection {
         private String serverHost;
         private String serverPort;
-        private String location;
+        private int lac;
+        private int ci;
         private Channel channel;
     }
 }
