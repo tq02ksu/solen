@@ -29,5 +29,9 @@ public class ConnectionManager {
         private int lac;
         private int ci;
         private Channel channel;
+
+        private int header;
+        private int index;
+        private long idCode;
     }
 }

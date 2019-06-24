@@ -39,6 +39,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     .channel(ctx.channel())
                     .lac(lac)
                     .ci(ci)
+                    .header(message.getHeader())
+                    .index(message.getIndex())
+                    .idCode(message.getIdCode())
                     .build());
 
             synchronized (ctx.channel()) {
@@ -46,13 +49,14 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                         .header(message.getHeader())
                         .index(message.getIndex() + 1)
                         .idCode(message.getIdCode())
+                        .cmd((short) 2)
                         .deviceId(message.getDeviceId())
-                        .data(new byte[0])
+                        .data(new byte[] {0x0})  // arg==0
                         .build())).get();
             }
         }
 
-        System.out.println("message received: " + message);
+        logger.info("message received: " + message);
     }
 
     private SoltMachineMessage decode(ByteBuf msg) {
