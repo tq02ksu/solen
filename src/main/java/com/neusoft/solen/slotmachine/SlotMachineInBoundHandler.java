@@ -56,22 +56,22 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     }
 
     private SoltMachineMessage decode(ByteBuf msg) {
-            StringBuilder buffer = new StringBuilder("0x");
+            StringBuilder tmp = new StringBuilder("0x");
 
             while (msg.isReadable()) {
-                buffer.append(String.format("%02x ", msg.readByte()));
+                tmp.append(String.format("%02x ", msg.readByte()));
             }
-            logger.info("read message(le): {}", buffer.toString());
+            logger.info("read message(le): {}", tmp.toString());
             msg.resetReaderIndex();
 
-            buffer = new StringBuilder("0x");
+            tmp = new StringBuilder("0x");
 
             while (msg.isReadable()) {
                 ByteBuf bb = Unpooled.wrappedBuffer(new byte[] { msg.readByte(), 0 });
 
-                buffer.append(String.format("%02x ",bb.readShort()));
+                tmp.append(String.format("%02x ",bb.readShort()));
             }
-            logger.info("read message(be): {}", buffer.toString());
+            logger.info("read message(be): {}", tmp.toString());
             msg.resetReaderIndex();
 
         short header = msg.readShortLE();
