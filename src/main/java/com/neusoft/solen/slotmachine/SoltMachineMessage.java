@@ -30,7 +30,7 @@ public class SoltMachineMessage {
 
     private String deviceId;
 
-    private int type;
+    private short cmd;
 
     private byte[] data;
 }

@@ -26,7 +26,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         SoltMachineMessage message = decode(msg);
 
-        if (message.getType() == 0) {
+        if (message.getCmd() == 0) {
             byte[] data = message.getData();
             Assert.isTrue(data.length == 8,
                     "register packet length expect to 8, but is " + data.length);
@@ -57,11 +57,11 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
     private SoltMachineMessage decode(ByteBuf msg) {
             StringBuilder tmp = new StringBuilder("0x");
-
+        if (logger.isDebugEnabled())
             while (msg.isReadable()) {
                 tmp.append(String.format("%02x ", msg.readByte()));
             }
-            logger.info("read message(le): {}", tmp.toString());
+            logger.debug("read message(le): {}", tmp.toString());
             msg.resetReaderIndex();
 
             tmp = new StringBuilder("0x");
@@ -69,9 +69,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             while (msg.isReadable()) {
                 ByteBuf bb = Unpooled.wrappedBuffer(new byte[] { msg.readByte(), 0 });
 
-                tmp.append(String.format("%02x ",bb.readShort()));
+                tmp.append(String.format("%02x ",bb.readShortLE()));
             }
-            logger.info("read message(be): {}", tmp.toString());
+            logger.debug("read message(be): {}", tmp.toString());
             msg.resetReaderIndex();
 
         short header = msg.readShortLE();
@@ -85,6 +85,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         msg.readBytes(buffer);
 
         String deviceId = new String(buffer);
+
+        byte[] cmdMeta = new byte[] {msg.readByte(), 0x0};
+        short cmd = Unpooled.wrappedBuffer(cmdMeta).readShortLE();
 
         byte[] data = new byte[length - 26];
         msg.readBytes(data);
@@ -107,6 +110,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 .header(header)
                 .index(index)
                 .idCode(idCode)
+                .cmd(cmd)
                 .deviceId(deviceId)
                 .data(data)
                 .build();
@@ -120,7 +124,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeLongLE(message.getIdCode());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeByte(message.getType());
+        byteBuf.writeByte(message.getCmd());
         byteBuf.writeBytes(message.getData());
 
         byte checksum = 0;
