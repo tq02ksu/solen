@@ -60,8 +60,8 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     }
 
     private SoltMachineMessage decode(ByteBuf msg) {
+        if (logger.isDebugEnabled()) {
             StringBuilder tmp = new StringBuilder("0x");
-        if (logger.isDebugEnabled())
             while (msg.isReadable()) {
                 tmp.append(String.format("%02x ", msg.readByte()));
             }
@@ -71,13 +71,11 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             tmp = new StringBuilder("0x");
 
             while (msg.isReadable()) {
-                ByteBuf bb = Unpooled.wrappedBuffer(new byte[] { msg.readByte(), 0 });
-
-                tmp.append(String.format("%02x ",bb.readShortLE()));
+                tmp.append(String.format("%02x ", reverse(msg.readByte())));
             }
             logger.debug("read message(be): {}", tmp.toString());
             msg.resetReaderIndex();
-
+        }
         short header = msg.readShortLE();
         short length = msg.readShortLE();
 
@@ -90,8 +88,8 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         String deviceId = new String(buffer);
 
-        byte[] cmdMeta = new byte[] {msg.readByte(), 0x0};
-        short cmd = Unpooled.wrappedBuffer(cmdMeta).readShortLE();
+
+        short cmd = reverse(msg.readByte());
 
         byte[] data = new byte[length - 26];
         msg.readBytes(data);
@@ -128,7 +126,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeLongLE(message.getIdCode());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeByte(message.getCmd());
+        byteBuf.writeByte(reverse((byte)message.getCmd()));
         byteBuf.writeBytes(message.getData());
 
         byte checksum = 0;
@@ -139,5 +137,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeByte(checksum);
 
         return byteBuf;
+    }
+
+    byte reverse(byte b) {
+       return (byte)  Integer.reverse(((int) b) <<24);
     }
 }

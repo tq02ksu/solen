@@ -91,9 +91,6 @@ public class MessageController {
         }
     }
 
-
-
-
     private ByteBuf encode(SoltMachineMessage message) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeShortLE(message.getHeader());
@@ -102,7 +99,7 @@ public class MessageController {
         byteBuf.writeLongLE(message.getIdCode());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeByte(message.getCmd());
+        byteBuf.writeByte(reverse((byte)message.getCmd()));
         byteBuf.writeBytes(message.getData());
 
         byte checksum = 0;
@@ -113,5 +110,9 @@ public class MessageController {
         byteBuf.writeByte(checksum);
 
         return byteBuf;
+    }
+
+    byte reverse(byte b) {
+        return (byte)  Integer.reverse(((int) b) <<24);
     }
 }
