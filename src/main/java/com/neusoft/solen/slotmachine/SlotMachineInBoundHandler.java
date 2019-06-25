@@ -121,7 +121,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 .build();
     }
 
-    private ByteBuf encode(SoltMachineMessage message) {
+    public ByteBuf encode(SoltMachineMessage message) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeShortLE(message.getHeader());
         byteBuf.writeShortLE(message.getData().length + 26);
@@ -132,11 +132,11 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeByte(reverse((byte)message.getCmd()));
         byteBuf.writeBytes(message.getData());
 
-        byteBuf.resetReaderIndex();
         byte checksum = 0;
         for (int i = 0; i < message.getData().length + 26 - 1; i ++) {
             checksum ^= byteBuf.readByte();
         }
+        byteBuf.resetReaderIndex();
         byteBuf.writeByte(checksum);
 
         return byteBuf;
