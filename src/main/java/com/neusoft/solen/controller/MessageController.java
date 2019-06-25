@@ -53,7 +53,9 @@ public class MessageController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Object> send( String deviceId,  String data) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Object> send( @RequestBody SendRequest request) throws ExecutionException, InterruptedException {
+        String deviceId = request.getDeviceId();
+        String data = request.getData();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
@@ -67,7 +69,9 @@ public class MessageController {
     }
 
     @PostMapping("/sendControl")
-    public ResponseEntity<Object> sendControl(String deviceId,  int ctrl) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Object> sendControl(@RequestBody SendRequest request) throws ExecutionException, InterruptedException {
+        String deviceId = request.getDeviceId();
+        int ctrl = request.getCtrl();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
@@ -92,7 +96,10 @@ public class MessageController {
     }
 
     @PostMapping("/sendAscii")
-    public ResponseEntity<Object> sendAscii(String deviceId, int cmd, String data) throws Exception {
+    public ResponseEntity<Object> sendAscii(SendRequest request) throws Exception {
+        String deviceId = request.getDeviceId();
+        short cmd = request.getCmd();
+        String data = request.getData();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
@@ -105,7 +112,7 @@ public class MessageController {
                     .index(conn.getIndex() + 1)
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
-                    .cmd((short) cmd)
+                    .cmd( cmd)
                     .data(data.getBytes())
                     .build();
             ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
