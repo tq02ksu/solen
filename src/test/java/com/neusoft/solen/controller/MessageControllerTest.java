@@ -22,6 +22,6 @@ public class MessageControllerTest  extends SolenApplicationTests {
                 .data("test".getBytes())
                 .build());
 
-        MessageController.logBytebuf(byteBuf);
+        MessageController.logBytebuf(byteBuf, "test");
     }
 }
