@@ -7,6 +7,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,6 +20,8 @@ import java.util.concurrent.ExecutionException;
 
 @RestController
 public class MessageController {
+    private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
+
     private final ConnectionManager connectionManager;
 
     public MessageController(ConnectionManager connectionManager) {
@@ -112,10 +116,11 @@ public class MessageController {
                     .index(conn.getIndex() + 1)
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
-                    .cmd( cmd)
+                    .cmd(cmd)
                     .data(data.getBytes())
                     .build();
             ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
+            logBytebuf(buf);
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }
@@ -141,7 +146,26 @@ public class MessageController {
         return byteBuf;
     }
 
-    byte reverse(byte b) {
+    public static byte reverse(byte b) {
         return (byte)  Integer.reverse(((int) b) <<24);
+    }
+
+    public static void logBytebuf(ByteBuf byteBuf) {
+        if (logger.isDebugEnabled()) {
+            StringBuilder tmp = new StringBuilder("0x");
+            while (byteBuf.isReadable()) {
+                tmp.append(String.format("%02x ", byteBuf.readByte()));
+            }
+            logger.debug("read message(le): {}", tmp.toString());
+            byteBuf.resetReaderIndex();
+
+            tmp = new StringBuilder("0x");
+
+            while (byteBuf.isReadable()) {
+                tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
+            }
+            logger.debug("read message(be): {}", tmp.toString());
+            byteBuf.resetReaderIndex();
+        }
     }
 }

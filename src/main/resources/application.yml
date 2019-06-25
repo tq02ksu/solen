@@ -5,3 +5,7 @@ spring:
 solen:
   server:
     port: 7889
+
+logging:
+  level:
+    com.neusoft.solen: debug

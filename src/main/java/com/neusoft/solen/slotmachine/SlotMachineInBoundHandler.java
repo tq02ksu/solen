@@ -1,5 +1,6 @@
 package com.neusoft.solen.slotmachine;
 
+import com.neusoft.solen.controller.MessageController;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -45,14 +46,16 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     .build());
 
             synchronized (ctx.channel()) {
-                ctx.channel().writeAndFlush(encode(SoltMachineMessage.builder()
+                ByteBuf reply = encode(SoltMachineMessage.builder()
                         .header(message.getHeader())
                         .index(message.getIndex() + 1)
                         .idCode(message.getIdCode())
                         .cmd((short) 2)
                         .deviceId(message.getDeviceId())
-                        .data(new byte[] {0x0})  // arg==0
-                        .build())).get();
+                        .data(new byte[]{0x0})  // arg==0
+                        .build());
+                MessageController.logBytebuf(reply);
+                ctx.channel().writeAndFlush(reply);
             }
         }
 
