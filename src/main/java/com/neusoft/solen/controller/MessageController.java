@@ -52,7 +52,7 @@ public class MessageController {
         return connectionManager.getStore().keySet();
     }
 
-    @PostMapping("send")
+    @PostMapping("/send")
     public ResponseEntity<Object> send( String deviceId,  String data) throws ExecutionException, InterruptedException {
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
@@ -66,7 +66,7 @@ public class MessageController {
         }
     }
 
-    @PostMapping("sendControl")
+    @PostMapping("/sendControl")
     public ResponseEntity<Object> sendControl(String deviceId,  int ctrl) throws ExecutionException, InterruptedException {
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
@@ -91,6 +91,28 @@ public class MessageController {
         }
     }
 
+    @PostMapping("/sendAscii")
+    public ResponseEntity<Object> sendAscii(String deviceId, int cmd, String data) throws Exception {
+        if (!connectionManager.getStore().containsKey(deviceId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Channel ch = connectionManager.getStore().get(deviceId).getChannel();
+        ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
+        synchronized (ch) {
+            SoltMachineMessage message = SoltMachineMessage.builder()
+                    .header(conn.getHeader())
+                    .index(conn.getIndex() + 1)
+                    .idCode(conn.getIdCode())
+                    .deviceId(deviceId)
+                    .cmd((short) cmd)
+                    .data(data.getBytes())
+                    .build();
+            ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
+            ch.writeAndFlush(buf).get();
+            return ResponseEntity.ok("Message sent: " + message);
+        }
+    }
     private ByteBuf encode(SoltMachineMessage message) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeShortLE(message.getHeader());
