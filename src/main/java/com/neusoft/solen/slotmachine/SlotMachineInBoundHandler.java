@@ -52,9 +52,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                         .idCode(message.getIdCode())
                         .cmd((short) 2)
                         .deviceId(message.getDeviceId())
-                        .data(new byte[]{0x0})  // arg==0
+                        .data(new byte[]{0})  // arg==0
                         .build());
-                MessageController.logBytebuf(reply);
+                MessageController.logBytebuf(reply, "sending reply ...");
                 ctx.channel().writeAndFlush(reply);
             }
         }

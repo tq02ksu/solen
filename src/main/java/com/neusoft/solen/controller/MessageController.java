@@ -120,12 +120,12 @@ public class MessageController {
                     .data(data.getBytes())
                     .build();
             ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
-            logBytebuf(buf);
+            logBytebuf(buf, "sending ascii");
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }
     }
-    private ByteBuf encode(SoltMachineMessage message) {
+    public ByteBuf encode(SoltMachineMessage message) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeShortLE(message.getHeader());
         byteBuf.writeShortLE(message.getData().length + 26);
@@ -150,13 +150,13 @@ public class MessageController {
         return (byte)  Integer.reverse(((int) b) <<24);
     }
 
-    public static void logBytebuf(ByteBuf byteBuf) {
+    public static void logBytebuf(ByteBuf byteBuf, String comment) {
         if (logger.isDebugEnabled()) {
             StringBuilder tmp = new StringBuilder("0x");
             while (byteBuf.isReadable()) {
                 tmp.append(String.format("%02x ", byteBuf.readByte()));
             }
-            logger.debug("read message(le): {}", tmp.toString());
+            logger.debug(comment + "(le): {}", tmp.toString());
             byteBuf.resetReaderIndex();
 
             tmp = new StringBuilder("0x");
@@ -164,7 +164,7 @@ public class MessageController {
             while (byteBuf.isReadable()) {
                 tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
             }
-            logger.debug("read message(be): {}", tmp.toString());
+            logger.debug(comment + "(be): {}", tmp.toString());
             byteBuf.resetReaderIndex();
         }
     }
