@@ -128,7 +128,6 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeByte(message.getIndex());
         byteBuf.writeLongLE(message.getIdCode());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeBytes(message.getDeviceId().getBytes());
         byteBuf.writeByte(reverse((byte)message.getCmd()));
         byteBuf.writeBytes(message.getData());
 
