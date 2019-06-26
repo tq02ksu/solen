@@ -100,7 +100,7 @@ public class MessageController {
     }
 
     @PostMapping("/sendAscii")
-    public ResponseEntity<Object> sendAscii(SendRequest request) throws Exception {
+    public ResponseEntity<Object> sendAscii(@RequestBody SendRequest request) throws Exception {
         String deviceId = request.getDeviceId();
         short cmd = request.getCmd();
         String data = request.getData();
