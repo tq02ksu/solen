@@ -35,8 +35,10 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     "register packet length expect to 8, but is " + data.length);
 
             ByteBuf location = Unpooled.wrappedBuffer(data);
-            int lac = location.readIntLE();
-            int ci  = location.readIntLE();
+            int lac = ((int)location.readByte()) << 8 + location.readByte();
+            location.readBytes(2);
+
+            int ci  =  ((int)location.readByte()) << 8 + location.readByte();
 
             connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
