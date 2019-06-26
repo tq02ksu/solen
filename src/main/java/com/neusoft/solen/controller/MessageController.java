@@ -84,7 +84,7 @@ public class MessageController {
         ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
         synchronized (ch) {
             byte[] buffer = new byte[16];
-            buffer[0] = ctrl == 1 ? (byte) 0x31 : (byte) 0x0;
+            buffer[0] = reverse((byte) request.getCtrl());
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
                     .index(conn.getIndex() + 1)
