@@ -1,6 +1,7 @@
 package com.neusoft.solen.controller;
 
 import com.neusoft.solen.slotmachine.ConnectionManager;
+import com.neusoft.solen.slotmachine.SlotMachineInBoundHandler;
 import com.neusoft.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -74,7 +75,6 @@ public class MessageController {
     @PostMapping("/sendControl")
     public ResponseEntity<Object> sendControl(@RequestBody SendRequest request) throws ExecutionException, InterruptedException {
         String deviceId = request.getDeviceId();
-        int ctrl = request.getCtrl();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
@@ -93,6 +93,7 @@ public class MessageController {
                     .data(buffer)
                     .build();
             ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
+            SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }

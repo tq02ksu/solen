@@ -173,7 +173,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             while (byteBuf.isReadable()) {
                 tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
             }
-            logger.debug(comment + "(be): {}", tmp.toString());
+            logger.trace(comment + "(be): {}", tmp.toString());
             byteBuf.resetReaderIndex();
         }
     }
