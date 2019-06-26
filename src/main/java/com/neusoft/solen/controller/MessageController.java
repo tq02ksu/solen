@@ -1,10 +1,8 @@
 package com.neusoft.solen.controller;
 
 import com.neusoft.solen.slotmachine.ConnectionManager;
-import com.neusoft.solen.slotmachine.SlotMachineInBoundHandler;
 import com.neusoft.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
@@ -14,9 +12,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+
+import static com.neusoft.solen.slotmachine.SlotMachineInBoundHandler.*;
 
 @RestController
 public class MessageController {
@@ -123,49 +122,6 @@ public class MessageController {
             logBytebuf(buf, "sending ascii");
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
-        }
-    }
-
-    public ByteBuf encode(SoltMachineMessage message) {
-        ByteBuf byteBuf = Unpooled.buffer();
-        byteBuf.writeShortLE(message.getHeader());
-        byteBuf.writeShortLE(message.getData().length + 26);
-        byteBuf.writeByte(message.getIndex());
-        byteBuf.writeLongLE(message.getIdCode());
-        byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeByte(reverse((byte)message.getCmd()));
-        byteBuf.writeBytes(message.getData());
-
-        byte checksum = 0;
-        for (int i = 0; i < message.getData().length + 26 - 1; i ++) {
-            checksum ^= byteBuf.readByte();
-        }
-        byteBuf.resetReaderIndex();
-        byteBuf.writeByte(checksum);
-
-        return byteBuf;
-    }
-
-    public static byte reverse(byte b) {
-        return (byte)  Integer.reverse(((int) b) <<24);
-    }
-
-    public static void logBytebuf(ByteBuf byteBuf, String comment) {
-        if (logger.isDebugEnabled()) {
-            StringBuilder tmp = new StringBuilder("0x");
-            while (byteBuf.isReadable()) {
-                tmp.append(String.format("%02x ", byteBuf.readByte()));
-            }
-            logger.debug(comment + "(le): {}", tmp.toString());
-            byteBuf.resetReaderIndex();
-
-            tmp = new StringBuilder("0x");
-
-            while (byteBuf.isReadable()) {
-                tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
-            }
-            logger.debug(comment + "(be): {}", tmp.toString());
-            byteBuf.resetReaderIndex();
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.neusoft.solen.slotmachine;
 
-import com.neusoft.solen.controller.MessageController;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
@@ -54,7 +53,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                         .deviceId(message.getDeviceId())
                         .data(new byte[]{0})  // arg==0
                         .build());
-                MessageController.logBytebuf(reply, "sending reply ...");
+                logBytebuf(reply, "sending reply ...");
                 ctx.channel().writeAndFlush(reply);
             }
         }
@@ -62,23 +61,11 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         logger.info("message received: " + message);
     }
 
-    private SoltMachineMessage decode(ByteBuf msg) {
+    private static SoltMachineMessage decode(ByteBuf msg) {
         if (logger.isDebugEnabled()) {
-            StringBuilder tmp = new StringBuilder("0x");
-            while (msg.isReadable()) {
-                tmp.append(String.format("%02x ", msg.readByte()));
-            }
-            logger.debug("read message(le): {}", tmp.toString());
-            msg.resetReaderIndex();
-
-            tmp = new StringBuilder("0x");
-
-            while (msg.isReadable()) {
-                tmp.append(String.format("%02x ", reverse(msg.readByte())));
-            }
-            logger.debug("read message(be): {}", tmp.toString());
-            msg.resetReaderIndex();
+            logBytebuf(msg, "decode message");
         }
+
         short header = msg.readShortLE();
         short length = msg.readShortLE();
 
@@ -121,7 +108,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 .build();
     }
 
-    public ByteBuf encode(SoltMachineMessage message) {
+    public static ByteBuf encode(SoltMachineMessage message) {
         ByteBuf byteBuf = Unpooled.buffer();
         byteBuf.writeShortLE(message.getHeader());
         byteBuf.writeShortLE(message.getData().length + 26);
@@ -141,7 +128,26 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         return byteBuf;
     }
 
-    byte reverse(byte b) {
+    public static byte reverse(byte b) {
        return (byte)  Integer.reverse(((int) b) <<24);
+    }
+
+    public static void logBytebuf(ByteBuf byteBuf, String comment) {
+        if (logger.isDebugEnabled()) {
+            StringBuilder tmp = new StringBuilder("0x");
+            while (byteBuf.isReadable()) {
+                tmp.append(String.format("%02x ", byteBuf.readByte()));
+            }
+            logger.debug(comment + "(le): {}", tmp.toString());
+            byteBuf.resetReaderIndex();
+
+            tmp = new StringBuilder("0x");
+
+            while (byteBuf.isReadable()) {
+                tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
+            }
+            logger.debug(comment + "(be): {}", tmp.toString());
+            byteBuf.resetReaderIndex();
+        }
     }
 }
