@@ -7,8 +7,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Component
@@ -33,5 +32,17 @@ public class ConnectionManager {
         private int header;
         private int index;
         private long idCode;
+
+        @Builder.Default
+        private List<Report> reports = new LinkedList<>();
+    }
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class Report {
+        private Date time;
+        private String content;
     }
 }

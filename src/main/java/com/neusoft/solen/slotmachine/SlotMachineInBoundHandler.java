@@ -8,6 +8,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
 
+import java.util.Date;
+import java.util.List;
+
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
 
@@ -56,6 +59,29 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 logBytebuf(reply, "sending reply ...");
                 ctx.channel().writeAndFlush(reply);
             }
+        } else if (message.getCmd() == 128) {
+            String content = new String(message.getData());
+            Date time = new Date();
+            List<ConnectionManager.Report> reports = connectionManager.getStore().get(message.getDeviceId()).getReports();
+
+            synchronized (ctx.channel()) {
+                if (reports.size() >= 10) {
+                    reports.remove(10);
+                }
+
+                reports.add(0, new ConnectionManager.Report(time, content));
+
+                ByteBuf reply = encode(SoltMachineMessage.builder()
+                        .header(message.getHeader())
+                        .index(message.getIndex() + 1)
+                        .idCode(message.getIdCode())
+                        .cmd((short) 2)
+                        .deviceId(message.getDeviceId())
+                        .data(new byte[]{(byte) 0x80})  // reply to cmd=128
+                        .build());
+                logBytebuf(reply, "sending reply ...");
+                ctx.channel().writeAndFlush(reply);
+            }
         }
 
         logger.info("message received: " + message);
@@ -78,8 +104,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         String deviceId = new String(buffer);
 
-
-        short cmd = reverse(msg.readByte());
+        short cmd = msg.readByte(); // cmd 是大端
 
         byte[] data = new byte[length - 26];
         msg.readBytes(data);
@@ -115,7 +140,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byteBuf.writeByte(message.getIndex());
         byteBuf.writeLongLE(message.getIdCode());
         byteBuf.writeBytes(message.getDeviceId().getBytes());
-        byteBuf.writeByte(reverse((byte)message.getCmd()));
+        byteBuf.writeByte((byte)message.getCmd()); // cmd 不是小端
         byteBuf.writeBytes(message.getData());
 
         byte checksum = 0;
