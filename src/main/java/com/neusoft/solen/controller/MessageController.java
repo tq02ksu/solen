@@ -28,20 +28,6 @@ public class MessageController {
         this.connectionManager = connectionManager;
     }
 
-    @RequestMapping("/sendAll")
-    public Object sendAll(@RequestParam String data) throws ExecutionException, InterruptedException {
-
-        Map<String, String> result = new HashMap<>();
-
-        for (Map.Entry<String, ConnectionManager.Connection> entry : connectionManager.getStore().entrySet()) {
-            Channel ch = entry.getValue().getChannel();
-            ByteBuf buf = Unpooled.wrappedBuffer("test send message".getBytes());
-            ch.writeAndFlush(buf).get();
-            result.put(entry.getKey(), "test send message");
-        }
-        return result;
-    }
-
     @RequestMapping("/detail/{deviceId}")
     public ResponseEntity<Object> detail(@PathVariable ("deviceId") String deviceId) {
         if (!connectionManager.getStore().containsKey(deviceId)) {
@@ -56,22 +42,6 @@ public class MessageController {
         return connectionManager.getStore().keySet();
     }
 
-    @PostMapping("/send")
-    public ResponseEntity<Object> send( @RequestBody SendRequest request) throws ExecutionException, InterruptedException {
-        String deviceId = request.getDeviceId();
-        String data = request.getData();
-        if (!connectionManager.getStore().containsKey(deviceId)) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Channel ch = connectionManager.getStore().get(deviceId).getChannel();
-        synchronized (ch) {
-            ByteBuf buf = Unpooled.wrappedBuffer(data.getBytes());
-            ch.writeAndFlush(buf).get();
-            return ResponseEntity.ok("Message sent: " + data);
-        }
-    }
-
     @PostMapping("/sendControl")
     public ResponseEntity<Object> sendControl(@RequestBody SendRequest request) throws ExecutionException, InterruptedException {
         String deviceId = request.getDeviceId();
@@ -82,8 +52,10 @@ public class MessageController {
         Channel ch = connectionManager.getStore().get(deviceId).getChannel();
         ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
         synchronized (ch) {
-            byte[] buffer = new byte[16];
-            buffer[0] = reverse((byte) request.getCtrl());
+            byte[] buffer = new byte[] {(byte) (0x00 + request.getCtrl()), (byte) (0x01 - request.getCtrl()),
+                    0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+
+            buffer[0] = (byte) request.getCtrl();
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
                     .index(conn.getIndex() + 1)
