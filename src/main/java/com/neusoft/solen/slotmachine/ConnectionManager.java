@@ -23,6 +23,7 @@ public class ConnectionManager {
     @AllArgsConstructor
     @NoArgsConstructor
     public static class Connection {
+        private String deviceId;
         private String serverHost;
         private String serverPort;
         private int lac;

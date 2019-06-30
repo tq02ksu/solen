@@ -42,6 +42,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
             connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
+                    .deviceId(message.getDeviceId())
                     .lac(lac)
                     .ci(ci)
                     .header(message.getHeader())

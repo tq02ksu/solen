@@ -6,15 +6,18 @@ import com.neusoft.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
+import lombok.val;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import static com.neusoft.solen.slotmachine.SlotMachineInBoundHandler.*;
 
@@ -40,6 +43,30 @@ public class MessageController {
     @RequestMapping("/list")
     public Collection<String> list() {
         return connectionManager.getStore().keySet();
+    }
+
+    @RequestMapping("/listAll")
+    public Object listAll() {
+        TreeSet<ConnectionManager.Connection> set = new TreeSet<>(
+                Comparator.comparing(ConnectionManager.Connection::getDeviceId));
+        set.addAll(connectionManager.getStore().values());
+        return set;
+    }
+
+    @RequestMapping("/statByField")
+    public Object statByField(@RequestParam String field) {
+        Collection<ConnectionManager.Connection> values = connectionManager.getStore().values();
+        Function<ConnectionManager.Connection, Object> getter = c -> {
+            try {
+                return Objects.requireNonNull(BeanUtils.getPropertyDescriptor(
+                        ConnectionManager.Connection.class, field))
+                        .getReadMethod().invoke(c);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        };
+
+        return values.stream().collect(Collectors.groupingBy(getter, Collectors.counting()));
     }
 
     @PostMapping("/sendControl")
