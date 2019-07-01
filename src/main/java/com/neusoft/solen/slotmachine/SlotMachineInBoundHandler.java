@@ -2,6 +2,7 @@ package com.neusoft.solen.slotmachine;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
@@ -10,6 +11,7 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
@@ -28,6 +30,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         SoltMachineMessage message = decode(msg);
+        sendReply(ctx.channel(), message);
 
         if (message.getCmd() == 0) {
             byte[] data = message.getData();
@@ -49,19 +52,6 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     .index(message.getIndex())
                     .idCode(message.getIdCode())
                     .build());
-
-            synchronized (ctx.channel()) {
-                ByteBuf reply = encode(SoltMachineMessage.builder()
-                        .header(message.getHeader())
-                        .index(message.getIndex() + 1)
-                        .idCode(message.getIdCode())
-                        .cmd((short) 2)
-                        .deviceId(message.getDeviceId())
-                        .data(new byte[]{0})  // arg==0
-                        .build());
-                logBytebuf(reply, "sending reply ...");
-                ctx.channel().writeAndFlush(reply);
-            }
         } else if (message.getCmd() == 128) {
             String content = new String(message.getData());
             Date time = new Date();
@@ -73,21 +63,29 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 }
 
                 reports.add(0, new ConnectionManager.Report(time, content));
-
-                ByteBuf reply = encode(SoltMachineMessage.builder()
-                        .header(message.getHeader())
-                        .index(message.getIndex() + 1)
-                        .idCode(message.getIdCode())
-                        .cmd((short) 2)
-                        .deviceId(message.getDeviceId())
-                        .data(new byte[]{(byte) 0x80})  // reply to cmd=128
-                        .build());
-                logBytebuf(reply, "sending reply ...");
-                ctx.channel().writeAndFlush(reply);
             }
         }
 
         logger.info("message received: " + message);
+    }
+
+    public static void sendReply(Channel channel, SoltMachineMessage message) {
+        synchronized (channel) {
+            ByteBuf reply = encode(SoltMachineMessage.builder()
+                    .header(message.getHeader())
+                    .index(message.getIndex() + 1)
+                    .idCode(message.getIdCode())
+                    .cmd((short) 2)
+                    .deviceId(message.getDeviceId())
+                    .data(new byte[]{(byte) message.getCmd()})  // arg==0
+                    .build());
+            logBytebuf(reply, "sending reply ...");
+            try {
+                channel.writeAndFlush(reply).get();
+            } catch (Exception e) {
+                throw new RuntimeException("error while send reply", e);
+            }
+        }
     }
 
     private static SoltMachineMessage decode(ByteBuf msg) {
