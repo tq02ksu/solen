@@ -38,10 +38,10 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     "register packet length expect to 8, but is " + data.length);
 
             ByteBuf location = Unpooled.wrappedBuffer(data);
-            int lac = ((int)location.readByte()) << 8 + location.readByte();
+            int lac = ((int) location.readByte()) << 8 + location.readByte();
             location.readBytes(2);
 
-            int ci  =  ((int)location.readByte()) << 8 + location.readByte();
+            int ci = ((int) location.readByte()) << 8 + location.readByte();
 
             connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
@@ -52,6 +52,12 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     .index(message.getIndex())
                     .idCode(message.getIdCode())
                     .build());
+        } else if (message.getCmd() == 1) {
+            int outputStat = (message.getData()[0] & 0x02 ) >> 1;
+            int inputStat = message.getData()[0] & 0x01;
+            ConnectionManager.Connection conn = connectionManager.getStore().get(message.getDeviceId());
+            conn.setInputStat(inputStat);
+            conn.setOutputStat(outputStat);
         } else if (message.getCmd() == 128) {
             String content = new String(message.getData());
             Date time = new Date();

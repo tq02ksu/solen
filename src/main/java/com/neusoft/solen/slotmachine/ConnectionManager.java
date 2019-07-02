@@ -33,6 +33,8 @@ public class ConnectionManager {
         private int header;
         private int index;
         private long idCode;
+        private int inputStat;
+        private int outputStat;
 
         @Builder.Default
         private List<Report> reports = new LinkedList<>();
