@@ -1,7 +1,7 @@
-# solen
+# SOLEN
 commons iot framework with solen slot machine ic to controll and monitor massive terminals
 
-## protocol
+## Protocol
 Solen provide all interface is rest style. Http Header must have a 'Content-Type: application/json' entry.
  for example:
 ```bash
