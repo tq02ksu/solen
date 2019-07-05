@@ -99,7 +99,6 @@ public class MessageController {
     @PostMapping("/sendAscii")
     public ResponseEntity<Object> sendAscii(@RequestBody SendRequest request) throws Exception {
         String deviceId = request.getDeviceId();
-        short cmd = request.getCmd();
         String data = request.getData();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
@@ -113,7 +112,7 @@ public class MessageController {
                     .index(conn.getIndex() + 1)
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
-                    .cmd(cmd)
+                    .cmd((short) 129)
                     .data(data.getBytes())
                     .build();
             ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
