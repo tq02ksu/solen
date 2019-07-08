@@ -11,7 +11,6 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
@@ -38,10 +37,10 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                     "register packet length expect to 8, but is " + data.length);
 
             ByteBuf location = Unpooled.wrappedBuffer(data);
-            int lac = location.readByte() + (location.readByte() << 8);
+            int lac = (location.readByte() & 0xFF) + ((location.readByte() & 0xFF) << 8);
             location.readBytes(2);
 
-            int ci = location.readByte() + (location.readByte() << 8);
+            int ci = (location.readByte() & 0xFF) + ((location.readByte() & 0xFF) << 8);
 
             connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
@@ -58,6 +57,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             ConnectionManager.Connection conn = connectionManager.getStore().get(message.getDeviceId());
             conn.setInputStat(inputStat);
             conn.setOutputStat(outputStat);
+            conn.setLastHeartBeatTime(new Date());
         } else if (message.getCmd() == 128) {
             String content = new String(message.getData());
             Date time = new Date();
@@ -111,7 +111,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
         String deviceId = new String(buffer);
 
-        short cmd = msg.readByte(); // cmd 是大端
+        short cmd = (short) (msg.readByte() & 0xFF); // cmd 是大端
 
         byte[] data = new byte[length - 26];
         msg.readBytes(data);
@@ -168,7 +168,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         if (logger.isDebugEnabled()) {
             StringBuilder tmp = new StringBuilder("0x");
             while (byteBuf.isReadable()) {
-                tmp.append(String.format("%02x ", byteBuf.readByte()));
+                tmp.append(String.format("%02x ", byteBuf.readByte() & 0xFF));
             }
             logger.debug(comment + "(le): {}", tmp.toString());
             byteBuf.resetReaderIndex();
@@ -176,7 +176,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             tmp = new StringBuilder("0x");
 
             while (byteBuf.isReadable()) {
-                tmp.append(String.format("%02x ", reverse(byteBuf.readByte())));
+                tmp.append(String.format("%02x ", reverse(byteBuf.readByte()) & 0xFF));
             }
             logger.trace(comment + "(be): {}", tmp.toString());
             byteBuf.resetReaderIndex();
