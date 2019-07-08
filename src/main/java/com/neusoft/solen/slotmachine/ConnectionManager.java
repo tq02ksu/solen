@@ -28,38 +28,32 @@ public class ConnectionManager {
         return store;
     }
 
-
-
     @PostConstruct
     public void init() {
-        thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                while (true) {
-                    store.forEach((key, val) -> {
-                        if ( System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5 * 60 * 60) {
-                            logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
-                                    key, val.getLastHeartBeatTime());
-                            try {
-                                val.getChannel().close().get();
-                            } catch (Exception e) {
-                                logger.error("error while close channel, deviceId={}", key);
-                            }
+        thread = new Thread(() -> {
+            while (true) {
+                store.forEach((key, val) -> {
+                    if ( System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5 * 60 * 60) {
+                        logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
+                                key, val.getLastHeartBeatTime());
+                        try {
+                            val.getChannel().close().get();
+                        } catch (Exception e) {
+                            logger.error("error while close channel, deviceId={}", key);
                         }
-                    });
-
-                    if (shutdown) {
-                        return;
                     }
+                });
 
-                    try {
-                        Thread.sleep(10000);
-                    } catch (InterruptedException e) {
-                        logger.info("interrupted", e);
-                        break;
-                    }
+                if (shutdown) {
+                    return;
                 }
 
+                try {
+                    Thread.sleep(10000);
+                } catch (InterruptedException e) {
+                    logger.info("interrupted", e);
+                    break;
+                }
             }
         });
         thread.setName("Connection-Guard");
