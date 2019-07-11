@@ -83,7 +83,7 @@ public class MessageController {
             buffer[0] = (byte) request.getCtrl();
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
-                    .index(conn.getIndex() + 1)
+                    .index(conn.getIndex().getAndIncrement())
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
                     .cmd((short) 3)
@@ -109,7 +109,7 @@ public class MessageController {
         synchronized (ch) {
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
-                    .index(conn.getIndex() + 1)
+                    .index(conn.getIndex().getAndIncrement())
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
                     .cmd((short) 129)

@@ -14,6 +14,7 @@ import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ConnectionManager {
@@ -80,7 +81,7 @@ public class ConnectionManager {
         private Channel channel;
 
         private int header;
-        private int index;
+        private transient AtomicInteger index;
         private long idCode;
         private int inputStat;
         private int outputStat;

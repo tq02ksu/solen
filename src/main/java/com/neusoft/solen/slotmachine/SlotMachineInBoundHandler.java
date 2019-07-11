@@ -11,6 +11,7 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
@@ -42,13 +43,18 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
             int ci = (location.readByte() & 0xFF) + ((location.readByte() & 0xFF) << 8);
 
+            if (connectionManager.getStore().containsKey(message.getDeviceId())
+                    && connectionManager.getStore().get(message.getDeviceId()).getChannel().isActive()) {
+                logger.warn("detected active device: {}", connectionManager.getStore().get(message.getDeviceId()));
+            }
+
             connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
                     .channel(ctx.channel())
                     .deviceId(message.getDeviceId())
                     .lac(lac)
                     .ci(ci)
                     .header(message.getHeader())
-                    .index(message.getIndex())
+                    .index(new AtomicInteger(message.getIndex()))
                     .idCode(message.getIdCode())
                     .build());
         } else if (message.getCmd() == 1) {
@@ -79,7 +85,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         synchronized (channel) {
             ByteBuf reply = encode(SoltMachineMessage.builder()
                     .header(message.getHeader())
-                    .index(message.getIndex() + 1)
+                    .index(message.getIndex())
                     .idCode(message.getIdCode())
                     .cmd((short) 2)
                     .deviceId(message.getDeviceId())
