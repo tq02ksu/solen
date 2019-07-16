@@ -76,8 +76,8 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             Date time = new Date();
             List<ConnectionManager.Report> reports = connectionManager.getStore().get(message.getDeviceId()).getReports();
             reports.add(0, new ConnectionManager.Report(time, content));
-            if (reports.size() >= 10) {
-                reports.remove(10);
+            if (reports.size() > 10) {
+                reports.remove(10 );
             }
         }
 
