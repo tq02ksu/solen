@@ -9,11 +9,14 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -74,25 +77,47 @@ public class MessageController {
             return ResponseEntity.notFound().build();
         }
 
+        if (connectionManager.getStore().get(deviceId).getOutputStatSyncs().size() > 3) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
+                    "too many request for this device: " + deviceId);
+        }
+
         Channel ch = connectionManager.getStore().get(deviceId).getChannel();
         ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
-        synchronized (ch) {
-            byte[] buffer = new byte[] {(byte) (request.getCtrl()), (byte) (0x01 - request.getCtrl()),
-                    0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+        SoltMachineMessage message;
+        CountDownLatch latch = null;
 
-            buffer[0] = (byte) request.getCtrl();
-            SoltMachineMessage message = SoltMachineMessage.builder()
-                    .header(conn.getHeader())
-                    .index(conn.getIndex().getAndIncrement())
-                    .idCode(conn.getIdCode())
-                    .deviceId(deviceId)
-                    .cmd((short) 3)
-                    .data(buffer)
-                    .build();
-            ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
-            SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
-            ch.writeAndFlush(buf).get();
+        try {
+            synchronized (ch) {
+                latch = new CountDownLatch(1);
+                conn.getOutputStatSyncs().add(latch);
+                byte[] buffer = new byte[]{(byte) (request.getCtrl()), (byte) (0x01 - request.getCtrl()),
+                        0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
+
+                buffer[0] = (byte) request.getCtrl();
+                message = SoltMachineMessage.builder()
+                        .header(conn.getHeader())
+                        .index(conn.getIndex().getAndIncrement())
+                        .idCode(conn.getIdCode())
+                        .deviceId(deviceId)
+                        .cmd((short) 3)
+                        .data(buffer)
+                        .build();
+                ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
+                SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
+                ch.writeAndFlush(buf).get();
+            }
+        } finally {
+            conn.getOutputStatSyncs().remove(latch);
+        }
+
+
+        boolean success = latch.await(20, TimeUnit.SECONDS);
+
+        if (success) {
             return ResponseEntity.ok("Message sent: " + message);
+        } else {
+            return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body("request timeout 20 seconds");
         }
     }
 

@@ -48,6 +48,8 @@ curl -H 'Content-Type: application/json' http://ip:port/api/listAll
     }
   response:
   状态码200表示成功, 结果是调试信息  
+  超过20秒终端没有响应, 会返回408 请求超时
+  一个设备超过3个请求， 会返回429 to many request for device
 </pre>
 
 ##### send ascii

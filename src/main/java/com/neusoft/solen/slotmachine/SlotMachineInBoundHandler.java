@@ -11,7 +11,8 @@ import org.springframework.util.Assert;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private static final Logger logger = LoggerFactory.getLogger(SlotMachineInBoundHandler.class);
@@ -48,15 +49,17 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 logger.warn("detected active device: {}", connectionManager.getStore().get(message.getDeviceId()));
             }
 
-            connectionManager.getStore().put(message.getDeviceId(), ConnectionManager.Connection.builder()
-                    .channel(ctx.channel())
-                    .deviceId(message.getDeviceId())
-                    .lac(lac)
-                    .ci(ci)
-                    .header(message.getHeader())
-                    .index(new AtomicInteger(message.getIndex()))
-                    .idCode(message.getIdCode())
-                    .build());
+            ConnectionManager.Connection connection = Optional
+                    .of(connectionManager.getStore().get(message.getDeviceId()))
+                    .orElseGet(ConnectionManager.Connection::new);
+
+            connection.setChannel(ctx.channel());
+            connection.setDeviceId(message.getDeviceId());
+            connection.setLac(lac);
+            connection.setCi(ci);
+            connection.setHeader(message.getHeader());
+            message.setIdCode(message.getIdCode());
+            connectionManager.getStore().putIfAbsent(message.getDeviceId(), connection);
         } else if (message.getCmd() == 1) {
             int outputStat = (message.getData()[0] & 0x02 ) >> 1;
             int inputStat = message.getData()[0] & 0x01;
@@ -64,17 +67,17 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             conn.setInputStat(inputStat);
             conn.setOutputStat(outputStat);
             conn.setLastHeartBeatTime(new Date());
+
+            for (CountDownLatch sync : conn.getOutputStatSyncs()) {
+                sync.countDown();
+            }
         } else if (message.getCmd() == 128) {
             String content = new String(message.getData());
             Date time = new Date();
             List<ConnectionManager.Report> reports = connectionManager.getStore().get(message.getDeviceId()).getReports();
-
-            synchronized (ctx.channel()) {
-                if (reports.size() >= 10) {
-                    reports.remove(10);
-                }
-
-                reports.add(0, new ConnectionManager.Report(time, content));
+            reports.add(0, new ConnectionManager.Report(time, content));
+            if (reports.size() >= 10) {
+                reports.remove(10);
             }
         }
 

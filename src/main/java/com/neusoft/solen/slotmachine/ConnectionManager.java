@@ -13,6 +13,8 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -81,7 +83,7 @@ public class ConnectionManager {
         private Channel channel;
 
         private int header;
-        private transient AtomicInteger index;
+
         private long idCode;
         private int inputStat;
         private int outputStat;
@@ -89,6 +91,10 @@ public class ConnectionManager {
 
         @Builder.Default
         private List<Report> reports = new LinkedList<>();
+
+        private transient AtomicInteger index = new AtomicInteger(0);
+
+        private transient List<CountDownLatch> outputStatSyncs = new CopyOnWriteArrayList<>();
     }
 
     @Builder
