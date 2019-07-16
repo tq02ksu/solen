@@ -36,14 +36,14 @@ public class ConnectionManager {
         thread = new Thread(() -> {
             while (true) {
                 store.forEach((key, val) -> {
-                    if ( System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5 * 60 * 60) {
-                        logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
-                                key, val.getLastHeartBeatTime());
-                        try {
+                    try {
+                        if (System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5 * 60 * 60) {
+                            logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
+                                    key, val.getLastHeartBeatTime());
                             val.getChannel().close().get();
-                        } catch (Exception e) {
-                            logger.error("error while close channel, deviceId={}", key);
                         }
+                    } catch (Exception e) {
+                        logger.error("error while close channel, deviceId={}", key);
                     }
                 });
 
