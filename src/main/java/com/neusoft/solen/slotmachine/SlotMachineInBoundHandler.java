@@ -58,7 +58,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             connection.setLac(lac);
             connection.setCi(ci);
             connection.setHeader(message.getHeader());
-            message.setIdCode(message.getIdCode());
+            connection.setIdCode(message.getIdCode());
             connectionManager.getStore().putIfAbsent(message.getDeviceId(), connection);
         } else if (message.getCmd() == 1) {
             int outputStat = (message.getData()[0] & 0x02 ) >> 1;
