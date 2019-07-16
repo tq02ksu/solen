@@ -50,7 +50,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
             }
 
             ConnectionManager.Connection connection = Optional
-                    .of(connectionManager.getStore().get(message.getDeviceId()))
+                    .ofNullable(connectionManager.getStore().get(message.getDeviceId()))
                     .orElseGet(ConnectionManager.Connection::new);
 
             connection.setChannel(ctx.channel());
