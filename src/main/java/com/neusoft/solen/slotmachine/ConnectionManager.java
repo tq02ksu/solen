@@ -87,7 +87,7 @@ public class ConnectionManager {
         private long idCode;
         private int inputStat;
         private int outputStat;
-        private Date lastHeartBeatTime;
+        private Date lastHeartBeatTime = new Date();
 
         @Builder.Default
         private List<Report> reports = new LinkedList<>();
