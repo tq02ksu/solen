@@ -37,7 +37,7 @@ public class ConnectionManager {
             while (true) {
                 store.forEach((key, val) -> {
                     try {
-                        if (System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5 * 60 * 60) {
+                        if (System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 5L * 60 * 60 * 1000) {
                             logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
                                     key, val.getLastHeartBeatTime());
                             val.getChannel().close().get();
