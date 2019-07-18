@@ -83,6 +83,11 @@ public class MessageController {
         }
 
         Channel ch = connectionManager.getStore().get(deviceId).getChannel();
+
+        if (!ch.isActive()) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
+                    "Terminal is disconnected: " + deviceId);
+        }
         ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
         SoltMachineMessage message;
         CountDownLatch  latch = new CountDownLatch(1);
