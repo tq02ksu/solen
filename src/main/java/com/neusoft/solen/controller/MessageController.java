@@ -56,9 +56,9 @@ public class MessageController {
     }
 
     @RequestMapping("/statByField")
-    public Object statByField(@RequestParam String field) {
+    public Map<String, Long> statByField(@RequestParam String field) {
         Collection<ConnectionManager.Connection> values = connectionManager.getStore().values();
-        Function<ConnectionManager.Connection, Object> getter = c -> {
+        Function<ConnectionManager.Connection, String> getter = c -> {
             try {
                 Object target = c;
                 for (String f : field.split("[.]")) {
@@ -67,7 +67,7 @@ public class MessageController {
                     target = pd.getReadMethod().invoke(target);
                 }
 
-                return target;
+                return target.toString();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
