@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.beans.PropertyDescriptor;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -59,9 +60,14 @@ public class MessageController {
         Collection<ConnectionManager.Connection> values = connectionManager.getStore().values();
         Function<ConnectionManager.Connection, Object> getter = c -> {
             try {
-                return Objects.requireNonNull(BeanUtils.getPropertyDescriptor(
-                        ConnectionManager.Connection.class, field))
-                        .getReadMethod().invoke(c);
+                Object target = c;
+                for (String f : field.split("[.]")) {
+                    PropertyDescriptor pd = Objects.requireNonNull(BeanUtils.getPropertyDescriptor(
+                            c.getClass(), f));
+                    target = pd.getReadMethod().invoke(target);
+                }
+
+                return target;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
