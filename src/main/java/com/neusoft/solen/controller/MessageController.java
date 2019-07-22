@@ -33,13 +33,37 @@ public class MessageController {
         this.connectionManager = connectionManager;
     }
 
-    @RequestMapping("/detail/{deviceId}")
+    @GetMapping("/device/{deviceId}")
     public ResponseEntity<Object> detail(@PathVariable ("deviceId") String deviceId) {
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
 
         return ResponseEntity.ok(connectionManager.getStore().get(deviceId));
+    }
+
+    @DeleteMapping("/device/{deviceId}")
+    public Object delete(@PathVariable("deviceId") String deviceId,
+                         @RequestParam(required = false, defaultValue = "false") boolean force) {
+        if (!connectionManager.getStore().containsKey(deviceId)) {
+            return  ResponseEntity.notFound().build();
+        }
+
+        ConnectionManager.Connection device = connectionManager.getStore().get(deviceId);
+        if (device.getChannel().isActive() && !force) {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("can not delete connecting device");
+        }
+
+        if (device.getChannel().isActive()) {
+            try {
+                device.getChannel().closeFuture().get();
+            } catch (Exception e) {
+                logger.error("error while close connection", e);
+            }
+        }
+        connectionManager.getStore().remove(deviceId);
+
+        return device;
     }
 
     @RequestMapping("/list")
