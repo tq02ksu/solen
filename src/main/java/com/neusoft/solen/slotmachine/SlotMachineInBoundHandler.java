@@ -29,7 +29,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
         SoltMachineMessage message = decode(msg);
         sendReply(ctx.channel(), message);
 
@@ -84,7 +84,11 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         logger.info("message received: " + message);
     }
 
-    public static void sendReply(Channel channel, SoltMachineMessage message) {
+    private static void sendReply(Channel channel, SoltMachineMessage message) {
+        if (message.getCmd() == 2) {
+            // skip for reply message
+            return;
+        }
         synchronized (channel) {
             ByteBuf reply = encode(SoltMachineMessage.builder()
                     .header(message.getHeader())
@@ -169,7 +173,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         return byteBuf;
     }
 
-    public static byte reverse(byte b) {
+    private static byte reverse(byte b) {
        return (byte)  Integer.reverse(((int) b) <<24);
     }
 
