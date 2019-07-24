@@ -4,4 +4,4 @@
 export TZ=Asia/Shanghai
 export LANG=en_US.UTF-8
 DEFAULT_APP=solen
-EXEC_NAME=$DEFAULT_APP-app
+EXEC_NAME=$DEFAULT_APP
