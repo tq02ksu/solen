@@ -1,4 +1,4 @@
-package com.neusoft.solen.slotmachine;
+package top.tengpingtech.solen.slotmachine;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

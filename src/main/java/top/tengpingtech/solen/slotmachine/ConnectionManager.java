@@ -1,4 +1,4 @@
-package com.neusoft.solen.slotmachine;
+package top.tengpingtech.solen.slotmachine;
 
 import io.netty.channel.Channel;
 import lombok.AllArgsConstructor;
@@ -15,7 +15,6 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Component

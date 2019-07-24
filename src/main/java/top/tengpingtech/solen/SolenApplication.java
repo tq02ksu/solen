@@ -1,6 +1,6 @@
-package com.neusoft.solen;
+package top.tengpingtech.solen;
 
-import com.neusoft.solen.server.ServerProperties;
+import top.tengpingtech.solen.server.ServerProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;

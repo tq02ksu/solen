@@ -1,4 +1,4 @@
-package com.neusoft.solen.slotmachine;
+package top.tengpingtech.solen.slotmachine;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;

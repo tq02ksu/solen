@@ -1,4 +1,4 @@
-package com.neusoft.solen.controller;
+package top.tengpingtech.solen.controller;
 
 import lombok.Data;
 

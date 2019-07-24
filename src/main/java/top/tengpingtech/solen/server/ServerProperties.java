@@ -1,8 +1,8 @@
-package com.neusoft.solen.server;
+package top.tengpingtech.solen.server;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import static com.neusoft.solen.server.ServerProperties.PREFIX;
+import static top.tengpingtech.solen.server.ServerProperties.PREFIX;
 
 @ConfigurationProperties(prefix = PREFIX)
 public class ServerProperties {

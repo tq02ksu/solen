@@ -1,6 +1,5 @@
-package com.neusoft.solen.slotmachine;
+package top.tengpingtech.solen.slotmachine;
 
-import com.neusoft.solen.controller.MessageController;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;

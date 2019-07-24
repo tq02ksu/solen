@@ -1,8 +1,8 @@
-package com.neusoft.solen.controller;
+package top.tengpingtech.solen.controller;
 
-import com.neusoft.solen.slotmachine.ConnectionManager;
-import com.neusoft.solen.slotmachine.SlotMachineInBoundHandler;
-import com.neusoft.solen.slotmachine.SoltMachineMessage;
+import top.tengpingtech.solen.slotmachine.ConnectionManager;
+import top.tengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
+import top.tengpingtech.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -20,8 +20,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
-import static com.neusoft.solen.slotmachine.SlotMachineInBoundHandler.*;
 
 @RestController
 public class MessageController {
@@ -113,7 +111,7 @@ public class MessageController {
                         .cmd((short) 3)
                         .data(buffer)
                         .build();
-                ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
+                ByteBuf buf = Unpooled.wrappedBuffer(SlotMachineInBoundHandler.encode(message));
                 SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
                 ch.writeAndFlush(buf).get();
             }
@@ -152,8 +150,8 @@ public class MessageController {
                     .cmd((short) 129)
                     .data(data.getBytes())
                     .build();
-            ByteBuf buf = Unpooled.wrappedBuffer(encode(message));
-            logBytebuf(buf, "sending ascii");
+            ByteBuf buf = Unpooled.wrappedBuffer(SlotMachineInBoundHandler.encode(message));
+            SlotMachineInBoundHandler.logBytebuf(buf, "sending ascii");
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }

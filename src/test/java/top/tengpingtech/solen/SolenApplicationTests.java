@@ -1,4 +1,4 @@
-package com.neusoft.solen;
+package top.tengpingtech.solen;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
