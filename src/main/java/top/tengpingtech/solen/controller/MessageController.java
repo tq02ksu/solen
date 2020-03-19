@@ -53,11 +53,7 @@ public class MessageController {
         }
 
         if (device.getChannel().isActive()) {
-            try {
-                device.getChannel().closeFuture().get();
-            } catch (Exception e) {
-                logger.error("error while close connection", e);
-            }
+           connectionManager.close(device);
         }
         connectionManager.getStore().remove(deviceId);
 
@@ -73,7 +69,19 @@ public class MessageController {
     public Object listAll() {
         TreeSet<ConnectionManager.Connection> set = new TreeSet<>(
                 Comparator.comparing(ConnectionManager.Connection::getDeviceId));
-        set.addAll(connectionManager.getStore().values());
+        for (Map.Entry<String, ConnectionManager.Connection> entry : connectionManager.getStore().entrySet()) {
+            ConnectionManager.Connection c = entry.getValue();
+            set.add(ConnectionManager.Connection.builder()
+                    .deviceId(c.getDeviceId())
+                    .lac(c.getLac())
+                    .ci(c.getCi())
+                    .channel(c.getChannel())
+                    .idCode(c.getIdCode())
+                    .inputStat(c.getInputStat())
+                    .outputStat(c.getOutputStat())
+                    .build());
+        }
+
         return set;
     }
 
@@ -109,24 +117,21 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
                     "too many request for this device: " + deviceId);
         }
-
-        Channel ch = connectionManager.getStore().get(deviceId).getChannel();
-
-        if (!ch.isActive()) {
+        ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
+        if (!conn.getChannel().isActive()) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
         }
-        ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
+
         SoltMachineMessage message;
         CountDownLatch  latch = new CountDownLatch(1);
 
         try {
-            synchronized (ch) {
+            synchronized (conn.getChannel()) {
                 conn.getOutputStatSyncs().add(latch);
                 byte[] buffer = new byte[]{(byte) (request.getCtrl()), (byte) (0x01 - request.getCtrl()),
                         0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
 
-                buffer[0] = (byte) request.getCtrl();
                 message = SoltMachineMessage.builder()
                         .header(conn.getHeader())
                         .index(conn.getIndex().getAndIncrement())
@@ -137,7 +142,7 @@ public class MessageController {
                         .build();
                 ByteBuf buf = Unpooled.wrappedBuffer(SlotMachineInBoundHandler.encode(message));
                 SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
-                ch.writeAndFlush(buf).get();
+                conn.getChannel().writeAndFlush(buf).get();
             }
             boolean success = latch.await(20, TimeUnit.SECONDS);
 

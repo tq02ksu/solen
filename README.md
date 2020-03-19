@@ -7,14 +7,8 @@ Solen provide all interface is rest style. Http Header must have a 'Content-Type
 ```bash
 curl -H 'Content-Type: application/json' http://ip:port/api/listAll
 ```
-##### terminal list
-终端列表
-<pre>
- path: GET /api/list
- response: ['deviceId1', 'deviceId2' ]
-</pre>
 
-##### terminal list with status
+##### terminal list (all status)
 终端列表(全状态)
 <pre>
  path: GET /api/listAll <br/>
@@ -35,6 +29,66 @@ curl -H 'Content-Type: application/json' http://ip:port/api/listAll
      },
      ...
    ]
+</pre>
+
+##### terminal list with status
+终端详情
+<pre>
+ path: GET /api/device/{deviceId} <br/>
+ response:
+     {
+       "deviceId" : "xxx",
+       "lac" : xx,
+       "ci" : xx,
+       "channel": {
+         "registered" : true,
+         "shutdown": false,
+         "active": true,
+       },
+       "idCode" : xx,
+       "inputStat" : 0,
+       "outputStat" : 1,
+       "reports" : [
+         {
+           "time" : "2019-08-01 10:00:00,112",
+           "content" : "adf"
+         }, {
+           "time" : "2019-08-01 10:00:00,112",
+           "content" : "adf"
+         }
+       ]
+     }
+</pre>
+
+##### delete terminal
+删除终端
+<pre>
+ path: DELETE /api/device/{deviceId}[?force=true] <br/>
+ 默认不可以删除连接状态正常的终端，加force参数后，可以强制删除
+ response:
+ 不存在时返回404, 删除正常返回200, 结果是已删除的设备详情。
+     {
+       "deviceId" : "xxx",
+       "lac" : xx,
+       "ci" : xx,
+       "channel": {
+         "registered" : true,
+         "shutdown": false,
+         "active": true,
+       },
+       "idCode" : xx,
+       "inputStat" : 0,
+       "outputStat" : 1,
+       "reports" : [
+         {
+           "time" : "2019-08-01 10:00:00,112",
+           "content" : "adf"
+         }, {
+           "time" : "2019-08-01 10:00:00,112",
+           "content" : "adf"
+         }
+       ]
+     }
 </pre>
 
 ##### send control command

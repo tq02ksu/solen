@@ -30,18 +30,26 @@ public class ConnectionManager {
         return store;
     }
 
+    public void close(Connection conn ) {
+        try {
+            conn.getChannel().close().sync();
+        } catch (InterruptedException e) {
+            logger.warn("error close conn: {}", conn, e);
+        }
+    }
+
     @PostConstruct
     public void init() {
         thread = new Thread(() -> {
             while (true) {
                 store.forEach((key, val) -> {
                     try {
-                        if (val.getChannel().isActive()
+                        if (val.getChannel().isOpen()
                                 && System.currentTimeMillis() - val.getLastHeartBeatTime().getTime()
                                 > 5L * 60 * 60 * 1000) {
                             logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
                                     key, val.getLastHeartBeatTime());
-                            val.getChannel().close().get();
+                            close(val);
                         }
                     } catch (Exception e) {
                         logger.error("error while close channel, deviceId={}", key);

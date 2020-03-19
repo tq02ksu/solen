@@ -46,7 +46,9 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
             if (connectionManager.getStore().containsKey(message.getDeviceId())
                     && connectionManager.getStore().get(message.getDeviceId()).getChannel().isActive()) {
-                logger.warn("detected active device: {}", connectionManager.getStore().get(message.getDeviceId()));
+                ConnectionManager.Connection conn = connectionManager.getStore().get(message.getDeviceId());
+                logger.warn("detected active device: {}", conn);
+                connectionManager.close(conn);
             }
 
             ConnectionManager.Connection connection = Optional
