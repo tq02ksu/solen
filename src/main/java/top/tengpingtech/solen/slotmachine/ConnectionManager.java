@@ -45,8 +45,7 @@ public class ConnectionManager {
                 store.forEach((key, val) -> {
                     try {
                         if (val.getChannel().isOpen()
-                                && System.currentTimeMillis() - val.getLastHeartBeatTime().getTime()
-                                > 5L * 60 * 60 * 1000) {
+                                && System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 10L * 60 * 1000) {
                             logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
                                     key, val.getLastHeartBeatTime());
                             close(val);
@@ -110,7 +109,7 @@ public class ConnectionManager {
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class Report {
+    static class Report {
         private Date time;
         private String content;
     }
