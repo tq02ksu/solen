@@ -1,7 +1,7 @@
-package top.tengpingtech.solen.server;
+package top.fengpingtech.solen.server;
 
-import top.tengpingtech.solen.slotmachine.ConnectionManager;
-import top.tengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
+import top.fengpingtech.solen.slotmachine.ConnectionManager;
+import top.fengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.ChannelFuture;

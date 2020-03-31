@@ -1,4 +1,4 @@
-package top.tengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.slotmachine;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

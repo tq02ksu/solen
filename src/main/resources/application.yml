@@ -1,6 +1,8 @@
 spring:
   application:
     name: solen
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss,SSS
 
 solen:
   server:
@@ -8,4 +10,4 @@ solen:
 
 logging:
   level:
-    com.neusoft.solen: debug
+    top.fengpingtech.solen: debug

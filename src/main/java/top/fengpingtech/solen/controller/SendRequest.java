@@ -1,4 +1,4 @@
-package top.tengpingtech.solen.controller;
+package top.fengpingtech.solen.controller;
 
 import lombok.Data;
 

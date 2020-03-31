@@ -1,8 +1,8 @@
-package top.tengpingtech.solen.server;
+package top.fengpingtech.solen.server;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import static top.tengpingtech.solen.server.ServerProperties.PREFIX;
+import static top.fengpingtech.solen.server.ServerProperties.PREFIX;
 
 @ConfigurationProperties(prefix = PREFIX)
 public class ServerProperties {

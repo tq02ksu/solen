@@ -1,4 +1,4 @@
-package top.tengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.slotmachine;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -8,9 +8,9 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import top.fengpingtech.solen.model.Connection;
 
 import java.util.Date;
-import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
@@ -30,7 +30,22 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
-        SoltMachineMessage message = decode(msg);
+        if (logger.isDebugEnabled()) {
+            logBytebuf(msg, "decode message");
+        }
+
+        for (int i = 0; msg.isReadable() ; i ++) {
+            SoltMachineMessage message = decode(msg);
+            if (i > 0) {
+                logger.info("packet sticky resolved: index={}, message={}", i, message);
+            }
+
+            processMessage(ctx, message);
+        }
+    }
+
+    private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage message) {
+
         sendReply(ctx.channel(), message);
 
         if (message.getCmd() == 0) {
@@ -46,14 +61,14 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
 
             if (connectionManager.getStore().containsKey(message.getDeviceId())
                     && connectionManager.getStore().get(message.getDeviceId()).getChannel().isActive()) {
-                ConnectionManager.Connection conn = connectionManager.getStore().get(message.getDeviceId());
+                Connection conn = connectionManager.getStore().get(message.getDeviceId());
                 logger.warn("detected active device: {}", conn);
                 connectionManager.close(conn);
             }
 
-            ConnectionManager.Connection connection = Optional
+            Connection connection = Optional
                     .ofNullable(connectionManager.getStore().get(message.getDeviceId()))
-                    .orElseGet(ConnectionManager.Connection::new);
+                    .orElseGet(Connection::new);
 
             connection.setChannel(ctx.channel());
             connection.setDeviceId(message.getDeviceId());
@@ -65,7 +80,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         } else if (message.getCmd() == 1) {
             int outputStat = (message.getData()[0] & 0x02 ) >> 1;
             int inputStat = message.getData()[0] & 0x01;
-            ConnectionManager.Connection conn = connectionManager.getStore().get(message.getDeviceId());
+            Connection conn = connectionManager.getStore().get(message.getDeviceId());
             conn.setInputStat(inputStat);
             conn.setOutputStat(outputStat);
             conn.setLastHeartBeatTime(new Date());
@@ -74,12 +89,17 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
                 sync.countDown();
             }
         } else if (message.getCmd() == 128) {
+            Connection conn = connectionManager.getStore().get(message.getDeviceId());
+            if (conn == null) {
+                logger.warn("skipped message : {}, device not registered", message);
+                return;
+            }
             String content = new String(message.getData());
-            Date time = new Date();
-            List<ConnectionManager.Report> reports = connectionManager.getStore().get(message.getDeviceId()).getReports();
-            reports.add(0, new ConnectionManager.Report(time, content));
-            if (reports.size() > 10) {
-                reports.remove(10 );
+            Date now = new Date();
+            conn.setLastHeartBeatTime(now);
+            conn.getReports().add(0, new Connection.Report(now, content));
+            if (conn.getReports().size() > 10) {
+                conn.getReports().remove(10 );
             }
         }
 
@@ -110,10 +130,7 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
     }
 
     private static SoltMachineMessage decode(ByteBuf msg) {
-        if (logger.isDebugEnabled()) {
-            logBytebuf(msg, "decode message");
-        }
-
+        int startIndex = msg.readerIndex();
         short header = msg.readShortLE();
         short length = msg.readShortLE();
 
@@ -131,15 +148,15 @@ public class SlotMachineInBoundHandler extends SimpleChannelInboundHandler<ByteB
         byte[] data = new byte[length - 26];
         msg.readBytes(data);
 
-        byte checksum = msg.readByte();
-
-        msg.resetReaderIndex();
+        msg.readerIndex(startIndex);
 
         byte calc = 0;
 
         for (int i = 0; i < length - 1; i ++) {
             calc ^= msg.readByte();
         }
+
+        byte checksum = msg.readByte();
 
         if (calc != checksum) {
             logger.warn("checksum failed, left is {}, right is {}", calc, checksum);

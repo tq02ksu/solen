@@ -1,21 +1,14 @@
-package top.tengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.slotmachine;
 
-import io.netty.channel.Channel;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import top.fengpingtech.solen.model.Connection;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class ConnectionManager {
@@ -45,7 +38,7 @@ public class ConnectionManager {
                 store.forEach((key, val) -> {
                     try {
                         if (val.getChannel().isOpen()
-                                && System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > 10L * 60 * 1000) {
+                                && System.currentTimeMillis() - val.getLastHeartBeatTime().getTime() > Connection.HEARTBEAT_TIMEOUT_MS * 2) {
                             logger.info("deviceId={} last heartbeatTime is {}, seem to lost connection, ticking",
                                     key, val.getLastHeartBeatTime());
                             close(val);
@@ -76,41 +69,5 @@ public class ConnectionManager {
     public void destroy() {
         shutdown = true;
         thread.interrupt();
-    }
-
-    @Builder
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    public static class Connection {
-        private String deviceId;
-        private String serverHost;
-        private String serverPort;
-        private int lac;
-        private int ci;
-        private Channel channel;
-
-        private int header;
-
-        private long idCode;
-        private int inputStat;
-        private int outputStat;
-        private Date lastHeartBeatTime = new Date();
-
-        @Builder.Default
-        private List<Report> reports = new LinkedList<>();
-
-        private transient AtomicInteger index = new AtomicInteger(0);
-
-        private transient List<CountDownLatch> outputStatSyncs = new CopyOnWriteArrayList<>();
-    }
-
-    @Builder
-    @Data
-    @AllArgsConstructor
-    @NoArgsConstructor
-    static class Report {
-        private Date time;
-        private String content;
     }
 }

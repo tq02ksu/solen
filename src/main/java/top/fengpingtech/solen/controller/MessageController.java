@@ -1,8 +1,10 @@
-package top.tengpingtech.solen.controller;
+package top.fengpingtech.solen.controller;
 
-import top.tengpingtech.solen.slotmachine.ConnectionManager;
-import top.tengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
-import top.tengpingtech.solen.slotmachine.SoltMachineMessage;
+import top.fengpingtech.solen.bean.ConnectionBean;
+import top.fengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
+import top.fengpingtech.solen.model.Connection;
+import top.fengpingtech.solen.slotmachine.ConnectionManager;
+import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -25,6 +27,19 @@ import java.util.stream.Collectors;
 public class MessageController {
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
+    private static final Map<String, Comparator<Connection>> COMPARATORS =
+            new HashMap<String, Comparator<Connection>>() {
+        {
+            // lac, ci, inputStat, outputStat, deviceId
+            put("default", Comparator.comparing(Connection::getDeviceId));
+            put("deviceId", Comparator.comparing(Connection::getDeviceId));
+            put("lac", Comparator.comparing(Connection::getLac));
+            put("ci", Comparator.comparing(Connection::getCi));
+            put("inputStat", Comparator.comparing(Connection::getInputStat));
+            put("outputStat", Comparator.comparing(Connection::getOutputStat));
+        }
+    };
+
     private final ConnectionManager connectionManager;
 
     public MessageController(ConnectionManager connectionManager) {
@@ -37,7 +52,8 @@ public class MessageController {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.ok(connectionManager.getStore().get(deviceId));
+        ConnectionBean bean = ConnectionBean.build(connectionManager.getStore().get(deviceId));
+        return ResponseEntity.ok(bean);
     }
 
     @DeleteMapping("/device/{deviceId}")
@@ -47,7 +63,7 @@ public class MessageController {
             return  ResponseEntity.notFound().build();
         }
 
-        ConnectionManager.Connection device = connectionManager.getStore().get(deviceId);
+        Connection device = connectionManager.getStore().get(deviceId);
         if (device.getChannel().isActive() && !force) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("can not delete connecting device");
         }
@@ -57,38 +73,45 @@ public class MessageController {
         }
         connectionManager.getStore().remove(deviceId);
 
-        return device;
+        return ConnectionBean.build(device);
     }
 
     @RequestMapping("/list")
-    public Collection<String> list() {
-        return connectionManager.getStore().keySet();
-    }
+    public Object list(@RequestParam(value = "sort", defaultValue = "deviceId") String sort,
+                                   @RequestParam(value = "order", defaultValue = "ASC") String order,
+                                   @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+                                   @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
+        Comparator<Connection> comparator = COMPARATORS.containsKey(sort) ? COMPARATORS.get(sort) : COMPARATORS.get("default");
+        comparator = order.equalsIgnoreCase("DESC") ? comparator.reversed() : comparator;
 
-    @RequestMapping("/listAll")
-    public Object listAll() {
-        TreeSet<ConnectionManager.Connection> set = new TreeSet<>(
-                Comparator.comparing(ConnectionManager.Connection::getDeviceId));
-        for (Map.Entry<String, ConnectionManager.Connection> entry : connectionManager.getStore().entrySet()) {
-            ConnectionManager.Connection c = entry.getValue();
-            set.add(ConnectionManager.Connection.builder()
-                    .deviceId(c.getDeviceId())
-                    .lac(c.getLac())
-                    .ci(c.getCi())
-                    .channel(c.getChannel())
-                    .idCode(c.getIdCode())
-                    .inputStat(c.getInputStat())
-                    .outputStat(c.getOutputStat())
-                    .build());
-        }
+        List<Connection> list = connectionManager.getStore().values().stream()
+                .map(c -> Connection.builder()
+                        .deviceId(c.getDeviceId())
+                        .lac(c.getLac())
+                        .ci(c.getCi())
+                        .channel(c.getChannel())
+                        .idCode(c.getIdCode())
+                        .inputStat(c.getInputStat())
+                        .outputStat(c.getOutputStat())
+                        .build())
+                .sorted(comparator)
+                .collect(Collectors.toList());
 
-        return set;
+        int total = list.size();
+        int start = Integer.max(0, (pageNo - 1) * pageSize);
+        int size = Integer.max(0, Integer.min(pageSize, total - start));
+        return new HashMap<String, Object> () {
+            {
+                put("total", total);
+                put("data", list.subList(start, size).stream().map(ConnectionBean::build).collect(Collectors.toList()));
+            }
+        };
     }
 
     @RequestMapping("/statByField")
     public Map<String, Long> statByField(@RequestParam String field) {
-        Collection<ConnectionManager.Connection> values = connectionManager.getStore().values();
-        Function<ConnectionManager.Connection, String> getter = c -> {
+        Collection<Connection> values = connectionManager.getStore().values();
+        Function<Connection, String> getter = c -> {
             try {
                 Object target = c;
                 for (String f : field.split("[.]")) {
@@ -117,7 +140,7 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
                     "too many request for this device: " + deviceId);
         }
-        ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
+        Connection conn = connectionManager.getStore().get(deviceId);
         if (!conn.getChannel().isActive()) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
@@ -169,7 +192,7 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
         }
-        ConnectionManager.Connection conn = connectionManager.getStore().get(deviceId);
+        Connection conn = connectionManager.getStore().get(deviceId);
         synchronized (ch) {
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
