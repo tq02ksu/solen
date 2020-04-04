@@ -1,9 +1,11 @@
 package top.fengpingtech.solen.controller;
 
+import io.netty.buffer.UnpooledHeapByteBuf;
 import top.fengpingtech.solen.bean.ConnectionBean;
-import top.fengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
+import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
+import top.fengpingtech.solen.slotmachine.MessageEncoder;
 import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -16,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.beans.PropertyDescriptor;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -163,8 +166,11 @@ public class MessageController {
                         .cmd((short) 3)
                         .data(buffer)
                         .build();
-                ByteBuf buf = Unpooled.wrappedBuffer(SlotMachineInBoundHandler.encode(message));
-                SlotMachineInBoundHandler.logBytebuf(buf, "sending control");
+
+                MessageEncoder encoder = new MessageEncoder();
+                ByteBuf buf = Unpooled.buffer();
+                encoder.encode(message, buf);
+                MessageDebugger.logBytebuf(buf, "sending control");
                 conn.getChannel().writeAndFlush(buf).get();
             }
             boolean success = latch.await(20, TimeUnit.SECONDS);
@@ -200,10 +206,12 @@ public class MessageController {
                     .idCode(conn.getIdCode())
                     .deviceId(deviceId)
                     .cmd((short) 129)
-                    .data(data.getBytes())
+                    .data(data.getBytes(StandardCharsets.UTF_8))
                     .build();
-            ByteBuf buf = Unpooled.wrappedBuffer(SlotMachineInBoundHandler.encode(message));
-            SlotMachineInBoundHandler.logBytebuf(buf, "sending ascii");
+            MessageEncoder encoder = new MessageEncoder();
+            ByteBuf buf = Unpooled.buffer();
+            encoder.encode(message, buf);
+            MessageDebugger.logBytebuf(buf, "sending ascii");
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }

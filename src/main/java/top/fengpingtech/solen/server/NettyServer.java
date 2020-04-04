@@ -1,10 +1,13 @@
 package top.fengpingtech.solen.server;
 
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
-import top.fengpingtech.solen.slotmachine.SlotMachineInBoundHandler;
+import top.fengpingtech.solen.slotmachine.MessageDebugger;
+import top.fengpingtech.solen.slotmachine.MessageDecoder;
+import top.fengpingtech.solen.slotmachine.MessageEncoder;
+import top.fengpingtech.solen.slotmachine.MessageProcessor;
+import top.fengpingtech.solen.slotmachine.PacketPreprocessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.MultithreadEventLoopGroup;
@@ -28,8 +31,6 @@ public class NettyServer {
 
     private final ConnectionManager connectionManager;
 
-    private ChannelFuture channelFuture;
-
     public NettyServer(ServerProperties serverProperties, ConnectionManager connectionManager) {
         this.serverProperties = serverProperties;
         this.connectionManager = connectionManager;
@@ -46,8 +47,6 @@ public class NettyServer {
 
             workGroup = new EpollEventLoopGroup(serverProperties.getWorkerThreads(),
                     new DefaultThreadFactory("netty-worker", false));
-            // ((EpollEventLoopGroup) bossGroup).setIoRatio(100);
-            // ((EpollEventLoopGroup) workGroup).setIoRatio(100);
             bootstrap.channel(EpollServerSocketChannel.class);
             bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
             bootstrap.childOption(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
@@ -74,24 +73,22 @@ public class NettyServer {
 //        bootstrap.childOption(ChannelOption.SO_SNDBUF, serverProperties.getSendBufferSize());
 //        bootstrap.childOption(ChannelOption.SO_RCVBUF, serverProperties.getReceiveBufferSize());
 
-        bootstrap.group(bossGroup, workGroup).childHandler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(bossGroup, workGroup).childHandler(
+                new ChannelInitializer<SocketChannel>() {
             @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
+            protected void initChannel(SocketChannel ch) {
                 ch.pipeline()
-                        .addLast(new SlotMachineInBoundHandler(connectionManager))
-                        .addLast(new IdleStateHandler(0,0,300));
-//                        .addLast("ideStateAwareHandler", new IdleStateHandler(
-//                                serverProperties.getReaderIdleTime(),
-//                                serverProperties.getWriterIdleTime(),
-//                                serverProperties.getKeepAliveTime()))
-//                        .addLast("ide", new RpcServerChannelIdleHandler())
-//                        .addLast(new RpcServerHandler());
+                        .addFirst(new MessageEncoder())
+
+                        .addLast(new MessageDebugger())
+                        .addLast(new PacketPreprocessor())
+                        .addLast(new MessageDecoder())
+                        .addLast(new MessageProcessor(connectionManager));
             }
         });
 
         try {
-
-             channelFuture = bootstrap.bind(serverProperties.getPort()).sync();
+             bootstrap.bind(serverProperties.getPort()).sync();
         } catch (InterruptedException e) {
             logger.error("netty Server failed to start, {}", e.getMessage());
         }
