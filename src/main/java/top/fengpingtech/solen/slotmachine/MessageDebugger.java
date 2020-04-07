@@ -1,21 +1,38 @@
 package top.fengpingtech.solen.slotmachine;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MessageDebugger extends SimpleChannelInboundHandler<ByteBuf> {
+public class MessageDebugger extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(MessageDebugger.class);
+
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-        if (logger.isDebugEnabled()) {
-            logBytebuf(msg, "decode message");
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+        if (msg instanceof ByteBuf) {
+            if (logger.isDebugEnabled()) {
+                logBytebuf((ByteBuf) msg, "receiving bytes");
+            }
+            ((ByteBuf) msg).retain();
         }
-        msg.retain();
         ctx.fireChannelRead(msg);
     }
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
+        if (msg instanceof ByteBuf) {
+            if (logger.isDebugEnabled()) {
+                logBytebuf((ByteBuf) msg, "sending bytes");
+                ((ByteBuf) msg).retain();
+            }
+        }
+        ctx.write(msg, promise);
+    }
+
 
     public static void logBytebuf(ByteBuf byteBuf, String comment) {
         if (logger.isDebugEnabled()) {

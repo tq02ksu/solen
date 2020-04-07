@@ -78,10 +78,9 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel ch) {
                 ch.pipeline()
-                        .addFirst(new MessageEncoder())
-
                         .addLast(new MessageDebugger())
                         .addLast(new PacketPreprocessor())
+                        .addLast(new MessageEncoder())
                         .addLast(new MessageDecoder())
                         .addLast(new MessageProcessor(connectionManager));
             }

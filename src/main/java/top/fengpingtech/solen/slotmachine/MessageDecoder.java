@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 public class MessageDecoder extends ByteToMessageDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(MessageDebugger.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageDecoder.class);
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) {

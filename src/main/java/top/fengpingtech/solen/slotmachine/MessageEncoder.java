@@ -3,8 +3,11 @@ package top.fengpingtech.solen.slotmachine;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class MessageEncoder extends MessageToByteEncoder<SoltMachineMessage> {
+    private static final Logger logger = LoggerFactory.getLogger(MessageDecoder.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, SoltMachineMessage msg, ByteBuf out) {
@@ -12,6 +15,7 @@ public class MessageEncoder extends MessageToByteEncoder<SoltMachineMessage> {
     }
 
     public void encode(SoltMachineMessage msg, ByteBuf out) {
+        logger.info("message sent: " + msg);
         int startIndex = out.readerIndex();
         out.writeShortLE(msg.getHeader());
         out.writeShortLE(msg.getData().length + 26);
