@@ -1,11 +1,8 @@
 package top.fengpingtech.solen.slotmachine;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
@@ -31,11 +28,8 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             Assert.isTrue(data.length == 8,
                     "register packet length expect to 8, but is " + data.length);
 
-            ByteBuf location = Unpooled.wrappedBuffer(data);
-            int lac = (location.readByte() & 0xFF) + ((location.readByte() & 0xFF) << 8);
-            location.readBytes(2);
-
-            int ci = (location.readByte() & 0xFF) + ((location.readByte() & 0xFF) << 8);
+            int lac = (data[0] & 0xFF) + ((data[1] & 0xFF) << 8);
+            int ci = (data[4] & 0xFF) + ((data[5] & 0xFF) << 8);
 
             if (connectionManager.getStore().containsKey(msg.getDeviceId())
                     && connectionManager.getStore().get(msg.getDeviceId()).getChannel().isActive()) {
@@ -105,5 +99,9 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
         sendReply(msg, out);
 
         processMessage(ctx.channel(), msg, out);
+
+        for (Object o : out) {
+            ctx.pipeline().write(o);
+        }
     }
 }
