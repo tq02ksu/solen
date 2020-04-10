@@ -21,6 +21,7 @@ public class ConnectionBean {
     private int header;
     private int inputStat;
     private int outputStat;
+    private Integer rssi;
 
     private Date lastHeartBeatTime = new Date();
 

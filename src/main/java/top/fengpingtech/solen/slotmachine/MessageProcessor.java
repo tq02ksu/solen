@@ -57,6 +57,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 conn.setInputStat(inputStat);
                 conn.setOutputStat(outputStat);
                 conn.setLastHeartBeatTime(new Date());
+                conn.setRssi((int) msg.getData()[1]);
 
                 for (CountDownLatch sync : conn.getOutputStatSyncs()) {
                     sync.countDown();

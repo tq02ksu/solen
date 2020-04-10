@@ -34,6 +34,9 @@ public class Connection {
     private int outputStat;
     private Date lastHeartBeatTime = new Date();
 
+    // 信号强度
+    private Integer rssi;
+
     @Builder.Default
     private List<Report> reports = new LinkedList<>();
 
