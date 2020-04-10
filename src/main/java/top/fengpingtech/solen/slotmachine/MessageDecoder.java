@@ -56,4 +56,9 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
         logger.info("message received: " + out);
     }
+
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) {
+        ctx.close();
+    }
 }

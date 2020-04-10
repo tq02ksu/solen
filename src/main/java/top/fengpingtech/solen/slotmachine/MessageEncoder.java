@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MessageEncoder extends MessageToByteEncoder<SoltMachineMessage> {
-    private static final Logger logger = LoggerFactory.getLogger(MessageDecoder.class);
+    private static final Logger logger = LoggerFactory.getLogger(MessageEncoder.class);
 
     @Override
     protected void encode(ChannelHandlerContext ctx, SoltMachineMessage msg, ByteBuf out) {

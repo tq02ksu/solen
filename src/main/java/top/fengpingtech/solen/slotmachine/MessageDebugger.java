@@ -4,7 +4,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,7 +32,6 @@ public class MessageDebugger extends ChannelDuplexHandler {
         ctx.write(msg, promise);
     }
 
-
     public static void logBytebuf(ByteBuf byteBuf, String comment) {
         if (logger.isDebugEnabled()) {
             StringBuilder tmp = new StringBuilder("0x");
@@ -54,6 +52,6 @@ public class MessageDebugger extends ChannelDuplexHandler {
     }
 
     private static byte reverse(byte b) {
-        return (byte)  Integer.reverse(((int) b) <<24);
+        return (byte) Integer.reverse(((int) b) <<24);
     }
 }

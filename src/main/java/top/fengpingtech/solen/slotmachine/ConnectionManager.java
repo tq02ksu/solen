@@ -23,7 +23,7 @@ public class ConnectionManager {
         return store;
     }
 
-    public void close(Connection conn ) {
+    public void close(Connection conn) {
         try {
             conn.getChannel().close().sync();
         } catch (InterruptedException e) {

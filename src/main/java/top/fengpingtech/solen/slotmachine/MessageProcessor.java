@@ -101,7 +101,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
         processMessage(ctx.channel(), msg, out);
 
         for (Object o : out) {
-            ctx.pipeline().write(o);
+            ctx.pipeline().writeAndFlush(o);
         }
     }
 }

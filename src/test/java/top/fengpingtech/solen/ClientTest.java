@@ -17,6 +17,8 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import top.fengpingtech.solen.slotmachine.MessageDebugger;
+import top.fengpingtech.solen.slotmachine.MessageDecoder;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
 import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 
@@ -76,22 +78,21 @@ public class ClientTest extends SolenApplicationTests {
                         public void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline p = ch.pipeline();
                             //p.addLast(new LoggingHandler(LogLevel.INFO));
-//                            p.addLast(new MessageDecoder());
-//                            p.addLast(new MessageEncoder());
                             //p.addLast("encoder", new MessageEncoder());
                             //p.addLast("decoder", new MessageDecoder());
                             //p.addFirst(new LineBasedFrameDecoder(65535));
+                            p.addLast(new MessageDebugger());
+                            p.addLast(new MessageDecoder());
                             p.addLast(new ClientFragmentedRegisterHandler());
                         }
                     });
 
             // Start the client.
             ChannelFuture f = b.connect("127.0.0.1", 7889).sync();
-            System.out.println("EchoClient.main ServerBootstrap配置启动完成");
 
+            Thread.sleep(500);
             // Wait until the connection is closed.
             f.channel().close().sync();
-            System.out.println("EchoClient.end");
         } finally {
             // Shut down the event loop to terminate all threads.
             group.shutdownGracefully();
@@ -120,7 +121,7 @@ public class ClientTest extends SolenApplicationTests {
         }
     }
 
-    private static class ClientFragmentedRegisterHandler extends ChannelInboundHandlerAdapter {
+    public static class ClientFragmentedRegisterHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             Channel channel = ctx.channel();
