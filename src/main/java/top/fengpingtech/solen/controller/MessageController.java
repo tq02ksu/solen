@@ -1,6 +1,5 @@
 package top.fengpingtech.solen.controller;
 
-import io.netty.buffer.UnpooledHeapByteBuf;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.model.Connection;
@@ -40,6 +39,7 @@ public class MessageController {
             put("ci", Comparator.comparing(Connection::getCi));
             put("inputStat", Comparator.comparing(Connection::getInputStat));
             put("outputStat", Comparator.comparing(Connection::getOutputStat));
+            put("rssi", Comparator.comparing(Connection::getRssi));
         }
     };
 

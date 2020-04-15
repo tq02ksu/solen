@@ -37,6 +37,12 @@ public class Connection {
     // 信号强度
     private Integer rssi;
 
+    private Integer debugData1;
+    private Integer debugData2;
+    private Integer debugData3;
+    private Integer debugData4;
+    private Integer debugData5;
+
     @Builder.Default
     private List<Report> reports = new LinkedList<>();
 

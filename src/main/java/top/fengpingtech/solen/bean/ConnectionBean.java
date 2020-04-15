@@ -22,6 +22,11 @@ public class ConnectionBean {
     private int inputStat;
     private int outputStat;
     private Integer rssi;
+    private Integer debugData1;
+    private Integer debugData2;
+    private Integer debugData3;
+    private Integer debugData4;
+    private Integer debugData5;
 
     private Date lastHeartBeatTime = new Date();
 

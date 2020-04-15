@@ -143,6 +143,21 @@ public class ClientTest extends SolenApplicationTests {
             Thread.sleep(1000);
 
             channel.writeAndFlush(buf.slice(10, buf.readableBytes() - 10));
+
+            Thread.sleep(1000);
+
+            buf = ctx.alloc().buffer();
+
+            SoltMachineMessage msg = SoltMachineMessage.builder()
+                    .header(13175)
+                    .index(104)
+                    .idCode(8389750321502775627L)
+                    .deviceId("10619030001")
+                    .cmd((short) 1)
+                    .data(new byte[] {15, 16, 0, 120, 0, 39, 1, 54, 1, -1, 46, 0, 0, 67, 0, 0, 0})
+                    .build();
+            encoder.encode(msg, buf);
+            channel.pipeline().writeAndFlush(buf);
         }
     }
 }
