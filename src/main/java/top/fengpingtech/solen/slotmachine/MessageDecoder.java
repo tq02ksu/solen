@@ -47,7 +47,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
         out.add(SoltMachineMessage.builder()
                 .header(header)
-                .index(index)
+                .index(index & 0xFF)
                 .idCode(idCode)
                 .cmd(cmd)
                 .deviceId(deviceId)

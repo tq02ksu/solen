@@ -40,18 +40,6 @@ public class MessageDebugger extends ChannelDuplexHandler {
             }
             logger.debug(comment + "(le): {}", tmp.toString());
             byteBuf.resetReaderIndex();
-
-            tmp = new StringBuilder("0x");
-
-            while (byteBuf.isReadable()) {
-                tmp.append(String.format("%02x ", reverse(byteBuf.readByte()) & 0xFF));
-            }
-            logger.trace(comment + "(be): {}", tmp.toString());
-            byteBuf.resetReaderIndex();
         }
-    }
-
-    private static byte reverse(byte b) {
-        return (byte) Integer.reverse(((int) b) <<24);
     }
 }
