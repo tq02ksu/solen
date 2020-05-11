@@ -71,9 +71,7 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("can not delete connecting device");
         }
 
-        if (device.getChannel().isActive()) {
-           connectionManager.close(device);
-        }
+        connectionManager.close(device);
         connectionManager.getStore().remove(deviceId);
 
         return ConnectionBean.build(device);
@@ -106,7 +104,9 @@ public class MessageController {
         return new HashMap<String, Object> () {
             {
                 put("total", total);
-                put("data", list.subList(start, size).stream().map(ConnectionBean::build).collect(Collectors.toList()));
+                put("data",
+                        list.subList(start, start + size).stream()
+                                .map(ConnectionBean::build).collect(Collectors.toList()));
             }
         };
     }

@@ -36,9 +36,9 @@ public class ClientMain {
             // Start the client.
             ChannelFuture f = b.connect("127.0.0.1", 7889).sync();
 
-            Thread.sleep(10000);
+            Thread.sleep(100000000);
             // Wait until the connection is closed.
-            f.channel().close().sync();
+//            f.channel().close().sync();
         } finally {
             // Shut down the event loop to terminate all threads.
             group.shutdownGracefully();
