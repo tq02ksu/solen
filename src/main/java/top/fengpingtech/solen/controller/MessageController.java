@@ -100,12 +100,12 @@ public class MessageController {
 
         int total = list.size();
         int start = Integer.max(0, (pageNo - 1) * pageSize);
-        int size = Integer.max(0, Integer.min(pageSize, total - start));
+        int size = Integer.max(0, Integer.min(pageSize + start, total));
         return new HashMap<String, Object> () {
             {
                 put("total", total);
                 put("data",
-                        list.subList(start, start + size).stream()
+                        list.subList(start, size).stream()
                                 .map(ConnectionBean::build).collect(Collectors.toList()));
             }
         };
