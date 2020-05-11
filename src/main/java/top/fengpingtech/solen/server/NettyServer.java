@@ -1,5 +1,9 @@
 package top.fengpingtech.solen.server;
 
+import io.netty.channel.kqueue.KQueue;
+import io.netty.channel.kqueue.KQueueEventLoopGroup;
+import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.handler.timeout.ReadTimeoutHandler;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
@@ -43,19 +47,26 @@ public class NettyServer {
         MultithreadEventLoopGroup workGroup;
         if (Epoll.isAvailable()) {
             bossGroup = new EpollEventLoopGroup(serverProperties.getIoThreads(),
-                    new DefaultThreadFactory("netty-boss", false));
+                    new DefaultThreadFactory("netty-boss", true));
 
             workGroup = new EpollEventLoopGroup(serverProperties.getWorkerThreads(),
-                    new DefaultThreadFactory("netty-worker", false));
+                    new DefaultThreadFactory("netty-worker", true));
             bootstrap.channel(EpollServerSocketChannel.class);
             bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
             bootstrap.childOption(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
             logger.info("Use epoll edge trigger mode.");
+        } else if (KQueue.isAvailable()) {
+            bossGroup = new KQueueEventLoopGroup(serverProperties.getIoThreads(),
+                    new DefaultThreadFactory("netty-boss", true));
+            workGroup = new KQueueEventLoopGroup(serverProperties.getWorkerThreads(),
+                    new DefaultThreadFactory("netty-worker", true));
+            bootstrap.channel(KQueueServerSocketChannel.class);
+
         } else {
             bossGroup = new NioEventLoopGroup(serverProperties.getIoThreads(),
-                    new DefaultThreadFactory("RpcServerBossGroup", false));
+                    new DefaultThreadFactory("netty-boss", true));
             workGroup = new NioEventLoopGroup(serverProperties.getWorkerThreads(),
-                    new DefaultThreadFactory("RpcServerWorkerGroup", false));
+                    new DefaultThreadFactory("netty-worker", true));
 
             // ((NioEventLoopGroup) bossGroup).setIoRatio(100);
             // ((NioEventLoopGroup) workGroup).setIoRatio(100);
@@ -78,6 +89,7 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel ch) {
                 ch.pipeline()
+                        .addLast(new ReadTimeoutHandler(6000))
                         .addLast(new MessageDebugger())
                         .addLast(new PacketPreprocessor())
                         .addLast(new MessageEncoder())
