@@ -3,7 +3,7 @@ spring:
     name: solen
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss,SSS
-
+    time-zone: Asia/Shanghai
 solen:
   server:
     port: 7889
@@ -11,3 +11,4 @@ solen:
 logging:
   level:
     top.fengpingtech.solen: debug
+    io.netty: debug
