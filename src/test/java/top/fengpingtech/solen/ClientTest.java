@@ -2,7 +2,6 @@ package top.fengpingtech.solen;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
@@ -155,6 +154,57 @@ public class ClientTest extends SolenApplicationTests {
                     .deviceId("10619030001")
                     .cmd((short) 1)
                     .data(new byte[] {15, 16, 0, 120, 0, 39, 1, 54, 1, -1, 46, 0, 0, 67, 0, 0, 0})
+                    .build();
+            encoder.encode(msg, buf);
+            channel.pipeline().writeAndFlush(buf);
+
+            // test cmd=128
+            buf = ctx.alloc().buffer();
+            msg = SoltMachineMessage.builder()
+                    .header(13175)
+                    .index(104)
+                    .idCode(8389750321502775627L)
+                    .deviceId("10619030001")
+                    .cmd((short) 128)
+                    .data("12345".getBytes())
+                    .build();
+            encoder.encode(msg, buf);
+            channel.pipeline().writeAndFlush(buf);
+
+            Thread.sleep(5000);
+            buf = ctx.alloc().buffer();
+            msg = SoltMachineMessage.builder()
+                    .header(13175)
+                    .index(104)
+                    .idCode(8389750321502775627L)
+                    .deviceId("10619030001")
+                    .cmd((short) 128)
+                    .data("12345".getBytes())
+                    .build();
+            encoder.encode(msg, buf);
+            channel.pipeline().writeAndFlush(buf);
+
+            Thread.sleep(5000);
+            buf = ctx.alloc().buffer();
+            msg = SoltMachineMessage.builder()
+                    .header(13175)
+                    .index(104)
+                    .idCode(8389750321502775627L)
+                    .deviceId("10619030001")
+                    .cmd((short) 128)
+                    .data("abcdf".getBytes())
+                    .build();
+            encoder.encode(msg, buf);
+            channel.pipeline().writeAndFlush(buf);
+            Thread.sleep(2000);
+            buf = ctx.alloc().buffer();
+            msg = SoltMachineMessage.builder()
+                    .header(13175)
+                    .index(104)
+                    .idCode(8389750321502775627L)
+                    .deviceId("10619030001")
+                    .cmd((short) 128)
+                    .data(new byte[] {(byte)0x67, (byte) 0x68, (byte)0x69,(byte) 0})
                     .build();
             encoder.encode(msg, buf);
             channel.pipeline().writeAndFlush(buf);

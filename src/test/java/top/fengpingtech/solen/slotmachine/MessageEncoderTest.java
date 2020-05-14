@@ -3,9 +3,6 @@ package top.fengpingtech.solen.slotmachine;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;
-import top.fengpingtech.solen.SolenApplication;
-
-import static org.junit.Assert.*;
 
 public class MessageEncoderTest {
     MessageEncoder encoder = new MessageEncoder();
@@ -37,5 +34,4 @@ public class MessageEncoderTest {
                 .data(new byte[] {10, 65, 0, 0, 76, 71, 0, 0})
                 .build(), buf);
     }
-
 }
