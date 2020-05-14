@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class MessageDecoder extends ByteToMessageDecoder {
     private static final Logger logger = LoggerFactory.getLogger(MessageDecoder.class);
@@ -25,6 +27,16 @@ public class MessageDecoder extends ByteToMessageDecoder {
         msg.readBytes(buffer);
 
         String deviceId = new String(buffer);
+
+        // skip invalid deviceId
+        if (!deviceId.matches("^\\w+$")) {
+            String hex = Stream.iterate(0, i -> i + 1)
+                    .limit(buffer.length)
+                    .map(i -> String.format("%02x ", buffer[i] & 0xff))
+                    .collect(Collectors.joining());
+            logger.warn("skipped message because of invalid device id: 0x{}", hex);
+            return;
+        }
 
         short cmd = (short) (msg.readByte() & 0xFF); // cmd 是大端
 
