@@ -112,7 +112,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 if (val.get() != null) {
                     ctx.executor().schedule(() -> {
                         for (byte[] message = val.get(); message != null; message = val.get()) {
-                            if (val.compareAndSet(message, null) && message != null) {
+                            if (val.compareAndSet(message, null)) {
                                 processMessage(ctx, conn, message);
                             }
                         }

@@ -1,29 +1,33 @@
 package top.fengpingtech.solen.server;
 
+import io.netty.bootstrap.ServerBootstrap;
+import io.netty.buffer.PooledByteBufAllocator;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
+import io.netty.channel.MultithreadEventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollChannelOption;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollMode;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.kqueue.KQueue;
 import io.netty.channel.kqueue.KQueueEventLoopGroup;
 import io.netty.channel.kqueue.KQueueServerSocketChannel;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import io.netty.handler.timeout.ReadTimeoutHandler;
+import io.netty.util.concurrent.DefaultThreadFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
 import top.fengpingtech.solen.slotmachine.MessageProcessor;
 import top.fengpingtech.solen.slotmachine.PacketPreprocessor;
-import io.netty.bootstrap.ServerBootstrap;
-import io.netty.buffer.PooledByteBufAllocator;
-import io.netty.channel.ChannelInitializer;
-import io.netty.channel.ChannelOption;
-import io.netty.channel.MultithreadEventLoopGroup;
-import io.netty.channel.epoll.*;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.DefaultThreadFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 
@@ -89,8 +93,9 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel ch) {
                 ch.pipeline()
-                        .addLast(new ReadTimeoutHandler(6000))
+                        .addLast(new LoggingHandler())
                         .addLast(new MessageDebugger())
+                        .addLast(new ReadTimeoutHandler(6000))
                         .addLast(new PacketPreprocessor())
                         .addLast(new MessageEncoder())
                         .addLast(new MessageDecoder())
