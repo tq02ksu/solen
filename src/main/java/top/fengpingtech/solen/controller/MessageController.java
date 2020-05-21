@@ -1,11 +1,5 @@
 package top.fengpingtech.solen.controller;
 
-import top.fengpingtech.solen.bean.ConnectionBean;
-import top.fengpingtech.solen.slotmachine.MessageDebugger;
-import top.fengpingtech.solen.model.Connection;
-import top.fengpingtech.solen.slotmachine.ConnectionManager;
-import top.fengpingtech.solen.slotmachine.MessageEncoder;
-import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
@@ -14,11 +8,29 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import top.fengpingtech.solen.bean.ConnectionBean;
+import top.fengpingtech.solen.model.Connection;
+import top.fengpingtech.solen.slotmachine.ConnectionManager;
+import top.fengpingtech.solen.slotmachine.MessageDebugger;
+import top.fengpingtech.solen.slotmachine.MessageEncoder;
+import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 
 import java.beans.PropertyDescriptor;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -170,7 +182,7 @@ public class MessageController {
                 MessageEncoder encoder = new MessageEncoder();
                 ByteBuf buf = Unpooled.buffer();
                 encoder.encode(message, buf);
-                MessageDebugger.logBytebuf(buf, "sending control");
+                MessageDebugger.logByteBuf(buf, "sending control", conn.getChannel().toString());
                 conn.getChannel().writeAndFlush(buf).get();
             }
             boolean success = latch.await(20, TimeUnit.SECONDS);
@@ -211,7 +223,7 @@ public class MessageController {
             MessageEncoder encoder = new MessageEncoder();
             ByteBuf buf = Unpooled.buffer();
             encoder.encode(message, buf);
-            MessageDebugger.logBytebuf(buf, "sending ascii");
+            MessageDebugger.logByteBuf(buf, "sending ascii", ch.toString());
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }

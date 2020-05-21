@@ -22,7 +22,7 @@ public class MessageEncoder extends MessageToByteEncoder<SoltMachineMessage> {
         out.writeByte(msg.getIndex());
         out.writeLongLE(msg.getIdCode());
         out.writeBytes(msg.getDeviceId().getBytes());
-        out.writeByte((byte)msg.getCmd()); // cmd 不是小端
+        out.writeByte((byte)msg.getCmd());
         out.writeBytes(msg.getData());
 
         byte checksum = 0;

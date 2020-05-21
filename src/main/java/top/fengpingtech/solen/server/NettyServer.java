@@ -22,12 +22,14 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import top.fengpingtech.solen.slotmachine.ConnectionKeeperHandler;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
 import top.fengpingtech.solen.slotmachine.MessageProcessor;
 import top.fengpingtech.solen.slotmachine.PacketPreprocessor;
+import top.fengpingtech.solen.slotmachine.TracingLogHandler;
 
 import javax.annotation.PostConstruct;
 
@@ -93,10 +95,13 @@ public class NettyServer {
             @Override
             protected void initChannel(SocketChannel ch) {
                 ch.pipeline()
+                        .addLast(new TracingLogHandler())
                         .addLast(new LoggingHandler())
                         .addLast(new MessageDebugger())
-                        .addLast(new ReadTimeoutHandler(6000))
+                        .addLast(new ReadTimeoutHandler(600))
                         .addLast(new PacketPreprocessor())
+                        .addLast(new ReadTimeoutHandler(600))
+                        .addLast(new ConnectionKeeperHandler())
                         .addLast(new MessageEncoder())
                         .addLast(new MessageDecoder())
                         .addLast(new MessageProcessor(connectionManager));

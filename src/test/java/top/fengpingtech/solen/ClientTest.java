@@ -171,7 +171,7 @@ public class ClientTest extends SolenApplicationTests {
             encoder.encode(msg, buf);
             channel.pipeline().writeAndFlush(buf);
 
-            Thread.sleep(5000);
+            Thread.sleep(15000);
             buf = ctx.alloc().buffer();
             msg = SoltMachineMessage.builder()
                     .header(13175)

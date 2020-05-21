@@ -14,7 +14,7 @@ public class MessageDebugger extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof ByteBuf) {
             if (logger.isDebugEnabled()) {
-                logBytebuf((ByteBuf) msg, "receiving bytes");
+                logByteBuf((ByteBuf) msg, "receiving bytes", ctx.channel().toString());
             }
             ((ByteBuf) msg).retain();
         }
@@ -25,20 +25,20 @@ public class MessageDebugger extends ChannelDuplexHandler {
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) {
         if (msg instanceof ByteBuf) {
             if (logger.isDebugEnabled()) {
-                logBytebuf((ByteBuf) msg, "sending bytes");
+                logByteBuf((ByteBuf) msg, "sending bytes", ctx.channel().toString());
                 ((ByteBuf) msg).retain();
             }
         }
         ctx.write(msg, promise);
     }
 
-    public static void logBytebuf(ByteBuf byteBuf, String comment) {
+    public static void logByteBuf(ByteBuf byteBuf, String comment, String channel) {
         if (logger.isDebugEnabled()) {
             StringBuilder tmp = new StringBuilder("0x");
             while (byteBuf.isReadable()) {
                 tmp.append(String.format("%02x ", byteBuf.readByte() & 0xFF));
             }
-            logger.debug(comment + "(le): {}", tmp.toString());
+            logger.info("{}: {} {}", channel, comment, tmp.toString());
             byteBuf.resetReaderIndex();
         }
     }

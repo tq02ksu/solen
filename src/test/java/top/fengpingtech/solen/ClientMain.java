@@ -8,6 +8,7 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.logging.LoggingHandler;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
 
@@ -27,7 +28,8 @@ public class ClientMain {
                             //p.addLast("encoder", new MessageEncoder());
                             //p.addLast("decoder", new MessageDecoder());
                             //p.addFirst(new LineBasedFrameDecoder(65535));
-                            p.addLast(new MessageDebugger());
+                            p.addLast("logging", new LoggingHandler());
+                            p.addLast("debugger", new MessageDebugger());
                             p.addLast(new MessageDecoder());
                             p.addLast(new ClientTest.ClientFragmentedRegisterHandler());
                         }

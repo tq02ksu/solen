@@ -19,7 +19,7 @@ public class MessageEncoderTest {
                         .data("test".getBytes())
                         .build(), byteBuf);
 
-        MessageDebugger.logBytebuf(byteBuf, "test");
+        MessageDebugger.logByteBuf(byteBuf, "test", null);
     }
 
     @Test

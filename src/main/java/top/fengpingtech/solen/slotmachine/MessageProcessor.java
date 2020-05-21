@@ -43,7 +43,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
         this.connectionManager = connectionManager;
     }
 
-    private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
+    private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg) {
         if (msg.getCmd() == 0) {
             byte[] data = msg.getData();
             Assert.isTrue(data.length == 8,
@@ -70,6 +70,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             connection.setHeader(msg.getHeader());
             connection.setIdCode(msg.getIdCode());
             connectionManager.getStore().putIfAbsent(msg.getDeviceId(), connection);
+            ctx.channel().attr(AttributeKey.valueOf("DeviceId")).set(msg.getDeviceId());
         } else if (msg.getCmd() == 1) {
             int outputStat = (msg.getData()[0] & 0x02 ) >> 1;
             int inputStat = msg.getData()[0] & 0x01;
@@ -195,13 +196,18 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
         sendReply(msg, out);
 
-        processMessage(ctx, msg, out);
+        processMessage(ctx, msg);
 
-        for (Object o : out) {
-            ctx.pipeline().writeAndFlush(o);
+        synchronized (ctx.channel()) {
+            for (Object o : out) {
+                ctx.pipeline().writeAndFlush(o);
+            }
         }
+
+        // clear output
+        out.clear();
     }
 }
