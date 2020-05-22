@@ -28,16 +28,6 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
         String deviceId = new String(buffer);
 
-        // skip invalid deviceId
-        if (!deviceId.matches("^\\w+$")) {
-            String hex = Stream.iterate(0, i -> i + 1)
-                    .limit(buffer.length)
-                    .map(i -> String.format("%02x ", buffer[i] & 0xff))
-                    .collect(Collectors.joining());
-            logger.warn("skipped message because of invalid device id: 0x{}", hex);
-            return;
-        }
-
         short cmd = (short) (msg.readByte() & 0xFF); // cmd 是大端
 
         byte[] data = new byte[length - 26];
@@ -55,6 +45,16 @@ public class MessageDecoder extends ByteToMessageDecoder {
 
         if (calc != checksum) {
             logger.warn("checksum failed, left is {}, right is {}", calc, checksum);
+        }
+
+        // skip invalid deviceId
+        if (!deviceId.matches("^\\w+$")) {
+            String hex = Stream.iterate(0, i -> i + 1)
+                    .limit(buffer.length)
+                    .map(i -> String.format("%02x ", buffer[i] & 0xff))
+                    .collect(Collectors.joining());
+            logger.warn("skipped message because of invalid device id: 0x{}", hex);
+            return;
         }
 
         out.add(SoltMachineMessage.builder()
