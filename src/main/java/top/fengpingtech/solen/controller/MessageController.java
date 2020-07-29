@@ -38,6 +38,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @RestController
+@RequestMapping("/api")
 public class MessageController {
     private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
 
