@@ -22,10 +22,12 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * process terminal message:
+ * <pre>
  *  cmd=0 register message
  *  cmd=1 heart beat
  *  cmd=2 reply
  *  cmd=128 text report message terminated by invisible characters like '\0', '\n' or timeout with 3 seconds
+ * </pre>
  */
 public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage> {
     private static final Logger logger = LoggerFactory.getLogger(MessageProcessor.class);
@@ -33,7 +35,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
     private static final int TEXT_REPORT_TIMEOUT_SECONDS = 3;
 
     private static final List<Byte> TEXT_TERMINATORS = Collections.unmodifiableList(
-            Arrays.asList((byte)0x00, (byte)0x0a));
+            Arrays.asList((byte) 0x00, (byte) 0x0a));
 
     private static final String ATTRIBUTE_KEY_MESSAGE_BUFFER = "MESSAGE_BUFFER";
 
@@ -45,12 +47,13 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
 
     private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg) {
         if (msg.getCmd() == 0) {
-            byte[] data = msg.getData();
-            Assert.isTrue(data.length == 8,
-                    "register packet length expect to 8, but is " + data.length);
+            ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
+            Assert.isTrue(data.readableBytes() == 8,
+                    "register packet length expect to 8, but is " + data.readableBytes());
 
-            int lac = (data[0] & 0xFF) + ((data[1] & 0xFF) << 8);
-            int ci = (data[4] & 0xFF) + ((data[5] & 0xFF) << 8);
+            int lac = data.readIntLE();
+            int ci = data.readIntLE();
+            data.release();
 
             if (connectionManager.getStore().containsKey(msg.getDeviceId())
                     && connectionManager.getStore().get(msg.getDeviceId()).getChannel().isActive()) {
@@ -72,26 +75,31 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             connectionManager.getStore().putIfAbsent(msg.getDeviceId(), connection);
             ctx.channel().attr(AttributeKey.valueOf("DeviceId")).set(msg.getDeviceId());
         } else if (msg.getCmd() == 1) {
-            int outputStat = (msg.getData()[0] & 0x02 ) >> 1;
-            int inputStat = msg.getData()[0] & 0x01;
+            ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
+            byte stat = data.readByte();
+
+            int outputStat = (stat & 0x02) >> 1;
+            int inputStat = stat & 0x01;
             Connection conn = connectionManager.getStore().get(msg.getDeviceId());
             if (conn != null) {
                 conn.setInputStat(inputStat);
                 conn.setOutputStat(outputStat);
                 conn.setLastHeartBeatTime(new Date());
-                conn.setRssi((msg.getData()[1] & 0xFF) + ((msg.getData()[2] & 0xFF) << 8));
-                conn.setDebugData1((msg.getData()[3] & 0xFF) + ((msg.getData()[4] & 0xFF) << 8));
-                conn.setDebugData2((msg.getData()[4] & 0xFF) + ((msg.getData()[6] & 0xFF) << 8));
-                conn.setDebugData3((msg.getData()[7] & 0xFF) + ((msg.getData()[8] & 0xFF) << 8));
-                conn.setDebugData4((msg.getData()[9] & 0xFF) + ((msg.getData()[10] & 0xFF) << 8)
-                        + ((msg.getData()[11] & 0xFF) << 16) + ((msg.getData()[12] & 0xFF) << 24));
-                conn.setDebugData5((msg.getData()[13] & 0xFF) + ((msg.getData()[14] & 0xFF) << 8)
-                        + ((msg.getData()[15] & 0xFF) << 16) + ((msg.getData()[16] & 0xFF) << 24));
+                // data[1], data[2]
+                conn.setRssi((int) data.readShortLE());
+                // data[3], data[4]
+                conn.setVoltage((double) data.readShortLE() / 10);
+                // data[5], data[6]
+                conn.setTemperature((double) data.readShortLE() / 10);
+                // data[7], data[8]
+                conn.setGravity((int) data.readShortLE());
+                conn.setUptime(data.readIntLE());
 
                 for (CountDownLatch sync : conn.getOutputStatSyncs()) {
                     sync.countDown();
                 }
             }
+            data.release();
         } else if (msg.getCmd() == 128) {
             Connection conn = connectionManager.getStore().get(msg.getDeviceId());
             if (conn == null) {
