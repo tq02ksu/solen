@@ -13,11 +13,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import top.fengpingtech.solen.auth.AuthProperties;
+import top.fengpingtech.solen.auth.AuthService;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.model.Connection;
+import top.fengpingtech.solen.model.Tenant;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
@@ -56,16 +60,31 @@ public class MessageController {
         }
     };
 
+    private final AuthProperties authProperties;
+
+    private final AuthService authService;
+
     private final ConnectionManager connectionManager;
 
-    public MessageController(ConnectionManager connectionManager) {
+    public MessageController(AuthProperties authProperties, AuthService authService, ConnectionManager connectionManager) {
+        this.authProperties = authProperties;
+        this.authService = authService;
         this.connectionManager = connectionManager;
     }
 
     @GetMapping("/device/{deviceId}")
-    public ResponseEntity<Object> detail(@PathVariable ("deviceId") String deviceId) {
+    public ResponseEntity<Object> detail(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @PathVariable ("deviceId") String deviceId) {
+
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
+        }
+
+        Connection conn = connectionManager.getStore().get(deviceId);
+        Tenant tenant = getTenant(appKey);
+        if (!authService.canVisit(tenant, conn)) {
+            return ResponseEntity.status(401).body("unauthorized!");
         }
 
         ConnectionBean bean = ConnectionBean.build(connectionManager.getStore().get(deviceId));
@@ -73,32 +92,42 @@ public class MessageController {
     }
 
     @DeleteMapping("/device/{deviceId}")
-    public Object delete(@PathVariable("deviceId") String deviceId,
-                         @RequestParam(required = false, defaultValue = "false") boolean force) {
+    public ResponseEntity<Object> delete(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @PathVariable("deviceId") String deviceId,
+            @RequestParam(required = false, defaultValue = "false") boolean force) {
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return  ResponseEntity.notFound().build();
         }
 
-        Connection device = connectionManager.getStore().get(deviceId);
-        if (device.getChannel().isActive() && !force) {
+        Connection conn = connectionManager.getStore().get(deviceId);
+        if (conn.getChannel().isActive() && !force) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("can not delete connecting device");
         }
 
-        connectionManager.close(device);
+        Tenant tenant = getTenant(appKey);
+        if (!authService.canVisit(tenant, conn)) {
+            return ResponseEntity.status(401).body("unauthorized!");
+        }
+        connectionManager.close(conn);
         connectionManager.getStore().remove(deviceId);
 
-        return ConnectionBean.build(device);
+        return ResponseEntity.ok(ConnectionBean.build(conn));
     }
 
     @RequestMapping("/list")
-    public Object list(@RequestParam(value = "sort", defaultValue = "deviceId") String sort,
+    public Object list(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @RequestParam(value = "sort", defaultValue = "deviceId") String sort,
                                    @RequestParam(value = "order", defaultValue = "ASC") String order,
                                    @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                    @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
+        Tenant tenant = getTenant(appKey);
         Comparator<Connection> comparator = COMPARATORS.containsKey(sort) ? COMPARATORS.get(sort) : COMPARATORS.get("default");
         comparator = order.equalsIgnoreCase("DESC") ? comparator.reversed() : comparator;
 
         List<Connection> list = connectionManager.getStore().values().stream()
+                .filter(authService.filter(tenant))
                 .map(c -> Connection.builder()
                         .deviceId(c.getDeviceId())
                         .lac(c.getLac())
@@ -125,7 +154,9 @@ public class MessageController {
     }
 
     @RequestMapping("/statByField")
-    public Map<String, Long> statByField(@RequestParam String field) {
+    public Map<String, Long> statByField(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @RequestParam String field) {
         Collection<Connection> values = connectionManager.getStore().values();
         Function<Connection, String> getter = c -> {
             try {
@@ -142,21 +173,32 @@ public class MessageController {
             }
         };
 
-        return values.stream().collect(Collectors.groupingBy(getter, Collectors.counting()));
+        Tenant tenant = getTenant(appKey);
+        return values.stream()
+                .filter(authService.filter(tenant))
+                .collect(Collectors.groupingBy(getter, Collectors.counting()));
     }
 
     @PostMapping("/sendControl")
-    public ResponseEntity<Object> sendControl(@RequestBody SendRequest request) throws ExecutionException, InterruptedException {
+    public ResponseEntity<Object> sendControl(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @RequestBody SendRequest request) throws ExecutionException, InterruptedException {
+        Tenant tenant = getTenant(appKey);
+
         String deviceId = request.getDeviceId();
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }
 
-        if (connectionManager.getStore().get(deviceId).getOutputStatSyncs().size() > 3) {
+        Connection conn = connectionManager.getStore().get(deviceId);
+        if (!authService.canVisit(tenant, conn)) {
+            return ResponseEntity.status(401).body("unauthorized");
+        }
+
+        if (conn.getOutputStatSyncs().size() > 3) {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
                     "too many request for this device: " + deviceId);
         }
-        Connection conn = connectionManager.getStore().get(deviceId);
         if (!conn.getChannel().isActive()) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
@@ -199,7 +241,11 @@ public class MessageController {
     }
 
     @PostMapping("/sendAscii")
-    public ResponseEntity<Object> sendAscii(@RequestBody SendRequest request) throws Exception {
+    public ResponseEntity<Object> sendAscii(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @RequestBody SendRequest request) throws Exception {
+        Tenant tenant = getTenant(appKey);
+
         String deviceId = request.getDeviceId();
         String data = request.getData();
         if (!connectionManager.getStore().containsKey(deviceId)) {
@@ -212,6 +258,11 @@ public class MessageController {
                     "Terminal is disconnected: " + deviceId);
         }
         Connection conn = connectionManager.getStore().get(deviceId);
+
+        if (!authService.canVisit(tenant, conn)) {
+            return ResponseEntity.status(401).body("unauthorized");
+        }
+
         synchronized (ch) {
             SoltMachineMessage message = SoltMachineMessage.builder()
                     .header(conn.getHeader())
@@ -228,5 +279,15 @@ public class MessageController {
             ch.writeAndFlush(buf).get();
             return ResponseEntity.ok("Message sent: " + message);
         }
+    }
+
+    Tenant getTenant(String appKey) {
+        if (appKey == null) {
+            return null;
+        }
+        return authProperties.getTenants()
+                .stream()
+                .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
+                .findFirst().orElseThrow(IllegalStateException::new);
     }
 }

@@ -7,6 +7,22 @@ spring:
 solen:
   server:
     port: 7889
+  auth:
+    tenants:
+      - app-key: test
+        secret-key: '$2a$10$thdy4TLr809cq6kpHdT1JOeTS.IiZfVFnjfkuxgqs.cSj53ffCWV.'
+        pass-key: test
+        roles: [ USER ]
+        device-patterns: [ "555**", "400**" ]
+      - app-key: admin
+        secret-key: 123asdsecret123asdfadmin
+        pass-key: admin
+        roles: [ ADMIN ]
+        device-patterns: ["**"]
+    jwt:
+      secret: d41d8cd98f00b204e9800998ecf8427e
+      ttl: 3600000
+      issuer: http://iot-online.fengping-tech.top
 
 logging:
   level:
