@@ -82,7 +82,7 @@ public class ClientTest extends SolenApplicationTests {
                             //p.addFirst(new LineBasedFrameDecoder(65535));
                             p.addLast(new MessageDebugger());
                             p.addLast(new MessageDecoder());
-                            p.addLast(new ClientFragmentedRegisterHandler());
+                            p.addLast(new ClientFragmentedRegisterHandler("55520041112"));
                         }
                     });
 
@@ -121,6 +121,12 @@ public class ClientTest extends SolenApplicationTests {
     }
 
     public static class ClientFragmentedRegisterHandler extends ChannelInboundHandlerAdapter {
+        private final String deviceId;
+
+        public ClientFragmentedRegisterHandler(String deviceId) {
+            this.deviceId = deviceId;
+        }
+
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
             Channel channel = ctx.channel();
@@ -130,7 +136,7 @@ public class ClientTest extends SolenApplicationTests {
                     .header(13175)
                     .index(0)
                     .idCode(12345L)
-                    .deviceId("10619030001")
+                    .deviceId(deviceId)
                     .cmd((short) 0)
                     .data(new byte[] {10, 65, 0, 0, 76, 71, 0, 0})
                     .build(), buf);
@@ -151,7 +157,7 @@ public class ClientTest extends SolenApplicationTests {
                     .header(13175)
                     .index(104)
                     .idCode(8389750321502775627L)
-                    .deviceId("10619030001")
+                    .deviceId(deviceId)
                     .cmd((short) 1)
                     .data(new byte[] {15, 16, 0, 120, 0, 39, 1, 54, 1, -1, 46, 0, 0, 67, 0, 0, 0})
                     .build();
@@ -164,7 +170,7 @@ public class ClientTest extends SolenApplicationTests {
                     .header(13175)
                     .index(104)
                     .idCode(8389750321502775627L)
-                    .deviceId("10619030001")
+                    .deviceId(deviceId)
                     .cmd((short) 128)
                     .data("12345".getBytes())
                     .build();
@@ -190,7 +196,7 @@ public class ClientTest extends SolenApplicationTests {
                     .header(13175)
                     .index(104)
                     .idCode(8389750321502775627L)
-                    .deviceId("10619030001")
+                    .deviceId(deviceId)
                     .cmd((short) 128)
                     .data("abcdf".getBytes())
                     .build();
@@ -202,7 +208,7 @@ public class ClientTest extends SolenApplicationTests {
                     .header(13175)
                     .index(104)
                     .idCode(8389750321502775627L)
-                    .deviceId("10619030001")
+                    .deviceId(deviceId)
                     .cmd((short) 128)
                     .data(new byte[] {(byte)0x67, (byte) 0x68, (byte)0x69,(byte) 0})
                     .build();

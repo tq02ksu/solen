@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
+import top.fengpingtech.solen.slotmachine.MessageEncoder;
 
 public class ClientMain {
     public static void main(String[] args) throws Exception {
@@ -22,16 +23,13 @@ public class ClientMain {
                     //.option(ChannelOption.TCP_NODELAY, true)
                     .handler(new ChannelInitializer<SocketChannel>() {
                         @Override
-                        public void initChannel(SocketChannel ch) throws Exception {
+                        public void initChannel(SocketChannel ch) {
                             ChannelPipeline p = ch.pipeline();
-                            //p.addLast(new LoggingHandler(LogLevel.INFO));
-                            //p.addLast("encoder", new MessageEncoder());
-                            //p.addLast("decoder", new MessageDecoder());
-                            //p.addFirst(new LineBasedFrameDecoder(65535));
                             p.addLast("logging", new LoggingHandler());
                             p.addLast("debugger", new MessageDebugger());
+                            p.addLast(new MessageEncoder());
                             p.addLast(new MessageDecoder());
-                            p.addLast(new ClientTest.ClientFragmentedRegisterHandler());
+                            p.addLast(new ClientTest.ClientFragmentedRegisterHandler("55520041112"));
                         }
                     });
 
