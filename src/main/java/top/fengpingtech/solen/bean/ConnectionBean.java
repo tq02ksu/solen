@@ -22,11 +22,15 @@ public class ConnectionBean {
     private int inputStat;
     private int outputStat;
     private Integer rssi;
-    private Integer debugData1;
-    private Integer debugData2;
-    private Integer debugData3;
-    private Integer debugData4;
-    private Integer debugData5;
+    // 电压 单位V
+    private Double voltage;
+    // 温度 摄氏度
+    private Double temperature;
+    // 重力
+    private Double gravity;
+    // 开机时长
+    private Integer uptime;
+//    private Integer debugData5;
 
     private Date lastHeartBeatTime = new Date();
 
