@@ -37,11 +37,16 @@ public class Connection {
     // 信号强度
     private Integer rssi;
 
-    private Integer debugData1;
-    private Integer debugData2;
-    private Integer debugData3;
-    private Integer debugData4;
-    private Integer debugData5;
+    // 电压 单位V
+    private Double voltage;
+    // 温度 摄氏度
+    private Double temperature;
+    // 重力 (N/kg, m/s2)
+    private Integer gravity;
+    // 开机时长
+    private Integer uptime;
+
+//    private Integer debugData5;
 
     @Builder.Default
     private List<Report> reports = new LinkedList<>();
