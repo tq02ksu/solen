@@ -27,7 +27,7 @@ public class ConnectionBean {
     // 温度 摄氏度
     private Double temperature;
     // 重力
-    private Double gravity;
+    private Integer gravity;
     // 开机时长
     private Integer uptime;
 //    private Integer debugData5;
