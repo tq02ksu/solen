@@ -120,10 +120,9 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 // schedule process
                 if (val.get() != null) {
                     ctx.executor().schedule(() -> {
-                        for (byte[] message = val.get(); message != null; message = val.get()) {
-                            if (val.compareAndSet(message, null)) {
-                                processMessage(ctx, conn, message);
-                            }
+                        if (val.get() == result.buffer) {
+                            logger.info("detected message timeout, processing message ...");
+                            processMessage(ctx, conn, result.buffer);
                         }
 
                     }, TEXT_REPORT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
