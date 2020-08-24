@@ -194,8 +194,8 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
     }
 
     private void sendReply(SoltMachineMessage message, List<Object> out) {
-        if (message.getCmd() == 2) {
-            // skip for reply message
+        if (message.getCmd() == 2 || message.getCmd() == 128) {
+            // skip for reply message for reply and message
             return;
         }
 
