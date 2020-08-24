@@ -32,7 +32,7 @@ import java.util.concurrent.TimeUnit;
 public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage> {
     private static final Logger logger = LoggerFactory.getLogger(MessageProcessor.class);
 
-    private static final int TEXT_REPORT_TIMEOUT_SECONDS = 3;
+    private static final int TEXT_REPORT_TIMEOUT_SECONDS = 5;
 
     private static final List<Byte> TEXT_TERMINATORS = Collections.unmodifiableList(
             Arrays.asList((byte) 0x00, (byte) 0x0a));
