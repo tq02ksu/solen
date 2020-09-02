@@ -57,6 +57,7 @@ public class MessageController {
             put("inputStat", Comparator.comparing(Connection::getInputStat));
             put("outputStat", Comparator.comparing(Connection::getOutputStat));
             put("rssi", Comparator.comparing(Connection::getRssi));
+            put("uptime", Comparator.comparing(Connection::getUptime));
         }
     };
 
