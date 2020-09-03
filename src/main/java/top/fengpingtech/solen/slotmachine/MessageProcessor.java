@@ -8,6 +8,7 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import top.fengpingtech.solen.model.BaseStation;
 import top.fengpingtech.solen.model.Connection;
 
 import java.nio.charset.StandardCharsets;
@@ -74,6 +75,18 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             connection.setIdCode(msg.getIdCode());
             connectionManager.getStore().putIfAbsent(msg.getDeviceId(), connection);
             ctx.channel().attr(AttributeKey.valueOf("DeviceId")).set(msg.getDeviceId());
+
+            ctx.executor().schedule(() -> {
+                ctx.writeAndFlush(
+                        SoltMachineMessage.builder()
+                                .header(msg.getHeader())
+                                .index(connection.getIndex().getAndIncrement())
+                                .idCode(msg.getIdCode())
+                                .cmd((short) 4)
+                                .deviceId(msg.getDeviceId())
+                                .data(new byte[0])  // arg==0
+                                .build());
+            }, 3, TimeUnit.SECONDS);
         } else if (msg.getCmd() == 1) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
             byte stat = data.readByte();
@@ -129,7 +142,56 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                     }, TEXT_REPORT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 }
             }
+        } else if (msg.getCmd() == 5) {
+            Connection conn = connectionManager.getStore().get(msg.getDeviceId());
+            int contentLength = 1 + 15 + 1 + 1 + 84 + 16 + 16 + 20;
+            if (conn == null) {
+                logger.warn("skipped message : {}, device not registered", msg);
+            } else if (msg.getData().length != contentLength) {
+                logger.warn("skipped message: {}, content length unexpected, expect={}, actual={}",
+                        msg, contentLength, msg.getData().length);
+            } else {
+                ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
+                int accessType = data.readByte();
+                byte[] imeiBuffer = new byte[15];
+                data.readBytes(imeiBuffer);
+                String imei = new String(imeiBuffer, StandardCharsets.UTF_8);
+                boolean cdma = data.readByte() != 0;
+                int networkType = data.readByte();
+                List<BaseStation> stations = parseStations(data);
+                byte[] doubleBuf = new byte[16];
+                data.readBytes(doubleBuf);
+                Double northLat = Double.parseDouble(new String(doubleBuf));
+                data.readBytes(doubleBuf);
+                Double eastLong = Double.parseDouble(new String(doubleBuf));
+                byte[] iccIdBuf = new byte[20];
+                data.readBytes(iccIdBuf);
+                String iccId = new String(iccIdBuf);
+
+                logger.info("receiving gprs data: accessType={}, imei={}, cdma={}, networkType={}, stations={}",
+                        accessType, imei, cdma, networkType, stations);
+                conn.setNorthLat(northLat);
+                conn.setEastLong(eastLong);
+                conn.setIccId(iccId);
+            }
         }
+    }
+
+    private List<BaseStation> parseStations(ByteBuf data) {
+        List<BaseStation> stations = new ArrayList<>();
+
+        for (int i = 0; i < 6; i++) {
+            stations .add(
+                    BaseStation.builder()
+                            .valid(data.readByte())
+                            .mcc(data.readShortLE())
+                            .mnc(data.readByte())
+                            .lac(data.readIntLE())
+                            .cellId(data.readIntLE())
+                            .signal(data.readShortLE())
+                            .build());
+        }
+        return stations;
     }
 
     private SplitResult split(ChannelHandlerContext ctx, byte[] data, byte[] buffer) {

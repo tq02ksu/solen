@@ -15,12 +15,12 @@ public class ConnectionBean {
     private String deviceId;
     private String serverHost;
     private String serverPort;
-    private int lac;
-    private int ci;
+    private Integer lac;
+    private Integer ci;
     private ConnectionStatus status;
-    private int header;
-    private int inputStat;
-    private int outputStat;
+    private Integer header;
+    private Integer inputStat;
+    private Integer outputStat;
     private Integer rssi;
     // 电压 单位V
     private Double voltage;
@@ -30,7 +30,15 @@ public class ConnectionBean {
     private Integer gravity;
     // 开机时长
     private Integer uptime;
-//    private Integer debugData5;
+
+    // 北纬
+    private Double northLat;
+
+    // 东经
+    private Double eastLong;
+
+    // sim id
+    private String iccId;
 
     private Date lastHeartBeatTime = new Date();
 

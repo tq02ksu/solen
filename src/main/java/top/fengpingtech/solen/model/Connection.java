@@ -23,15 +23,15 @@ public class Connection {
     private String deviceId;
     private String serverHost;
     private String serverPort;
-    private int lac;
-    private int ci;
+    private Integer lac;
+    private Integer ci;
     private Channel channel;
 
-    private int header;
+    private Integer header;
 
     private long idCode;
-    private int inputStat;
-    private int outputStat;
+    private Integer inputStat;
+    private Integer outputStat;
     private Date lastHeartBeatTime = new Date();
 
     // 信号强度
@@ -45,6 +45,15 @@ public class Connection {
     private Integer gravity;
     // 开机时长
     private Integer uptime;
+
+    // 北纬
+    private Double northLat;
+
+    // 东经
+    private Double eastLong;
+
+    // sim id
+    private String iccId;
 
 //    private Integer debugData5;
 
