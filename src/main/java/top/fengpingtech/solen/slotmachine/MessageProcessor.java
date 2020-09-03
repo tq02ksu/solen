@@ -75,18 +75,6 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             connection.setIdCode(msg.getIdCode());
             connectionManager.getStore().putIfAbsent(msg.getDeviceId(), connection);
             ctx.channel().attr(AttributeKey.valueOf("DeviceId")).set(msg.getDeviceId());
-
-            ctx.executor().schedule(() -> {
-                ctx.writeAndFlush(
-                        SoltMachineMessage.builder()
-                                .header(msg.getHeader())
-                                .index(connection.getIndex().getAndIncrement())
-                                .idCode(msg.getIdCode())
-                                .cmd((short) 4)
-                                .deviceId(msg.getDeviceId())
-                                .data(new byte[0])  // arg==0
-                                .build());
-            }, 3, TimeUnit.SECONDS);
         } else if (msg.getCmd() == 1) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
             byte stat = data.readByte();
