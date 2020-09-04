@@ -137,6 +137,9 @@ public class MessageController {
                         .idCode(c.getIdCode())
                         .inputStat(c.getInputStat())
                         .outputStat(c.getOutputStat())
+                        .northLat(c.getNorthLat())
+                        .eastLong(c.getEastLong())
+                        .iccId(c.getIccId())
                         .build())
                 .sorted(comparator)
                 .collect(Collectors.toList());
