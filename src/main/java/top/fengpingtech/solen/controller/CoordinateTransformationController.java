@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * ref: http://www.openluat.com/GPS-Offset.html
  */
 @RestController
-@RequestMapping("/util/coordinate-transformation")
+@RequestMapping("/api/util/coordinate-transformation")
 public class CoordinateTransformationController {
 
     private final double xPi = 3.14159265358979324 * 3000.0 / 180.0;
