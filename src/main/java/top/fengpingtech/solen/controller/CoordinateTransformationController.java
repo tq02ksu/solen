@@ -65,7 +65,7 @@ public class CoordinateTransformationController {
      * @return coords transformed
      */
     @RequestMapping("/wgs84-to-gcj02")
-    public List<Coordinate> wgs84ToGcj02(List<Coordinate> coords) {
+    public List<Coordinate> wgs84ToGcj02(@RequestBody List<Coordinate> coords) {
         return coords.stream().map(c -> {
             if (outOfChina(c.getLng(), c.getLat())) {
                 return c;
@@ -91,7 +91,7 @@ public class CoordinateTransformationController {
      * 	:param lat:火星坐标系纬度
      */
     @RequestMapping("/gcj02-to-wgs84")
-    public List<Coordinate> gcj02ToWgs84(List<Coordinate> coords) {
+    public List<Coordinate> gcj02ToWgs84(@RequestBody List<Coordinate> coords) {
         return coords.stream().map(c -> {
             if (outOfChina(c.getLng(), c.getLat())) {
                 return c;
@@ -111,12 +111,12 @@ public class CoordinateTransformationController {
     }
 
     @RequestMapping("/bd09-to-wgs84")
-    public List<Coordinate> bd09ToWgs84(List<Coordinate> coords) {
+    public List<Coordinate> bd09ToWgs84(@RequestBody List<Coordinate> coords) {
         return gcj02ToWgs84(bd09ToGcj02(coords));
     }
 
     @RequestMapping("/wgs84-to-bd09")
-    public List<Coordinate> wgs84ToBd09(List<Coordinate> coords) {
+    public List<Coordinate> wgs84ToBd09(@RequestBody List<Coordinate> coords) {
         return gcj02ToBd09(wgs84ToGcj02(coords));
     }
 
