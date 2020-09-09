@@ -8,6 +8,10 @@ import top.fengpingtech.solen.bean.Coordinate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 坐标转换
+ * ref: http://www.openluat.com/GPS-Offset.html
+ */
 @RestController
 @RequestMapping("/util/coordinate-transformation")
 public class CoordinateTransformationController {
@@ -43,7 +47,7 @@ public class CoordinateTransformationController {
      * @param coords coords to be process
      * @return gcj02 coordinates
      */
-    @RequestMapping("/bd09_to_gcj02")
+    @RequestMapping("/bd09-to-gcj02")
     public List<Coordinate> bd09ToGcj02(@RequestBody List<Coordinate> coords) {
         return coords.stream().map(c -> {
             double bdLat = c.getLat(), bdLng = c.getLng();
