@@ -29,7 +29,7 @@ public class CoordinateTransformationService {
         double theta = Math.atan2(lat, lng) + 0.000003 * Math.cos(lng * xPi);
         double bdLng = z * Math.cos(theta) + 0.0065;
         double bdLat = z * Math.sin(theta) + 0.006;
-        return Coordinate.builder().system(CoordinateSystem.bd09).lat(bdLat).lng(bdLng).build();
+        return Coordinate.builder().system(CoordinateSystem.BD09).lat(bdLat).lng(bdLng).build();
     }
 
     /**
@@ -47,7 +47,7 @@ public class CoordinateTransformationService {
         double theta = Math.atan2(y, x) - 0.000003 * Math.cos(x * xPi);
         double lng = z * Math.cos(theta);
         double lat = z * Math.sin(theta);
-        return Coordinate.builder().system(CoordinateSystem.gcj02).lng(lng).lat(lat).build();
+        return Coordinate.builder().system(CoordinateSystem.GCJ02).lng(lng).lat(lat).build();
     }
 
     /**
@@ -71,7 +71,7 @@ public class CoordinateTransformationService {
         dLng = (dLng * 180.0) / (a / sqrtMagic * Math.cos(radLat) * pi);
         double mgLat = c.getLat() + dLat;
         double mgLng = c.getLng() + dLng;
-        return Coordinate.builder().system(CoordinateSystem.gcj02).lat(mgLat).lng(mgLng).build();
+        return Coordinate.builder().system(CoordinateSystem.GCJ02).lat(mgLat).lng(mgLng).build();
     }
 
     /**
@@ -94,7 +94,7 @@ public class CoordinateTransformationService {
         double mgLat = c.getLat() + dLat;
         double mgLng = c.getLng() + dLng;
         return Coordinate.builder()
-                .system(CoordinateSystem.wgs84)
+                .system(CoordinateSystem.WGS84)
                 .lng(c.getLng() * 2 - mgLng)
                 .lat(c.getLat() * 2 - mgLat).build();
     }

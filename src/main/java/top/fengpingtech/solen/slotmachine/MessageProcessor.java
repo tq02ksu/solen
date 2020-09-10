@@ -158,7 +158,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 data.readBytes(iccIdBuf);
                 String iccId = new String(iccIdBuf);
                 Coordinate c =  Coordinate.builder()
-                        .system(CoordinateSystem.wgs84)
+                        .system(CoordinateSystem.WGS84)
                         .lat(lat)
                         .lng(lng)
                         .build();
