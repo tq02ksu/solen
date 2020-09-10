@@ -93,7 +93,7 @@ public class MessageController {
             return ResponseEntity.status(401).body("unauthorized!");
         }
 
-        ConnectionBean bean = ConnectionBean.build(connectionManager.getStore().get(deviceId));
+        ConnectionBean bean = buildBean(connectionManager.getStore().get(deviceId));
         return ResponseEntity.ok(bean);
     }
 
@@ -118,7 +118,7 @@ public class MessageController {
         connectionManager.close(conn);
         connectionManager.getStore().remove(deviceId);
 
-        return ResponseEntity.ok(ConnectionBean.build(conn));
+        return ResponseEntity.ok(buildBean(conn));
     }
 
     @RequestMapping("/list")
@@ -156,19 +156,7 @@ public class MessageController {
                 put("total", total);
                 put("data",
                         list.subList(start, size).stream()
-                                .map(this::buildBean).collect(Collectors.toList()));
-            }
-
-            private ConnectionBean buildBean(Connection connection) {
-                ConnectionBean bean = ConnectionBean.build(connection);
-                if (connection.getCoordinate() != null) {
-                    bean.setCoordinates(Arrays.asList(
-                            connection.getCoordinate(),
-                            coordinateTransformationService.wgs84ToBd09(connection.getCoordinate()),
-                            coordinateTransformationService.wgs84ToGcj02(connection.getCoordinate())
-                    ));
-                }
-                return bean;
+                                .map(c -> buildBean(c)).collect(Collectors.toList()));
             }
         };
     }
@@ -309,5 +297,17 @@ public class MessageController {
                 .stream()
                 .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
                 .findFirst().orElseThrow(IllegalStateException::new);
+    }
+
+    private ConnectionBean buildBean(Connection connection) {
+        ConnectionBean bean = ConnectionBean.build(connection);
+        if (connection.getCoordinate() != null) {
+            bean.setCoordinates(Arrays.asList(
+                    connection.getCoordinate(),
+                    coordinateTransformationService.wgs84ToBd09(connection.getCoordinate()),
+                    coordinateTransformationService.wgs84ToGcj02(connection.getCoordinate())
+            ));
+        }
+        return bean;
     }
 }

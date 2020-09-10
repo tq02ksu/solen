@@ -164,8 +164,8 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                         .build();
 
                 logger.info("receiving gprs data: accessType={}, imei={}, cdma={}, "
-                                + "networkType={}, stations={}, coordinate={}",
-                        accessType, imei, cdma, networkType, stations, c);
+                                + "networkType={}, stations={}, iccId={}, coordinate={}",
+                        accessType, imei, cdma, networkType, stations, iccId, c);
                 conn.setCoordinate(c);
                 conn.setIccId(iccId);
             }
