@@ -3,8 +3,6 @@ package top.fengpingtech.solen.controller;
 import org.junit.Test;
 import top.fengpingtech.solen.bean.Coordinate;
 
-import java.util.Collections;
-
 public class CoordinateTransformationControllerTest {
     private CoordinateTransformationController controller = new CoordinateTransformationController();
 
@@ -20,7 +18,7 @@ public class CoordinateTransformationControllerTest {
     public void wgs84ToGcj02() {
         Coordinate c = Coordinate.builder().lat(40.113693).lng(116.34478).build();
 
-        Coordinate result = controller.wgs84ToGcj02(Collections.singletonList(c)).get(0);
+        Coordinate result = controller.wgs84ToGcj02(c);
         System.out.println(result);
     }
 
@@ -36,7 +34,7 @@ public class CoordinateTransformationControllerTest {
     public void wgs84ToBd09() {
         Coordinate c = Coordinate.builder().lat(40.113693).lng(116.34478).build();
 
-        Coordinate result = controller.wgs84ToBd09(Collections.singletonList(c)).get(0);
+        Coordinate result = controller.wgs84ToBd09(c);
         System.out.println(result);
     }
 }

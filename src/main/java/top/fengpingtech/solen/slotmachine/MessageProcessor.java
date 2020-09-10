@@ -8,6 +8,8 @@ import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.Assert;
+import top.fengpingtech.solen.bean.Coordinate;
+import top.fengpingtech.solen.bean.CoordinateSystem;
 import top.fengpingtech.solen.model.BaseStation;
 import top.fengpingtech.solen.model.Connection;
 
@@ -149,17 +151,22 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 List<BaseStation> stations = parseStations(data);
                 byte[] doubleBuf = new byte[16];
                 data.readBytes(doubleBuf);
-                Double northLat = Double.parseDouble(new String(doubleBuf));
+                double lat = Double.parseDouble(new String(doubleBuf));
                 data.readBytes(doubleBuf);
-                Double eastLong = Double.parseDouble(new String(doubleBuf));
+                double lng = Double.parseDouble(new String(doubleBuf));
                 byte[] iccIdBuf = new byte[20];
                 data.readBytes(iccIdBuf);
                 String iccId = new String(iccIdBuf);
+                Coordinate c =  Coordinate.builder()
+                        .system(CoordinateSystem.wgs84)
+                        .lat(lat)
+                        .lng(lng)
+                        .build();
 
-                logger.info("receiving gprs data: accessType={}, imei={}, cdma={}, networkType={}, stations={}",
-                        accessType, imei, cdma, networkType, stations);
-                conn.setNorthLat(northLat);
-                conn.setEastLong(eastLong);
+                logger.info("receiving gprs data: accessType={}, imei={}, cdma={}, "
+                                + "networkType={}, stations={}, coordinate={}",
+                        accessType, imei, cdma, networkType, stations, c);
+                conn.setCoordinate(c);
                 conn.setIccId(iccId);
             }
         }

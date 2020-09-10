@@ -31,11 +31,7 @@ public class ConnectionBean {
     // 开机时长
     private Integer uptime;
 
-    // 北纬
-    private Double northLat;
-
-    // 东经
-    private Double eastLong;
+    private List<Coordinate> coordinates;
 
     // sim id
     private String iccId;

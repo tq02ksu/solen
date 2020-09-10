@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.bean.Coordinate;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -46,16 +47,13 @@ public class Connection {
     // 开机时长
     private Integer uptime;
 
-    // 北纬
-    private Double northLat;
-
-    // 东经
-    private Double eastLong;
+    /**
+     * GWS84
+     */
+    private Coordinate coordinate;
 
     // sim id
     private String iccId;
-
-//    private Integer debugData5;
 
     @Builder.Default
     private List<Report> reports = new LinkedList<>();

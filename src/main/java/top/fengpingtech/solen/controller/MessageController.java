@@ -22,6 +22,7 @@ import top.fengpingtech.solen.auth.AuthService;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.Tenant;
+import top.fengpingtech.solen.service.CoordinateTransformationService;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
@@ -29,6 +30,7 @@ import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
 
 import java.beans.PropertyDescriptor;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -67,10 +69,13 @@ public class MessageController {
 
     private final ConnectionManager connectionManager;
 
-    public MessageController(AuthProperties authProperties, AuthService authService, ConnectionManager connectionManager) {
+    private final CoordinateTransformationService coordinateTransformationService;
+
+    public MessageController(AuthProperties authProperties, AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
         this.authProperties = authProperties;
         this.authService = authService;
         this.connectionManager = connectionManager;
+        this.coordinateTransformationService = coordinateTransformationService;
     }
 
     @GetMapping("/device/{deviceId}")
@@ -137,8 +142,7 @@ public class MessageController {
                         .idCode(c.getIdCode())
                         .inputStat(c.getInputStat())
                         .outputStat(c.getOutputStat())
-                        .northLat(c.getNorthLat())
-                        .eastLong(c.getEastLong())
+                        .coordinate(c.getCoordinate())
                         .iccId(c.getIccId())
                         .build())
                 .sorted(comparator)
@@ -152,7 +156,19 @@ public class MessageController {
                 put("total", total);
                 put("data",
                         list.subList(start, size).stream()
-                                .map(ConnectionBean::build).collect(Collectors.toList()));
+                                .map(this::buildBean).collect(Collectors.toList()));
+            }
+
+            private ConnectionBean buildBean(Connection connection) {
+                ConnectionBean bean = ConnectionBean.build(connection);
+                if (connection.getCoordinate() != null) {
+                    bean.setCoordinates(Arrays.asList(
+                            connection.getCoordinate(),
+                            coordinateTransformationService.wgs84ToBd09(connection.getCoordinate()),
+                            coordinateTransformationService.wgs84ToGcj02(connection.getCoordinate())
+                    ));
+                }
+                return bean;
             }
         };
     }
@@ -285,7 +301,7 @@ public class MessageController {
         }
     }
 
-    Tenant getTenant(String appKey) {
+    private Tenant getTenant(String appKey) {
         if (appKey == null) {
             return null;
         }
