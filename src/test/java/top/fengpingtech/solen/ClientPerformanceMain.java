@@ -28,7 +28,7 @@ public class ClientPerformanceMain {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
             for (int i = 0; i < 2; i ++) {
-                long deviceId = 10620000000L + new Random().nextInt(10000000);
+                long deviceId = 55520000000L + new Random().nextInt(10000000);
                 Bootstrap b = new Bootstrap();
                 b.group(group)
                         .channel(NioSocketChannel.class)
@@ -46,7 +46,7 @@ public class ClientPerformanceMain {
                         });
 
                 // Start the client.
-                ChannelFuture f = b.connect("iot.fengping-tech.top", 31978).sync();
+                ChannelFuture f = b.connect("localhost", 7889).sync();
             }
             Thread.sleep(100000000);
             // Wait until the connection is closed.

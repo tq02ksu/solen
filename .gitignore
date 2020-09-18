@@ -3,6 +3,7 @@ target/
 log
 build_submitter.log
 output
+data
 
 ### STS ###
 .apt_generated
@@ -27,3 +28,4 @@ output
 /nbdist/
 /.nb-gradle/
 logs
+.DS_Store

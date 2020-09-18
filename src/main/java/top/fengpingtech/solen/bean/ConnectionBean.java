@@ -44,13 +44,13 @@ public class ConnectionBean {
         ConnectionBean bean = new ConnectionBean();
         BeanUtils.copyProperties(connection, bean);
 
-        if (connection.getChannel() == null) {
+        if (connection.getCtx() == null) {
             bean.status = ConnectionStatus.UNKNOWN;
-        } else if (connection.getChannel().isOpen() && connection.getChannel().isActive()
+        } else if (connection.getCtx().channel().isOpen() && connection.getCtx().channel().isActive()
                 && connection.getLastHeartBeatTime() != null
                 && connection.getLastHeartBeatTime().getTime() + Connection.HEARTBEAT_TIMEOUT_MS < System.currentTimeMillis()) {
             bean.status = ConnectionStatus.LOST;
-        } else if (connection.getChannel().isOpen() && connection.getChannel().isActive()) {
+        } else if (connection.getCtx().channel().isOpen() && connection.getCtx().channel().isActive()) {
             bean.status = ConnectionStatus.NORMAL;
         } else {
             bean.status = ConnectionStatus.DISCONNECTED;

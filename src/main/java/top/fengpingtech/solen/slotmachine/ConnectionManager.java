@@ -21,7 +21,7 @@ public class ConnectionManager {
 
     public void close(Connection conn) {
         try {
-            conn.getChannel().close().sync();
+            conn.getCtx().channel().close().sync();
         } catch (InterruptedException e) {
             logger.warn("error close conn: {}", conn, e);
         }

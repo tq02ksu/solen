@@ -22,8 +22,11 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import top.fengpingtech.solen.service.EventRepository;
+import top.fengpingtech.solen.slotmachine.ConnectionAttributeHolder;
 import top.fengpingtech.solen.slotmachine.ConnectionKeeperHandler;
 import top.fengpingtech.solen.slotmachine.ConnectionManager;
+import top.fengpingtech.solen.slotmachine.EventProcessor;
 import top.fengpingtech.solen.slotmachine.MessageDebugger;
 import top.fengpingtech.solen.slotmachine.MessageDecoder;
 import top.fengpingtech.solen.slotmachine.MessageEncoder;
@@ -41,9 +44,13 @@ public class NettyServer {
 
     private final ConnectionManager connectionManager;
 
-    public NettyServer(ServerProperties serverProperties, ConnectionManager connectionManager) {
+    private final EventRepository eventRepository;
+
+    public NettyServer(ServerProperties serverProperties, ConnectionManager connectionManager,
+                       EventRepository eventRepository) {
         this.serverProperties = serverProperties;
         this.connectionManager = connectionManager;
+        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
@@ -104,7 +111,9 @@ public class NettyServer {
                         .addLast(new ConnectionKeeperHandler())
                         .addLast(new MessageEncoder())
                         .addLast(new MessageDecoder())
-                        .addLast(new MessageProcessor(connectionManager));
+                        .addLast(new ConnectionAttributeHolder(connectionManager))
+                        .addLast(new MessageProcessor(connectionManager))
+                        .addLast(new EventProcessor(connectionManager, eventRepository));
             }
         });
 

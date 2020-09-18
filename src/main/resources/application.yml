@@ -4,13 +4,15 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss,SSS
     time-zone: Asia/Shanghai
+  mvc:
+    date-format: yyyy-MM-dd HH:mm:ss
 solen:
   server:
     port: 7889
   auth:
     tenants:
       - app-key: test
-        secret-key: '$2a$10$thdy4TLr809cq6kpHdT1JOeTS.IiZfVFnjfkuxgqs.cSj53ffCWV.'
+        secret-key: test
         pass-key: test
         roles: [ USER ]
         device-patterns: [ "555**", "400**" ]

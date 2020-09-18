@@ -63,16 +63,13 @@ public class MessageController {
         }
     };
 
-    private final AuthProperties authProperties;
-
     private final AuthService authService;
 
     private final ConnectionManager connectionManager;
 
     private final CoordinateTransformationService coordinateTransformationService;
 
-    public MessageController(AuthProperties authProperties, AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
-        this.authProperties = authProperties;
+    public MessageController(AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
         this.authService = authService;
         this.connectionManager = connectionManager;
         this.coordinateTransformationService = coordinateTransformationService;
@@ -88,7 +85,7 @@ public class MessageController {
         }
 
         Connection conn = connectionManager.getStore().get(deviceId);
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
         if (!authService.canVisit(tenant, conn)) {
             return ResponseEntity.status(401).body("unauthorized!");
         }
@@ -107,11 +104,11 @@ public class MessageController {
         }
 
         Connection conn = connectionManager.getStore().get(deviceId);
-        if (conn.getChannel().isActive() && !force) {
+        if (conn.getCtx().channel().isActive() && !force) {
             return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("can not delete connecting device");
         }
 
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
         if (!authService.canVisit(tenant, conn)) {
             return ResponseEntity.status(401).body("unauthorized!");
         }
@@ -128,7 +125,7 @@ public class MessageController {
                                    @RequestParam(value = "order", defaultValue = "ASC") String order,
                                    @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
                                    @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
         Comparator<Connection> comparator = COMPARATORS.containsKey(sort) ? COMPARATORS.get(sort) : COMPARATORS.get("default");
         comparator = order.equalsIgnoreCase("DESC") ? comparator.reversed() : comparator;
 
@@ -138,7 +135,7 @@ public class MessageController {
                         .deviceId(c.getDeviceId())
                         .lac(c.getLac())
                         .ci(c.getCi())
-                        .channel(c.getChannel())
+                        .ctx(c.getCtx())
                         .idCode(c.getIdCode())
                         .inputStat(c.getInputStat())
                         .outputStat(c.getOutputStat())
@@ -181,7 +178,7 @@ public class MessageController {
             }
         };
 
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
         return values.stream()
                 .filter(authService.filter(tenant))
                 .collect(Collectors.groupingBy(getter, Collectors.counting()));
@@ -191,7 +188,7 @@ public class MessageController {
     public ResponseEntity<Object> sendControl(
             @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
             @RequestBody SendRequest request) throws ExecutionException, InterruptedException {
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
 
         String deviceId = request.getDeviceId();
         if (!connectionManager.getStore().containsKey(deviceId)) {
@@ -207,7 +204,7 @@ public class MessageController {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
                     "too many request for this device: " + deviceId);
         }
-        if (!conn.getChannel().isActive()) {
+        if (!conn.getCtx().channel().isActive()) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
         }
@@ -216,7 +213,7 @@ public class MessageController {
         CountDownLatch  latch = new CountDownLatch(1);
 
         try {
-            synchronized (conn.getChannel()) {
+            synchronized (conn.getCtx().channel()) {
                 conn.getOutputStatSyncs().add(latch);
                 byte[] buffer = new byte[]{(byte) (request.getCtrl()), (byte) (0x01 - request.getCtrl()),
                         0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F};
@@ -230,11 +227,8 @@ public class MessageController {
                         .data(buffer)
                         .build();
 
-                MessageEncoder encoder = new MessageEncoder();
-                ByteBuf buf = Unpooled.buffer();
-                encoder.encode(message, buf);
-                MessageDebugger.logByteBuf(buf, "sending control", conn.getChannel().toString());
-                conn.getChannel().writeAndFlush(buf).get();
+                logger.info("sending control: {}", message);
+                conn.getCtx().pipeline().writeAndFlush(message).get();
             }
             boolean success = latch.await(20, TimeUnit.SECONDS);
 
@@ -252,7 +246,7 @@ public class MessageController {
     public ResponseEntity<Object> sendAscii(
             @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
             @RequestBody SendRequest request) throws Exception {
-        Tenant tenant = getTenant(appKey);
+        Tenant tenant = authService.getTenant(appKey);
 
         String deviceId = request.getDeviceId();
         String data = request.getData();
@@ -260,7 +254,7 @@ public class MessageController {
             return ResponseEntity.notFound().build();
         }
 
-        Channel ch = connectionManager.getStore().get(deviceId).getChannel();
+        Channel ch = connectionManager.getStore().get(deviceId).getCtx().channel();
         if (!ch.isActive()) {
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(
                     "Terminal is disconnected: " + deviceId);
@@ -280,23 +274,11 @@ public class MessageController {
                     .cmd((short) 129)
                     .data(data.getBytes(StandardCharsets.UTF_8))
                     .build();
-            MessageEncoder encoder = new MessageEncoder();
-            ByteBuf buf = Unpooled.buffer();
-            encoder.encode(message, buf);
-            MessageDebugger.logByteBuf(buf, "sending ascii", ch.toString());
-            ch.writeAndFlush(buf).get();
+
+            logger.info("sending message: {}", message);
+            conn.getCtx().pipeline().writeAndFlush(message).get();
             return ResponseEntity.ok("Message sent: " + message);
         }
-    }
-
-    private Tenant getTenant(String appKey) {
-        if (appKey == null) {
-            return null;
-        }
-        return authProperties.getTenants()
-                .stream()
-                .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
-                .findFirst().orElseThrow(IllegalStateException::new);
     }
 
     private ConnectionBean buildBean(Connection connection) {

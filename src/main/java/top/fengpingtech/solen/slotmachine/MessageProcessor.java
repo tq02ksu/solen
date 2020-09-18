@@ -59,7 +59,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             data.release();
 
             if (connectionManager.getStore().containsKey(msg.getDeviceId())
-                    && connectionManager.getStore().get(msg.getDeviceId()).getChannel().isActive()) {
+                    && connectionManager.getStore().get(msg.getDeviceId()).getCtx().channel().isActive()) {
                 Connection conn = connectionManager.getStore().get(msg.getDeviceId());
                 logger.warn("detected active device: {}", conn);
                 connectionManager.close(conn);
@@ -69,7 +69,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                     .ofNullable(connectionManager.getStore().get(msg.getDeviceId()))
                     .orElseGet(Connection::new);
 
-            connection.setChannel(ctx.channel());
+            connection.setCtx(ctx);
             connection.setDeviceId(msg.getDeviceId());
             connection.setLac(lac);
             connection.setCi(ci);
@@ -268,11 +268,13 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
 
         synchronized (ctx.channel()) {
             for (Object o : out) {
-                ctx.pipeline().writeAndFlush(o);
+                ctx.pipeline().write(o);
             }
+            ctx.pipeline().flush();
         }
 
         // clear output
         out.clear();
+        out.add(msg);
     }
 }

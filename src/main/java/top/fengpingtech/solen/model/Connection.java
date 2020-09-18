@@ -1,6 +1,7 @@
 package top.fengpingtech.solen.model;
 
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,7 +27,7 @@ public class Connection {
     private String serverPort;
     private Integer lac;
     private Integer ci;
-    private Channel channel;
+    private ChannelHandlerContext ctx;
 
     private Integer header;
 

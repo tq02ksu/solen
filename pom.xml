@@ -17,6 +17,7 @@
     <properties>
         <java.version>1.8</java.version>
         <spring-cloud.version>Greenwich.SR1</spring-cloud.version>
+        <jraft.version>1.3.4</jraft.version>
     </properties>
 
     <dependencies>
@@ -79,6 +80,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-configuration-processor</artifactId>
             <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.alipay.sofa</groupId>
+            <artifactId>jraft-rheakv-core</artifactId>
+            <version>${jraft.version}</version>
         </dependency>
         <dependency>
             <groupId>com.squareup.okhttp3</groupId>

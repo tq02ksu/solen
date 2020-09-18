@@ -1,33 +1,31 @@
 package top.fengpingtech.solen.auth;
 
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import org.springframework.stereotype.Component;
-import org.springframework.util.AntPathMatcher;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.Tenant;
+import top.fengpingtech.solen.service.AntMatchService;
 
-import java.time.Duration;
 import java.util.function.Predicate;
 
 @Component
 public class AuthService {
-    private static final String ROLE_ADMIN = "ADMIN";
+    public static final String ROLE_ADMIN = "ADMIN";
 
-    private final LoadingCache<CacheKey, Boolean> cache =
-            Caffeine.newBuilder()
-                    .maximumSize(10000)
-                    .expireAfterWrite(Duration.ofSeconds(300))
-                    .build(key -> canVisitInternal(key.tenant, key.conn));
+    private final AntMatchService antMatchService;
 
-    private final AntPathMatcher antPathMatcher = new AntPathMatcher();
+    private final AuthProperties authProperties;
+
+    public AuthService(AntMatchService antMatchService, AuthProperties authProperties) {
+        this.antMatchService = antMatchService;
+        this.authProperties = authProperties;
+    }
 
     public Predicate<Connection> filter(Tenant tenant) {
         return conn -> canVisit(tenant, conn);
     }
 
     public boolean canVisit(Tenant tenant, Connection conn) {
-        return tenant == null || cache.get(new CacheKey(tenant, conn));
+        return tenant == null || canVisitInternal(tenant, conn);
     }
 
     private boolean canVisitInternal(Tenant tenant, Connection conn) {
@@ -35,21 +33,16 @@ public class AuthService {
             return true;
         }
 
-        return tenant.getDevicePatterns()
-                .stream()
-                .anyMatch(p -> antMatch(p, conn.getDeviceId()));
+        return antMatchService.antMatch(tenant.getDevicePatterns(), conn.getDeviceId());
     }
 
-    private boolean antMatch(String pattern, String deviceId) {
-        return antPathMatcher.match(pattern, deviceId);
-    }
-
-    private static class CacheKey {
-        private Tenant tenant;
-        private Connection conn;
-        public CacheKey(Tenant tenant, Connection conn) {
-            this.tenant = tenant;
-            this.conn = conn;
+    public Tenant getTenant(String appKey) {
+        if (appKey == null) {
+            return null;
         }
+        return authProperties.getTenants()
+                .stream()
+                .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
+                .findFirst().orElseThrow(IllegalStateException::new);
     }
 }
