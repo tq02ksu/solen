@@ -44,9 +44,11 @@ public class EventProcessor extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        if (msg instanceof SoltMachineMessage) {
-            processEvent(ctx, (SoltMachineMessage) msg);
-        } else {
+        try {
+            if (msg instanceof SoltMachineMessage) {
+                processEvent(ctx, (SoltMachineMessage) msg);
+            }
+        } finally {
             super.write(ctx, msg, promise);
         }
     }

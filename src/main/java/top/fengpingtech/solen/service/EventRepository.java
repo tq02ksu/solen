@@ -14,7 +14,6 @@ import top.fengpingtech.solen.model.EventType;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -43,9 +42,6 @@ public class EventRepository {
     private final ScheduledExecutorService storeKeeperExecutor;
 
     private final AntMatchService antMatchService;
-
-    private final Comparator<Event> COMPARATOR = Comparator.nullsLast(
-            Comparator.comparing(Event::getDeviceId).reversed());
 
     private final ObjectMapper objectMapper;
 
@@ -80,9 +76,11 @@ public class EventRepository {
 
     public List<Event> find(Date startTime, Date endTime, List<String> patterns, Long startId, List<EventType> types,
                           int start, int limit) {
+        startTime = startTime == null ? new Date(0) : startTime;
+        endTime = endTime == null ? new Date(Long.MAX_VALUE) : endTime;
         String startKey = generateKey(startTime, null, null);
         String endKey = generateKey(endTime, null, null);
-        RheaIterator<KVEntry> it = store.iterator(startKey, endKey, 100);
+        RheaIterator<KVEntry> it = store.iterator(endKey, startKey, 100);
         Iterator<KVEntry> iterator = new Iterator<KVEntry>() {
             @Override
             public boolean hasNext() {
@@ -101,7 +99,7 @@ public class EventRepository {
                     try {
                         return objectMapper.readValue(entry.getValue(), Event.class);
                     } catch (IOException e) {
-                        logger.warn("error while read json: {}", e);
+                        logger.warn("error while read json: {}", new String(entry.getValue()), e);
                         return null;
                     }
                 }).filter(Objects::nonNull);
@@ -113,14 +111,6 @@ public class EventRepository {
             stream = stream.filter(e -> types.contains(e.getType()));
         }
 
-        if (startTime != null) {
-            stream = stream.filter(e -> e.getTime().after(startTime));
-        }
-
-        if (endTime != null) {
-            stream = stream.filter(e -> e.getTime().before(endTime) || e.getTime().equals(endTime));
-        }
-
         if (startId != null) {
             stream = stream.filter(e -> e.getEventId() < startId);
         }
@@ -128,7 +118,6 @@ public class EventRepository {
         return stream
                 .skip(start)
                 .limit(limit)
-                .sorted(COMPARATOR)
                 .collect(Collectors.toList());
     }
 
@@ -156,7 +145,6 @@ public class EventRepository {
         if (eventId == null) {
             eventId = 0L;
         }
-        String d = String.format("%016x", date.getTime());
-        return String.format("%s:%11s:%d", d, deviceId, eventId);
+        return String.format("%016x:%11s:%d", ~date.getTime(), deviceId, eventId);
     }
 }
