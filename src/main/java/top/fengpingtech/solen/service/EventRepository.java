@@ -5,6 +5,8 @@ import com.alipay.sofa.jraft.rhea.client.RheaKVStore;
 import com.alipay.sofa.jraft.rhea.storage.KVEntry;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.concurrent.CustomizableThreadFactory;
 import org.springframework.stereotype.Service;
 import top.fengpingtech.solen.model.Event;
@@ -18,6 +20,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.concurrent.Executors;
@@ -29,6 +32,8 @@ import java.util.stream.StreamSupport;
 
 @Service
 public class EventRepository {
+    private static final Logger logger = LoggerFactory.getLogger(EventRepository.class);
+
     private static final int KEEPER_SCHEDULE_DELAY_SECONDS = 60;
 
     private static final long EVENT_STORE_RESERVE_SECONDS = 86400 * 3;
@@ -97,9 +102,10 @@ public class EventRepository {
                     try {
                         return objectMapper.readValue(entry.getValue(), Event.class);
                     } catch (IOException e) {
-                        throw new IllegalStateException("error while read json", e);
+                        logger.warn("error while read json: {}", e);
+                        return null;
                     }
-                });
+                }).filter(Objects::nonNull);
         if (patterns != null && !patterns.isEmpty()) {
             stream = stream.filter(e -> antMatchService.antMatch(patterns, e.getDeviceId()));
         }
@@ -121,9 +127,10 @@ public class EventRepository {
         }
 
         return stream
-                .sorted(COMPARATOR)
                 .skip(start)
-                .limit(limit).collect(Collectors.toList());
+                .limit(limit)
+                .sorted(COMPARATOR)
+                .collect(Collectors.toList());
     }
 
     private void clean() {
@@ -133,7 +140,14 @@ public class EventRepository {
         store.deleteRange(startKey, endKey);
     }
 
-    private String generateKey(Date date, String deviceId, Long eventId) {
+    /**
+     *
+     * @param date
+     * @param deviceId
+     * @param eventId
+     * @return
+     */
+    String generateKey(Date date, String deviceId, Long eventId) {
         if (date == null) {
             return null;
         }
@@ -143,7 +157,7 @@ public class EventRepository {
         if (eventId == null) {
             eventId = 0L;
         }
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd-HH-mm-ss");
-        return String.format("%s:%12s:%d", dateFormat.format(date), deviceId, eventId);
+        String d = String.format("%016x", date.getTime());
+        return String.format("%s:%12s:%d", d, deviceId, eventId);
     }
 }
