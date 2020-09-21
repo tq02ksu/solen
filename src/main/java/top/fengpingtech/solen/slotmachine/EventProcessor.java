@@ -3,8 +3,9 @@ package top.fengpingtech.solen.slotmachine;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.fengpingtech.solen.bean.Coordinate;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.ConnectionAttribute;
@@ -21,6 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class EventProcessor extends ChannelDuplexHandler {
+    private static final Logger logger = LoggerFactory.getLogger(EventProcessor.class);
+
     private final ConnectionManager connectionManager;
     private final EventRepository eventRepository;
 
@@ -83,24 +86,28 @@ public class EventProcessor extends ChannelDuplexHandler {
                 break;
             case 1:
                 conn = connectionManager.getStore().get(msg.getDeviceId());
-                ConnectionAttribute currentAttribute = new ConnectionAttribute(conn);
-                ConnectionAttribute beforeAttribute = ctx.channel().attr(
-                        AttributeKey.<ConnectionAttribute>valueOf("ConnectionAttribute")).get();
+                if (conn != null) {
+                    ConnectionAttribute currentAttribute = new ConnectionAttribute(conn);
+                    ConnectionAttribute beforeAttribute = ctx.channel().attr(
+                            AttributeKey.<ConnectionAttribute>valueOf("ConnectionAttribute")).get();
 
-                details = new HashMap<>();
-                currentAttribute.forEach( (key, val) -> {
-                    if (beforeAttribute.containsKey(key) && !beforeAttribute.get(key).equals(val)) {
-                        details.put(key, val);
+                    details = new HashMap<>();
+                    currentAttribute.forEach((key, val) -> {
+                        if (beforeAttribute.containsKey(key) && !beforeAttribute.get(key).equals(val)) {
+                            details.put(key, val);
+                        }
+                    });
+                    if (!details.isEmpty()) {
+                        eventRepository.add(
+                                Event.builder()
+                                        .deviceId(msg.getDeviceId())
+                                        .type(EventType.ATTRIBUTE_UPDATE)
+                                        .details(details)
+                                        .time(new Date())
+                                        .build());
                     }
-                });
-                if (!details.isEmpty()) {
-                    eventRepository.add(
-                            Event.builder()
-                                    .deviceId(msg.getDeviceId())
-                                    .type(EventType.ATTRIBUTE_UPDATE)
-                                    .details(details)
-                                    .time(new Date())
-                                    .build());
+                } else {
+                    logger.warn("connection not found, skipped for event process {}", msg);
                 }
 
                 break;
@@ -135,6 +142,8 @@ public class EventProcessor extends ChannelDuplexHandler {
                                     .time(new Date())
                                     .details(details)
                                     .build());
+                } else {
+                    logger.warn("connection not found, skipped for event process {}", msg);
                 }
 
                 break;
