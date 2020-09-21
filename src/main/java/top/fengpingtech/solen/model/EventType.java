@@ -35,4 +35,9 @@ public enum EventType {
      * 定位信息
      */
     LOCATION_CHANGE,
+
+    /**
+     * 发送开关机
+     */
+    CONTROL,
 }

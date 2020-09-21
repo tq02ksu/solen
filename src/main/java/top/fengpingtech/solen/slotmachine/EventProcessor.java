@@ -34,11 +34,9 @@ public class EventProcessor extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        try {
-            if (msg instanceof SoltMachineMessage) {
-                processEvent(ctx, (SoltMachineMessage) msg);
-            }
-        } finally {
+        if (msg instanceof SoltMachineMessage) {
+            processEvent(ctx, (SoltMachineMessage) msg);
+        } else {
             super.channelRead(ctx, msg);
         }
 
@@ -46,11 +44,9 @@ public class EventProcessor extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        try {
-            if (msg instanceof SoltMachineMessage) {
-                processEvent(ctx, (SoltMachineMessage) msg);
-            }
-        } finally {
+        if (msg instanceof SoltMachineMessage) {
+            processEvent(ctx, (SoltMachineMessage) msg);
+        } else {
             super.write(ctx, msg, promise);
         }
     }
@@ -116,7 +112,7 @@ public class EventProcessor extends ChannelDuplexHandler {
                 eventRepository.add(
                         Event.builder()
                                 .deviceId(msg.getDeviceId())
-                                .type(EventType.CONNECT)
+                                .type(EventType.CONTROL)
                                 .details(details)
                                 .time(new Date())
                                 .build());

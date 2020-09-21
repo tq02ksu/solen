@@ -13,7 +13,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Event {
-    private Long id;
+    private Long eventId;
     private String deviceId;
     private EventType type;
     private Date time;

@@ -14,8 +14,6 @@ import top.fengpingtech.solen.model.EventType;
 
 import javax.annotation.PreDestroy;
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.Iterator;
@@ -46,7 +44,8 @@ public class EventRepository {
 
     private final AntMatchService antMatchService;
 
-    private final Comparator<Event> COMPARATOR = Comparator.comparing(Event::getId).reversed();
+    private final Comparator<Event> COMPARATOR = Comparator.nullsLast(
+            Comparator.comparing(Event::getDeviceId).reversed());
 
     private final ObjectMapper objectMapper;
 
@@ -69,7 +68,7 @@ public class EventRepository {
 
     public void add(Event event) {
         Long id = store.bGetSequence(SEQ_EVENT_ID, 1).getStartValue();
-        event.setId(id);
+        event.setEventId(id);
         String key = generateKey(event.getTime(), event.getDeviceId(), id);
         try {
             byte[] value = objectMapper.writeValueAsBytes(event);
@@ -123,7 +122,7 @@ public class EventRepository {
         }
 
         if (startId != null) {
-            stream = stream.filter(e -> e.getId() < startId);
+            stream = stream.filter(e -> e.getEventId() < startId);
         }
 
         return stream
@@ -158,6 +157,6 @@ public class EventRepository {
             eventId = 0L;
         }
         String d = String.format("%016x", date.getTime());
-        return String.format("%s:%12s:%d", d, deviceId, eventId);
+        return String.format("%s:%11s:%d", d, deviceId, eventId);
     }
 }

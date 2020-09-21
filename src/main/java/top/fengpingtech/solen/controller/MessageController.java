@@ -250,6 +250,15 @@ public class MessageController {
 
         String deviceId = request.getDeviceId();
         String data = request.getData();
+
+        if (data == null) {
+            return ResponseEntity.badRequest().body("data can not be null");
+        }
+
+        if (deviceId == null) {
+            return ResponseEntity.badRequest().body("deviceId can not be null");
+        }
+
         if (!connectionManager.getStore().containsKey(deviceId)) {
             return ResponseEntity.notFound().build();
         }

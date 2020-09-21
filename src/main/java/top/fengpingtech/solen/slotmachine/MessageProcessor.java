@@ -262,19 +262,17 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
 
     @Override
     protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
-        sendReply(msg, out);
-
-        processMessage(ctx, msg);
+        List<Object> replies = new ArrayList<>();
+        sendReply(msg, replies);
 
         synchronized (ctx.channel()) {
-            for (Object o : out) {
+            for (Object o : replies) {
                 ctx.pipeline().write(o);
             }
             ctx.pipeline().flush();
         }
 
-        // clear output
-        out.clear();
+        processMessage(ctx, msg);
         out.add(msg);
     }
 }
