@@ -37,7 +37,7 @@ public class EventController {
             @RequestParam(value = "endTime", required = false) Date endTime,
             @RequestParam(value = "deviceId", required = false) String deviceId,
             @RequestParam(value = "startId", required = false) String startId,
-            @RequestParam(value = "types", required = false) String types,
+            @RequestParam(value = "type", required = false) String type,
             @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
         Tenant tenant = authService.getTenant(appKey);
@@ -61,11 +61,11 @@ public class EventController {
         int start = (pageNo - 1) * pageSize;
 
         List<EventType> eventTypes;
-        if (types == null || types.isEmpty()) {
+        if (type == null || type.isEmpty()) {
             eventTypes = null;
         } else {
             eventTypes = new ArrayList<>();
-            for (String t : types.trim().split("[,|]")) {
+            for (String t : type.trim().split("[,|]")) {
                 eventTypes.add(EventType.valueOf(t));
             }
         }
