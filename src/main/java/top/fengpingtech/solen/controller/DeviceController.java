@@ -1,7 +1,5 @@
 package top.fengpingtech.solen.controller;
 
-import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +15,13 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import top.fengpingtech.solen.auth.AuthProperties;
 import top.fengpingtech.solen.auth.AuthService;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.Tenant;
 import top.fengpingtech.solen.service.CoordinateTransformationService;
-import top.fengpingtech.solen.slotmachine.ConnectionManager;
-import top.fengpingtech.solen.slotmachine.MessageDebugger;
-import top.fengpingtech.solen.slotmachine.MessageEncoder;
-import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
+import top.fengpingtech.solen.protocol.ConnectionManager;
+import top.fengpingtech.solen.protocol.SoltMachineMessage;
 
 import java.beans.PropertyDescriptor;
 import java.nio.charset.StandardCharsets;
@@ -45,8 +40,8 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
-public class MessageController {
-    private static final Logger logger = LoggerFactory.getLogger(MessageController.class);
+public class DeviceController {
+    private static final Logger logger = LoggerFactory.getLogger(DeviceController.class);
 
     private static final Map<String, Comparator<Connection>> COMPARATORS =
             new HashMap<String, Comparator<Connection>>() {
@@ -69,7 +64,7 @@ public class MessageController {
 
     private final CoordinateTransformationService coordinateTransformationService;
 
-    public MessageController(AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
+    public DeviceController(AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
         this.authService = authService;
         this.connectionManager = connectionManager;
         this.coordinateTransformationService = coordinateTransformationService;

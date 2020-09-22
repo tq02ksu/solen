@@ -23,16 +23,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import top.fengpingtech.solen.service.EventRepository;
-import top.fengpingtech.solen.slotmachine.ConnectionAttributeHolder;
-import top.fengpingtech.solen.slotmachine.ConnectionKeeperHandler;
-import top.fengpingtech.solen.slotmachine.ConnectionManager;
-import top.fengpingtech.solen.slotmachine.EventProcessor;
-import top.fengpingtech.solen.slotmachine.MessageDebugger;
-import top.fengpingtech.solen.slotmachine.MessageDecoder;
-import top.fengpingtech.solen.slotmachine.MessageEncoder;
-import top.fengpingtech.solen.slotmachine.MessageProcessor;
-import top.fengpingtech.solen.slotmachine.PacketPreprocessor;
-import top.fengpingtech.solen.slotmachine.TracingLogHandler;
+import top.fengpingtech.solen.protocol.ConnectionAttributeHolder;
+import top.fengpingtech.solen.protocol.ConnectionKeeperHandler;
+import top.fengpingtech.solen.protocol.ConnectionManager;
+import top.fengpingtech.solen.protocol.EventProcessor;
+import top.fengpingtech.solen.protocol.MessageDebugger;
+import top.fengpingtech.solen.protocol.MessageDecoder;
+import top.fengpingtech.solen.protocol.MessageEncoder;
+import top.fengpingtech.solen.protocol.MessageProcessor;
+import top.fengpingtech.solen.protocol.PacketPreprocessor;
+import top.fengpingtech.solen.protocol.TracingLogHandler;
 
 import javax.annotation.PostConstruct;
 

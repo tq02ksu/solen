@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

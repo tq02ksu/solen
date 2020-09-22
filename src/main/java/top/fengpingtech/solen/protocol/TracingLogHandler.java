@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;

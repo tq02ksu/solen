@@ -9,9 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import top.fengpingtech.solen.slotmachine.MessageDebugger;
-import top.fengpingtech.solen.slotmachine.MessageDecoder;
-import top.fengpingtech.solen.slotmachine.MessageEncoder;
+import top.fengpingtech.solen.protocol.MessageDebugger;
+import top.fengpingtech.solen.protocol.MessageDecoder;
+import top.fengpingtech.solen.protocol.MessageEncoder;
 
 public class ClientMain {
     public static void main(String[] args) throws Exception {

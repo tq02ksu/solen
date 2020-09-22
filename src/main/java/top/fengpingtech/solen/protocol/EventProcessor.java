@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -15,7 +15,6 @@ import top.fengpingtech.solen.service.CoordinateTransformationService;
 import top.fengpingtech.solen.service.EventRepository;
 
 import java.nio.charset.StandardCharsets;
-import java.text.SimpleDateFormat;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;

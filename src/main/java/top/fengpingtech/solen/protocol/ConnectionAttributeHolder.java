@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
