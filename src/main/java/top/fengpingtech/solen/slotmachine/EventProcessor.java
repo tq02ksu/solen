@@ -155,22 +155,18 @@ public class EventProcessor extends ChannelDuplexHandler {
                     d = r.getTime();
                 }
 
-                details = new HashMap<>();
-                details.put("content", new String(msg.getData(), StandardCharsets.UTF_8));
-                details.put("time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS").format(d));
+                details = Collections.singletonMap("content", new String(msg.getData(), StandardCharsets.UTF_8));
                 eventRepository.add(
                     Event.builder()
                             .deviceId(msg.getDeviceId())
                             .type(EventType.MESSAGE_RECEIVING)
-                            .time(new Date())
+                            .time(d)
                             .details(details)
                             .build());
                 break;
             case 129:
                 d = new Date();
-                details = new HashMap<>();
-                details.put("content", new String(msg.getData(), StandardCharsets.UTF_8));
-                details.put("time", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss,SSS").format(d));
+                details = Collections.singletonMap("content", new String(msg.getData(), StandardCharsets.UTF_8));
                 eventRepository.add(
                         Event.builder()
                                 .deviceId(msg.getDeviceId())
