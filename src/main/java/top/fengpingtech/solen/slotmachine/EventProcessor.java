@@ -114,7 +114,7 @@ public class EventProcessor extends ChannelDuplexHandler {
                 eventRepository.add(
                         Event.builder()
                                 .deviceId(msg.getDeviceId())
-                                .type(EventType.CONTROL)
+                                .type(EventType.CONTROL_SENDING)
                                 .details(details)
                                 .time(new Date())
                                 .build());

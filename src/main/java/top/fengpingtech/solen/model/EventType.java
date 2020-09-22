@@ -39,5 +39,5 @@ public enum EventType {
     /**
      * 发送开关机
      */
-    CONTROL,
+    CONTROL_SENDING,
 }
