@@ -90,7 +90,7 @@ public class EventProcessor extends ChannelDuplexHandler {
 
                     details = new HashMap<>();
                     currentAttribute.forEach((key, val) -> {
-                        if (beforeAttribute.containsKey(key) && !beforeAttribute.get(key).equals(val)) {
+                        if (!beforeAttribute.containsKey(key) || !beforeAttribute.get(key).equals(val)) {
                             details.put(key, val);
                         }
                     });
