@@ -1,6 +1,7 @@
 package top.fengpingtech.solen.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.AttributeKey;
 import top.fengpingtech.solen.model.Connection;
@@ -8,7 +9,7 @@ import top.fengpingtech.solen.model.ConnectionAttribute;
 
 import java.util.List;
 
-public class ConnectionAttributeHolder extends MessageToMessageEncoder<SoltMachineMessage> {
+public class ConnectionAttributeHolder extends MessageToMessageDecoder<SoltMachineMessage> {
     private final ConnectionManager connectionManager;
 
     public ConnectionAttributeHolder(ConnectionManager connectionManager) {
@@ -16,7 +17,7 @@ public class ConnectionAttributeHolder extends MessageToMessageEncoder<SoltMachi
     }
 
     @Override
-    protected void encode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) throws Exception {
+    protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
         out.add(msg);
 
         String deviceId = msg.getDeviceId();
