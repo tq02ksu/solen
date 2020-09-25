@@ -138,11 +138,10 @@ public class DeviceController {
 
         int total = list.size();
         int start = Integer.max(0, (pageNo - 1) * pageSize);
-        int size = Integer.max(0, Integer.min(pageSize + start, total));
         List<ConnectionBean> data = list.stream()
                 .sorted(comparator)
                 .skip(start)
-                .limit(size)
+                .limit(pageSize)
                 .map(this::buildBean)
                 .peek(b -> b.setReports(null))
                 .collect(Collectors.toList());
