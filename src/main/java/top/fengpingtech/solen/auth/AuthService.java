@@ -5,6 +5,10 @@ import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.Tenant;
 import top.fengpingtech.solen.service.AntMatchService;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.function.Predicate;
 
 @Component
@@ -44,5 +48,24 @@ public class AuthService {
                 .stream()
                 .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
                 .findFirst().orElseThrow(IllegalStateException::new);
+    }
+
+    public List<String> getPatterns(Tenant tenant, String deviceId) {
+        if (tenant == null || tenant.getRoles().contains(ROLE_ADMIN)) {
+            return deviceId == null ?
+                    Collections.singletonList("**") : Arrays.asList(deviceId.trim().split("[,| ]+"));
+        }
+
+        if (deviceId != null && !deviceId.isEmpty()) {
+            List<String> patterns = new ArrayList<>();
+            for (String id : deviceId.trim().split("[,| ]+")) {
+                if (antMatchService.antMatch(tenant.getDevicePatterns(), id)) {
+                    patterns.add(id);
+                }
+            }
+            return patterns;
+        }
+
+        return tenant.getDevicePatterns();
     }
 }

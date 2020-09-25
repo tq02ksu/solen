@@ -102,10 +102,9 @@ public class EventRepository {
                         logger.warn("error while read json: {}", new String(entry.getValue()), e);
                         return null;
                     }
-                }).filter(Objects::nonNull);
-        if (patterns != null && !patterns.isEmpty()) {
-            stream = stream.filter(e -> antMatchService.antMatch(patterns, e.getDeviceId()));
-        }
+                })
+                .filter(Objects::nonNull)
+                .filter(e -> antMatchService.antMatch(patterns, e.getDeviceId()));
 
         if (types != null && !types.isEmpty()) {
             stream = stream.filter(e -> types.contains(e.getType()));

@@ -41,22 +41,7 @@ public class EventController {
             @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
             @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
         Tenant tenant = authService.getTenant(appKey);
-        List<String> patterns;
-        if (deviceId != null && !deviceId.isEmpty()) {
-            patterns = new ArrayList<>();
-            for (String id : deviceId.trim().split("[,| ]+")) {
-                if (antMatchService.antMatch(tenant.getDevicePatterns(), id)) {
-                    patterns.add(id);
-                }
-            }
-            if (patterns.isEmpty()) {
-                patterns = tenant.getDevicePatterns();
-            }
-        } else if (!tenant.getRoles().contains(AuthService.ROLE_ADMIN)) {
-            patterns = tenant.getDevicePatterns();
-        } else {
-            patterns = null;
-        }
+        List<String> patterns = authService.getPatterns(tenant, deviceId);
 
         int start = (pageNo - 1) * pageSize;
 

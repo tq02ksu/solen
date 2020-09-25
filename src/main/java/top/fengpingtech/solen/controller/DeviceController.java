@@ -19,9 +19,10 @@ import top.fengpingtech.solen.auth.AuthService;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.Tenant;
-import top.fengpingtech.solen.service.CoordinateTransformationService;
 import top.fengpingtech.solen.protocol.ConnectionManager;
 import top.fengpingtech.solen.protocol.SoltMachineMessage;
+import top.fengpingtech.solen.service.AntMatchService;
+import top.fengpingtech.solen.service.CoordinateTransformationService;
 
 import java.beans.PropertyDescriptor;
 import java.nio.charset.StandardCharsets;
@@ -58,13 +59,18 @@ public class DeviceController {
         }
     };
 
+    private final AntMatchService antMatchService;
+
     private final AuthService authService;
 
     private final ConnectionManager connectionManager;
 
     private final CoordinateTransformationService coordinateTransformationService;
 
-    public DeviceController(AuthService authService, ConnectionManager connectionManager, CoordinateTransformationService coordinateTransformationService) {
+    public DeviceController(AntMatchService antMatchService, AuthService authService,
+                            ConnectionManager connectionManager,
+                            CoordinateTransformationService coordinateTransformationService) {
+        this.antMatchService = antMatchService;
         this.authService = authService;
         this.connectionManager = connectionManager;
         this.coordinateTransformationService = coordinateTransformationService;
@@ -116,39 +122,34 @@ public class DeviceController {
     @RequestMapping("/list")
     public Object list(
             @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @RequestParam(value = "deviceId", required = false) String deviceId,
             @RequestParam(value = "sort", defaultValue = "deviceId") String sort,
-                                   @RequestParam(value = "order", defaultValue = "ASC") String order,
-                                   @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
-                                   @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
+            @RequestParam(value = "order", defaultValue = "ASC") String order,
+            @RequestParam(value = "pageNo", defaultValue = "1") int pageNo,
+            @RequestParam(value = "pageSize", defaultValue = "100") int pageSize) {
         Tenant tenant = authService.getTenant(appKey);
         Comparator<Connection> comparator = COMPARATORS.containsKey(sort) ? COMPARATORS.get(sort) : COMPARATORS.get("default");
         comparator = order.equalsIgnoreCase("DESC") ? comparator.reversed() : comparator;
+        List<String> patterns = authService.getPatterns(tenant, deviceId);
 
         List<Connection> list = connectionManager.getStore().values().stream()
-                .filter(authService.filter(tenant))
-                .map(c -> Connection.builder()
-                        .deviceId(c.getDeviceId())
-                        .lac(c.getLac())
-                        .ci(c.getCi())
-                        .ctx(c.getCtx())
-                        .idCode(c.getIdCode())
-                        .inputStat(c.getInputStat())
-                        .outputStat(c.getOutputStat())
-                        .coordinate(c.getCoordinate())
-                        .iccId(c.getIccId())
-                        .build())
-                .sorted(comparator)
+                .filter(c -> antMatchService.antMatch(patterns, c.getDeviceId()))
                 .collect(Collectors.toList());
 
         int total = list.size();
         int start = Integer.max(0, (pageNo - 1) * pageSize);
         int size = Integer.max(0, Integer.min(pageSize + start, total));
+        List<ConnectionBean> data = list.stream()
+                .sorted(comparator)
+                .skip(start)
+                .limit(size)
+                .map(this::buildBean)
+                .peek(b -> b.setReports(null))
+                .collect(Collectors.toList());
         return new HashMap<String, Object> () {
             {
                 put("total", total);
-                put("data",
-                        list.subList(start, size).stream()
-                                .map(c -> buildBean(c)).collect(Collectors.toList()));
+                put("data", data);
             }
         };
     }
