@@ -144,6 +144,6 @@ public class EventRepository {
         if (eventId == null) {
             eventId = 0L;
         }
-        return String.format("%016x:%11s:%d", ~date.getTime(), deviceId, eventId);
+        return String.format("%016x:%11s:%016x", ~date.getTime(), deviceId, ~eventId);
     }
 }
