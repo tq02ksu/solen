@@ -3,6 +3,7 @@ package top.fengpingtech.solen.protocol;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,6 +71,11 @@ public class EventProcessor extends ChannelDuplexHandler {
     }
 
     private void processEvent(ChannelHandlerContext ctx, SoltMachineMessage msg) {
+        Attribute<Object> attr = ctx.channel().attr(AttributeKey.valueOf("Event-Skipped"));
+        if (attr.get() != null) {
+            return;
+        }
+
         Map<String, String> details;
         Connection conn;
         switch (msg.getCmd()) {
