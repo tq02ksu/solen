@@ -68,7 +68,7 @@ public class EventRepository {
         String key = generateKey(event.getTime(), event.getDeviceId(), id);
         try {
             byte[] value = objectMapper.writeValueAsBytes(event);
-            store.bPut(key, value);
+            store.put(key, value);
         } catch (JsonProcessingException e) {
             throw new IllegalStateException("error while encode json", e);
         }

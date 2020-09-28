@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import top.fengpingtech.solen.bean.Coordinate;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.ConnectionAttribute;
+import top.fengpingtech.solen.model.ConnectionStatus;
 import top.fengpingtech.solen.model.Event;
 import top.fengpingtech.solen.model.EventType;
 import top.fengpingtech.solen.service.CoordinateTransformationService;
@@ -58,11 +59,19 @@ public class EventProcessor extends ChannelDuplexHandler {
         try {
             String deviceId = ctx.channel().attr(AttributeKey.<String>valueOf("DeviceId")).get();
             if (deviceId != null) {
+                Date d = new Date();
                 eventRepository.add(
                         Event.builder()
                                 .deviceId(deviceId)
                                 .type(EventType.DISCONNECT)
-                                .time(new Date())
+                                .time(d)
+                                .build());
+                eventRepository.add(
+                        Event.builder()
+                                .deviceId(deviceId)
+                                .type(EventType.STATUS_UPDATE)
+                                .time(d)
+                                .details(Collections.singletonMap("status", ConnectionStatus.DISCONNECTED.name()))
                                 .build());
             }
         } finally {
@@ -80,11 +89,19 @@ public class EventProcessor extends ChannelDuplexHandler {
         Connection conn;
         switch (msg.getCmd()) {
             case 0:
+                Date d = new Date();
                 eventRepository.add(
                         Event.builder()
                                 .deviceId(msg.getDeviceId())
                                 .type(EventType.CONNECT)
-                                .time(new Date())
+                                .time(d)
+                                .build());
+                eventRepository.add(
+                        Event.builder()
+                                .deviceId(msg.getDeviceId())
+                                .type(EventType.STATUS_UPDATE)
+                                .time(d)
+                                .details(Collections.singletonMap("status", ConnectionStatus.NORMAL.name()))
                                 .build());
                 break;
             case 1:
@@ -152,7 +169,6 @@ public class EventProcessor extends ChannelDuplexHandler {
                 break;
             case 128:
                 conn = connectionManager.getStore().get(msg.getDeviceId());
-                Date d;
                 if (conn == null) {
                     d = new Date();
                 } else {
