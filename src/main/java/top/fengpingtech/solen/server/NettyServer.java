@@ -22,7 +22,6 @@ import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import top.fengpingtech.solen.service.EventRepository;
 import top.fengpingtech.solen.protocol.ConnectionAttributeHolder;
 import top.fengpingtech.solen.protocol.ConnectionKeeperHandler;
 import top.fengpingtech.solen.protocol.ConnectionManager;
@@ -32,7 +31,9 @@ import top.fengpingtech.solen.protocol.MessageDecoder;
 import top.fengpingtech.solen.protocol.MessageEncoder;
 import top.fengpingtech.solen.protocol.MessageProcessor;
 import top.fengpingtech.solen.protocol.PacketPreprocessor;
+import top.fengpingtech.solen.protocol.SerialMessagePacker;
 import top.fengpingtech.solen.protocol.TracingLogHandler;
+import top.fengpingtech.solen.service.EventRepository;
 
 import javax.annotation.PostConstruct;
 
@@ -112,6 +113,7 @@ public class NettyServer {
                         .addLast(new MessageEncoder())
                         .addLast(new MessageDecoder())
                         .addLast(new ConnectionAttributeHolder(connectionManager))
+                        .addLast(new SerialMessagePacker(connectionManager))
                         .addLast(new MessageProcessor(connectionManager))
                         .addLast(new EventProcessor(connectionManager, eventRepository));
             }

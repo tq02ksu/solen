@@ -2,7 +2,6 @@ package top.fengpingtech.solen.protocol;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
-import io.netty.handler.codec.MessageToMessageEncoder;
 import io.netty.util.AttributeKey;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.ConnectionAttribute;
