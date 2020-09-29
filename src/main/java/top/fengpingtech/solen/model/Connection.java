@@ -1,6 +1,5 @@
 package top.fengpingtech.solen.model;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,6 +33,8 @@ public class Connection {
     private long idCode;
     private Integer inputStat;
     private Integer outputStat;
+
+    @Builder.Default
     private Date lastHeartBeatTime = new Date();
 
     // 信号强度
@@ -59,8 +60,10 @@ public class Connection {
     @Builder.Default
     private List<Report> reports = new LinkedList<>();
 
+    @Builder.Default
     private transient AtomicInteger index = new AtomicInteger(0);
 
+    @Builder.Default
     private transient List<CountDownLatch> outputStatSyncs = new CopyOnWriteArrayList<>();
 
     @Builder
