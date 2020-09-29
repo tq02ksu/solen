@@ -11,7 +11,7 @@ LABEL maintainer=tq02ksu@gmail.com
 
 WORKDIR /app
 RUN apk add libc6-compat
-ENV LD_LIBRARAY_PATH /lib64
+ENV LD_LIBRARY_PATH /lib64
 RUN mkdir -p lib bin log; \
     { echo '#!/bin/sh' && echo 'exec java $JAVA_OPTS -jar lib/app.jar ${@}'; } > bin/run.sh; \
     chmod 755 bin/run.sh
