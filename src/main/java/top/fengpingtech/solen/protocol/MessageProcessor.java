@@ -131,6 +131,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 double lng = Double.parseDouble(new String(doubleBuf));
                 byte[] iccIdBuf = new byte[20];
                 data.readBytes(iccIdBuf);
+                data.release();
                 String iccId = new String(iccIdBuf);
                 Coordinate c =  Coordinate.builder()
                         .system(CoordinateSystem.WGS84)
