@@ -24,8 +24,8 @@ public class Connection {
     private String deviceId;
     private String serverHost;
     private String serverPort;
-    private Integer lac;
-    private Integer ci;
+    private Long lac;
+    private Long ci;
     private ChannelHandlerContext ctx;
 
     private Integer header;

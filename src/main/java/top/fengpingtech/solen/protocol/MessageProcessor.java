@@ -43,8 +43,8 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             Assert.isTrue(data.readableBytes() == 8,
                     "register packet length expect to 8, but is " + data.readableBytes());
 
-            int lac = data.readIntLE();
-            int ci = data.readIntLE();
+            long lac = data.readUnsignedIntLE();
+            long ci = data.readUnsignedIntLE();
             data.release();
 
             if (connectionManager.getStore().containsKey(msg.getDeviceId())
@@ -97,6 +97,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
             if (conn == null) {
                 logger.warn("skipped message : {}, device not registered", msg);
             } else {
+                conn.setLastHeartBeatTime(new Date());
                 synchronized (conn) {
                     String content = new String(msg.getData(), StandardCharsets.UTF_8);
                     Date now = new Date();
@@ -144,6 +145,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                         accessType, imei, cdma, networkType, stations, iccId, c);
                 conn.setCoordinate(c);
                 conn.setIccId(iccId);
+                conn.setLastHeartBeatTime(new Date());
             }
         }
     }
