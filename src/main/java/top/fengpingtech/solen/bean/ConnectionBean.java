@@ -15,8 +15,8 @@ public class ConnectionBean {
     private String deviceId;
     private String serverHost;
     private String serverPort;
-    private Integer lac;
-    private Integer ci;
+    private Long lac;
+    private Long ci;
     private ConnectionStatus status;
     private Integer header;
     private Integer inputStat;
