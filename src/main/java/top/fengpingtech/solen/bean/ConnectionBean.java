@@ -33,7 +33,7 @@ public class ConnectionBean {
 
     private List<Coordinate> coordinates;
 
-    // sim id
+    // icc id
     private String iccId;
 
     private Date lastHeartBeatTime = new Date();
