@@ -34,4 +34,17 @@ public class MessageEncoderTest {
                 .data(new byte[] {10, 65, 0, 0, 76, 71, 0, 0})
                 .build(), buf);
     }
+
+    @Test
+    public void testEncodeWithEmptyData() {
+        ByteBuf buf = Unpooled.buffer();
+        encoder.encode(SoltMachineMessage.builder()
+                .header(13175)
+                .index(0)
+                .idCode(12345L)
+                .deviceId("10619030001")
+                .cmd((short) 0)
+                .data(new byte[0])
+                .build(), buf);
+    }
 }

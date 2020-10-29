@@ -27,7 +27,7 @@ public class ClientPerformanceMain {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            for (int i = 0; i < 2; i ++) {
+            for (int i = 0; i < 3; i++) {
                 long deviceId = 55520000000L + new Random().nextInt(10000000);
                 Bootstrap b = new Bootstrap();
                 b.group(group)
@@ -82,19 +82,17 @@ public class ClientPerformanceMain {
             ByteBuf slice = buf.slice(0, 10);
             buf.retain();
             channel.writeAndFlush(slice);
-            Thread.sleep(1000);
-
-            channel.writeAndFlush(buf.slice(10, buf.readableBytes() - 10));
-
-            sendHeartBeat(ctx);
-
-            sendDeviceInfo(ctx);
+            ctx.executor().schedule(() -> {
+                channel.writeAndFlush(buf.slice(10, buf.readableBytes() - 10));
+                sendHeartBeat(ctx);
+                sendDeviceInfo(ctx);
+            }, 900 + new Random().nextInt(200), TimeUnit.MILLISECONDS);
         }
 
         private void sendDeviceInfo(ChannelHandlerContext ctx) {
             ByteBuf buf = ctx.alloc().buffer();
             MessageEncoder encoder = new MessageEncoder();
-            String message = "{\"body\":{\"devicelist\":[{\"DEVICE_ID\":\"1015\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"},{\"DEVICE_ID\":\"1016\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"},{\"DEVICE_ID\":\"1007\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"}],\"CPU_USE_INFO\":\"0%\",\"MEM_AVAI_INFO\":\"2.1G\",\"STORAGE_AVAI_INFO\":\"458G\",\"STATUS_CODE\":\"00\"},\"IP_ADDRESS\":\"192.168.133.88\",\"MAC_ADDRESS\":\"C4-09-38-97-B2-F7\",\"SESSION\":\"a5ffed75-28ec-4b61-acd3-6e7889bc79dc\",\"reserve\":null,\"DEVICE_ID\":null,\"info_type\":\"2\"}\n";
+            String message = "{\"body\":{\"devicelist\":[{\"DEVICE_ID\":\"1015\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"},{\"DEVICE_ID\":\"1016\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"},{\"DEVICE_ID\":\"1007\",\"STATUS_CODE\":\"0\",\"STATUS_REASON_CODE\":\"\"}],\"CPU_USE_INFO\":\"0%\",\"MEM_AVAI_INFO\":\"2.1G\",\"STORAGE_AVAI_INFO\":\"458G\",\"STATUS_CODE\":\"00\"},\"IP_ADDRESS\":\"192.168.133.88\",\"MAC_ADDRESS\":\"C4-09-38-97-B2-F7\",\"SESSION\":\"a5ffed75-28ec-4b61-acd3-6e7889bc79dc\",\"reserve\":null,\"DEVICE_ID\":null,\"info_type\":\"2\"}\u0000";
 
             SoltMachineMessage msg = SoltMachineMessage.builder()
                     .header(13175)
@@ -107,7 +105,7 @@ public class ClientPerformanceMain {
             encoder.encode(msg, buf);
             ctx.channel().pipeline().writeAndFlush(buf);
 
-            ctx.executor().schedule(() -> sendDeviceInfo(ctx), 10, TimeUnit.SECONDS);
+            ctx.executor().schedule(() -> sendDeviceInfo(ctx), 550 + new Random().nextInt(100), TimeUnit.SECONDS);
         }
 
         private void sendHeartBeat(ChannelHandlerContext ctx) {
@@ -124,7 +122,7 @@ public class ClientPerformanceMain {
             encoder.encode(msg, buf);
             ctx.channel().pipeline().writeAndFlush(buf);
 
-            ctx.executor().schedule(() -> sendHeartBeat(ctx), 10, TimeUnit.SECONDS);
+            ctx.executor().schedule(() -> sendHeartBeat(ctx), 55 + new Random().nextInt(10), TimeUnit.SECONDS);
         }
     }
 }
