@@ -61,10 +61,16 @@ public class Connection {
     private List<Report> reports = new LinkedList<>();
 
     @Builder.Default
+    private DeviceAuth auth = new DeviceAuth();
+
+    @Builder.Default
     private transient AtomicInteger index = new AtomicInteger(0);
 
     @Builder.Default
     private transient List<CountDownLatch> outputStatSyncs = new CopyOnWriteArrayList<>();
+
+    @Builder.Default
+    private transient List<WriteFlashHook> writeFlashSyncs = new CopyOnWriteArrayList<>();
 
     @Builder
     @Data
@@ -73,5 +79,15 @@ public class Connection {
     public static class Report {
         private Date time;
         private String content;
+    }
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class WriteFlashHook {
+        private Boolean result;
+
+        private CountDownLatch latch;
     }
 }

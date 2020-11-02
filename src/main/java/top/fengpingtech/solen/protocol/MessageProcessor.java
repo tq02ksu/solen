@@ -147,6 +147,32 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 conn.setIccId(iccId);
                 conn.setLastHeartBeatTime(new Date());
             }
+        } else if (msg.getCmd() == 8) {
+            // reply write flash result
+            Connection conn = connectionManager.getStore().get(msg.getDeviceId());
+            if (conn == null) {
+                logger.warn("skipped message : {}, device not registered", msg);
+            } else if (msg.getData().length != 1) {
+                logger.warn("invalid packet format, msg.data.length is not 1, msg={}", msg);
+            } else {
+                List<Connection.WriteFlashHook> syncs = conn.getWriteFlashSyncs();
+                if (syncs.isEmpty()) {
+                    logger.warn("invalid stat found, receive cmd=8, but no request sync. msg={}", msg);
+                } else {
+                    // remove first latch and count down;
+                    Connection.WriteFlashHook hook = syncs.remove(0);
+                    hook.setResult(msg.getData()[0] == 0);
+                    hook.getLatch().countDown();
+                }
+            }
+        } else if (msg.getCmd() == 10) {
+            // receive flash data
+            Connection conn = connectionManager.getStore().get(msg.getDeviceId());
+            if (conn == null) {
+                logger.warn("skipped message : {}, device not registered", msg);
+            } else {
+                new DeviceStorageCodec().decode(msg.getData(), conn);
+            }
         }
     }
 
@@ -200,6 +226,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
         List<Object> replies = new ArrayList<>();
         sendReply(msg, replies);
 
+        // write replies
         synchronized (ctx.channel()) {
             for (Object o : replies) {
                 ctx.pipeline().write(o);

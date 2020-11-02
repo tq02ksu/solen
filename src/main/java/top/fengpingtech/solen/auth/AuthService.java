@@ -37,7 +37,11 @@ public class AuthService {
             return true;
         }
 
-        return antMatchService.antMatch(tenant.getDevicePatterns(), conn.getDeviceId());
+        if (antMatchService.antMatch(tenant.getDevicePatterns(), conn.getDeviceId())) {
+            return true;
+        }
+
+        return conn.getAuth().getOwners().contains(tenant.getAppKey());
     }
 
     public Tenant getTenant(String appKey) {

@@ -18,8 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 import top.fengpingtech.solen.auth.AuthService;
 import top.fengpingtech.solen.bean.ConnectionBean;
 import top.fengpingtech.solen.model.Connection;
+import top.fengpingtech.solen.model.DeviceAuth;
 import top.fengpingtech.solen.model.Tenant;
 import top.fengpingtech.solen.protocol.ConnectionManager;
+import top.fengpingtech.solen.protocol.DeviceStorageCodec;
 import top.fengpingtech.solen.protocol.SoltMachineMessage;
 import top.fengpingtech.solen.service.AntMatchService;
 import top.fengpingtech.solen.service.CoordinateTransformationService;
@@ -95,6 +97,118 @@ public class DeviceController {
         return ResponseEntity.ok(bean);
     }
 
+    /**
+     * 查询设备权限信息
+     *
+     * @param appKey
+     * @param deviceId
+     * @return
+     */
+    @GetMapping("/device/{deviceId}/auth")
+    public ResponseEntity<Object> queryDeviceAuth(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @PathVariable("deviceId") String deviceId) {
+
+        Connection conn = connectionManager.getStore().get(deviceId);
+        if (conn.getCtx().channel().isActive()) {
+            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("device not found");
+        }
+
+        Tenant tenant = authService.getTenant(appKey);
+        if (!authService.canVisit(tenant, conn)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("can not visit this device");
+        }
+        return ResponseEntity.ok(conn.getAuth());
+    }
+
+    /**
+     * 设备绑定
+     *
+     * @param appKey
+     * @param deviceId
+     * @param auth
+     * @return
+     */
+    @PostMapping("/device/{deviceId}/auth")
+    public ResponseEntity<Object> modifyDeviceAuth(
+            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
+            @PathVariable("deviceId") String deviceId, @RequestBody DeviceAuth auth) {
+        List<String> owners = auth.getOwners();
+        if (appKey == null && owners == null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user not login and owners can not be both null");
+        }
+
+        if (appKey != null) {
+            Tenant tenant = authService.getTenant(appKey);
+            if (!tenant.getRoles().contains(AuthService.ROLE_ADMIN) && owners != null
+                    && owners.stream().anyMatch(r -> !r.equals(appKey))) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("can not authorize to other user");
+            }
+        }
+
+        if (!connectionManager.getStore().containsKey(deviceId)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Connection conn = connectionManager.getStore().get(deviceId);
+        List<String> current = conn.getAuth().getOwners();
+        if ((owners == null && current.contains(appKey)) ||
+                (owners != null && current.containsAll(owners))) {
+            return ResponseEntity.ok(buildBean(conn));
+        }
+        if (owners == null && !current.contains(appKey)) {
+            current.add(appKey);
+        } else {
+            assert owners != null;
+            owners.stream().filter(o -> !current.contains(o)).forEach(current::add);
+        }
+
+        // write flash
+        // 1. construct
+        SoltMachineMessage msg = SoltMachineMessage.builder()
+                .header(conn.getHeader())
+                .index(conn.getIndex().getAndIncrement())
+                .deviceId(deviceId)
+                .cmd((short) 7)
+                .data(new DeviceStorageCodec().encode(conn))
+                .build();
+
+        // build hook
+        Connection.WriteFlashHook hook = Connection.WriteFlashHook.builder()
+                .latch(new CountDownLatch(1))
+                .build();
+        synchronized (conn.getCtx().channel()) {
+            try {
+                conn.getWriteFlashSyncs().add(hook);
+                conn.getCtx().writeAndFlush(msg);
+                boolean success = hook.getLatch().await(20, TimeUnit.SECONDS);
+                if (success && hook.getResult() != null && hook.getResult()) {
+                    // wait less than timeout duration, and return success
+                    // request latest flash data and return success message
+                    conn.getCtx().writeAndFlush(SoltMachineMessage.builder()
+                            .header(conn.getHeader())
+                            .index(conn.getIndex().getAndIncrement())
+                            .deviceId(deviceId)
+                            .cmd((short) 9)
+                            .data(new byte[0])
+                            .build());
+                    return ResponseEntity.ok().body(buildBean(conn));
+                } else if (success) {
+                    // wait less than timeout duration, and return failure
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body("flash write error, maybe try again later");
+                }
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("wait write flash result timeout, maybe device not supported");
+            } catch (InterruptedException e) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("wait write flash result interrupted");
+            } finally {
+                conn.getWriteFlashSyncs().remove(hook);
+            }
+        }
+    }
+
     @DeleteMapping("/device/{deviceId}")
     public ResponseEntity<Object> delete(
             @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
@@ -111,7 +225,7 @@ public class DeviceController {
 
         Tenant tenant = authService.getTenant(appKey);
         if (!authService.canVisit(tenant, conn)) {
-            return ResponseEntity.status(401).body("unauthorized!");
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("can not operation this device!");
         }
         connectionManager.close(conn);
         connectionManager.getStore().remove(deviceId);
@@ -205,7 +319,7 @@ public class DeviceController {
         }
 
         SoltMachineMessage message;
-        CountDownLatch  latch = new CountDownLatch(1);
+        CountDownLatch latch = new CountDownLatch(1);
 
         try {
             synchronized (conn.getCtx().channel()) {
