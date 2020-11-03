@@ -1,6 +1,5 @@
 package top.fengpingtech.solen.protocol;
 
-import com.sun.xml.internal.messaging.saaj.util.ByteOutputStream;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.DeviceAuth;
 
@@ -16,9 +15,7 @@ import java.util.List;
 public class DeviceStorageCodec {
     public byte[] encode(Connection conn) {
         List<String> owners = conn.getAuth().getOwners();
-        ByteOutputStream out = new ByteOutputStream();
-        out.write(String.join(",", owners).getBytes(StandardCharsets.UTF_8));
-        return out.getBytes();
+        return String.join(",", owners).getBytes(StandardCharsets.UTF_8);
     }
 
     public void decode(byte[] bytes, Connection conn) {
