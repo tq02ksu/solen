@@ -1,10 +1,11 @@
 package top.fengpingtech.solen.model;
 
-import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.bean.Coordinate;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -23,15 +24,17 @@ public class Connection {
     private String deviceId;
     private String serverHost;
     private String serverPort;
-    private int lac;
-    private int ci;
-    private Channel channel;
+    private Long lac;
+    private Long ci;
+    private ChannelHandlerContext ctx;
 
-    private int header;
+    private Integer header;
 
     private long idCode;
-    private int inputStat;
-    private int outputStat;
+    private Integer inputStat;
+    private Integer outputStat;
+
+    @Builder.Default
     private Date lastHeartBeatTime = new Date();
 
     // 信号强度
@@ -46,14 +49,28 @@ public class Connection {
     // 开机时长
     private Integer uptime;
 
-//    private Integer debugData5;
+    /**
+     * GWS84
+     */
+    private Coordinate coordinate;
+
+    // sim id
+    private String iccId;
 
     @Builder.Default
     private List<Report> reports = new LinkedList<>();
 
+    @Builder.Default
+    private DeviceAuth auth = new DeviceAuth();
+
+    @Builder.Default
     private transient AtomicInteger index = new AtomicInteger(0);
 
+    @Builder.Default
     private transient List<CountDownLatch> outputStatSyncs = new CopyOnWriteArrayList<>();
+
+    @Builder.Default
+    private transient List<WriteFlashHook> writeFlashSyncs = new CopyOnWriteArrayList<>();
 
     @Builder
     @Data
@@ -62,5 +79,15 @@ public class Connection {
     public static class Report {
         private Date time;
         private String content;
+    }
+
+    @Builder
+    @Data
+    @AllArgsConstructor
+    @NoArgsConstructor
+    public static class WriteFlashHook {
+        private Boolean result;
+
+        private CountDownLatch latch;
     }
 }

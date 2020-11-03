@@ -1,10 +1,8 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.ByteOrder;
 
@@ -24,8 +22,6 @@ import java.nio.ByteOrder;
  * </pre>
  */
 public class PacketPreprocessor extends LengthFieldBasedFrameDecoder {
-    private static final Logger logger = LoggerFactory.getLogger(PacketPreprocessor.class);
-
     private static final int MAX_FRAME_LENGTH = 10 * 1024 * 1024;
 
     private static final int MAX_SEGMENTS = 3;

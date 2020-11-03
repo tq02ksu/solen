@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import top.fengpingtech.solen.model.Connection;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -27,11 +27,11 @@ public class SolenApplicationTests {
 
 	@Test
 	public void testJson() throws Exception {
-		List<Connection> list = new ArrayList<>(Arrays.asList(	new Connection()));
+		List<Connection> list = new ArrayList<>(Collections.singletonList(new Connection()));
 		int total = list.size();
 		int pageNo = 1;
 		int pageSize = 10;
-		int start = Integer.max(0, (pageNo - 1) * pageSize);
+		int start = 0;
 		int size = Integer.max(0, Integer.min(pageSize, total - start));
 		Object obj = new HashMap<String, Object>() {
 			{

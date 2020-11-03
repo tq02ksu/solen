@@ -108,15 +108,9 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 AttributeKey<byte[]> key = AttributeKey.valueOf(ATTRIBUTE_KEY_MESSAGE_BUFFER);
                 Attribute<byte[]> val = ctx.channel().attr(key);
                 SplitResult result;
-//                for (byte[] buffer = val.get(); ; buffer = val.get()) {
-//                    result = split(ctx, msg.getData(), buffer);
-//                    if (val.compareAndSet(buffer, result.buffer)) {
-//                        break;
-//                    }
-//                }
                 synchronized (val) {
-                    result = split(ctx, msg.getData(), val.get());
-                    val.set(result.buffer);
+                    result = split(ctx, msg.getData(), val.getAndSet(null));
+                    val.getAndSet(result.buffer);
                 }
 
                 if (!result.segments.isEmpty()) {
@@ -126,12 +120,12 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
                 // schedule process
                 if (val.get() != null) {
                     ctx.executor().schedule(() -> {
-                        synchronized (val) {
-                            if (val.compareAndSet(result.buffer, null)) {
-                                logger.info("Processing timeout message: {}", new String(result.buffer));
-                                processMessage(ctx, conn, result.buffer);
+                        for (byte[] message = val.get(); message != null; message = val.get()) {
+                            if (val.compareAndSet(message, null)) {
+                                processMessage(ctx, conn, message);
                             }
                         }
+
                     }, TEXT_REPORT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
                 }
             }

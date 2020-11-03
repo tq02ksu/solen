@@ -16,10 +16,10 @@ import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import top.fengpingtech.solen.slotmachine.MessageDebugger;
-import top.fengpingtech.solen.slotmachine.MessageDecoder;
-import top.fengpingtech.solen.slotmachine.MessageEncoder;
-import top.fengpingtech.solen.slotmachine.SoltMachineMessage;
+import top.fengpingtech.solen.protocol.MessageDebugger;
+import top.fengpingtech.solen.protocol.MessageDecoder;
+import top.fengpingtech.solen.protocol.MessageEncoder;
+import top.fengpingtech.solen.protocol.SoltMachineMessage;
 
 public class ClientTest extends SolenApplicationTests {
     @Autowired

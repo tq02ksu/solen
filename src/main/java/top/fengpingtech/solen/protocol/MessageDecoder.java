@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.slotmachine;
+package top.fengpingtech.solen.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -67,10 +67,5 @@ public class MessageDecoder extends ByteToMessageDecoder {
                 .build());
 
         logger.info("message received: " + out);
-    }
-
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) {
-        ctx.close();
     }
 }
