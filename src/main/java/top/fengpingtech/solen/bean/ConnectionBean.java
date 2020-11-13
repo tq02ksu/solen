@@ -4,6 +4,7 @@ import lombok.Data;
 import org.springframework.beans.BeanUtils;
 import top.fengpingtech.solen.model.Connection;
 import top.fengpingtech.solen.model.ConnectionStatus;
+import top.fengpingtech.solen.model.DeviceAuth;
 
 import java.util.Date;
 import java.util.LinkedList;
@@ -39,6 +40,8 @@ public class ConnectionBean {
     private Date lastHeartBeatTime = new Date();
 
     private List<Connection.Report> reports = new LinkedList<>();
+
+    private DeviceAuth auth;
 
     public static ConnectionBean build(Connection connection) {
         ConnectionBean bean = new ConnectionBean();

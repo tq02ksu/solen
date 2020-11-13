@@ -98,30 +98,6 @@ public class DeviceController {
     }
 
     /**
-     * 查询设备权限信息
-     *
-     * @param appKey
-     * @param deviceId
-     * @return
-     */
-    @GetMapping("/device/{deviceId}/auth")
-    public ResponseEntity<Object> queryDeviceAuth(
-            @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
-            @PathVariable("deviceId") String deviceId) {
-
-        Connection conn = connectionManager.getStore().get(deviceId);
-        if (conn.getCtx().channel().isActive()) {
-            return ResponseEntity.status(HttpStatus.METHOD_NOT_ALLOWED).body("device not found");
-        }
-
-        Tenant tenant = authService.getTenant(appKey);
-        if (!authService.canVisit(tenant, conn)) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("can not visit this device");
-        }
-        return ResponseEntity.ok(conn.getAuth());
-    }
-
-    /**
      * 设备绑定
      *
      * @param appKey
@@ -130,7 +106,7 @@ public class DeviceController {
      * @return
      */
     @PostMapping("/device/{deviceId}/auth")
-    public ResponseEntity<Object> modifyDeviceAuth(
+    public ResponseEntity<Object> modifyAuth(
             @RequestHeader(name = "Authorization-Principal", required = false) String appKey,
             @PathVariable("deviceId") String deviceId, @RequestBody DeviceAuth auth) {
         List<String> owners = auth.getOwners();
@@ -147,7 +123,7 @@ public class DeviceController {
         }
 
         if (!connectionManager.getStore().containsKey(deviceId)) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("device not found");
         }
 
         Connection conn = connectionManager.getStore().get(deviceId);
