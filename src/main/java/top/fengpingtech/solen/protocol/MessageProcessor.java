@@ -205,7 +205,7 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
         }
     }
 
-    private void sendReply(SoltMachineMessage message, List<Object> out) {
+    private void sendReply(SoltMachineMessage message, List<SoltMachineMessage> out) {
         if (message.getCmd() == 2 || message.getCmd() == 128) {
             // skip for reply message for reply and message
             return;
@@ -223,18 +223,42 @@ public class MessageProcessor extends MessageToMessageDecoder<SoltMachineMessage
 
     @Override
     protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
-        List<Object> replies = new ArrayList<>();
-        sendReply(msg, replies);
-
-        // write replies
-        synchronized (ctx.channel()) {
-            for (Object o : replies) {
-                ctx.pipeline().write(o);
-            }
-            ctx.pipeline().flush();
-        }
+        List<SoltMachineMessage> buffer = new ArrayList<>();
+        sendReply(msg, buffer);
 
         processMessage(ctx, msg);
+
+        processFlashMessage(msg, buffer);
+
+        // write buffer
+        if (!buffer.isEmpty()) {
+            synchronized (ctx.channel()) {
+                for (Object o : buffer) {
+                    ctx.pipeline().write(o);
+                }
+                ctx.pipeline().flush();
+            }
+        }
+
         out.add(msg);
+    }
+
+    private void processFlashMessage(SoltMachineMessage msg, List<SoltMachineMessage> out) {
+        Connection device = connectionManager.getStore().get(msg.getDeviceId());
+        if (device == null) {
+            logger.warn("device not found with deviceId = {}", msg.getDeviceId());
+            return;
+        }
+
+        if (msg.getCmd() == 0 || msg.getCmd() == 8) {
+            out.add(SoltMachineMessage.builder()
+                    .header(msg.getHeader())
+                    .index(device.getIndex().getAndIncrement())
+                    .idCode(msg.getIdCode())
+                    .cmd((short) 9)
+                    .deviceId(msg.getDeviceId())
+                    .data(new byte[0])
+                    .build());
+        }
     }
 }
