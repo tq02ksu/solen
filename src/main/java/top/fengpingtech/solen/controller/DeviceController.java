@@ -28,6 +28,7 @@ import top.fengpingtech.solen.service.CoordinateTransformationService;
 
 import java.beans.PropertyDescriptor;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
@@ -128,25 +129,29 @@ public class DeviceController {
 
         Connection conn = connectionManager.getStore().get(deviceId);
         List<String> current = conn.getAuth().getOwners();
-        if ((owners == null && current.contains(appKey)) ||
-                (owners != null && current.containsAll(owners))) {
+        if ((owners == null && current.contains(appKey) && current.size() == 1) ||
+                (owners != null && current.containsAll(owners) && owners.containsAll(current))) {
             return ResponseEntity.ok(buildBean(conn));
         }
-        if (owners == null && !current.contains(appKey)) {
-            current.add(appKey);
+
+        List<String> authorizing;
+        if (owners == null) {
+            authorizing = new ArrayList<>(current);
+            authorizing.add(appKey);
         } else {
-            assert owners != null;
-            owners.stream().filter(o -> !current.contains(o)).forEach(current::add);
+            authorizing = owners;
         }
 
         // write flash
         // 1. construct
+        byte[] flashData = new DeviceStorageCodec().encode(
+                Connection.builder().auth(DeviceAuth.builder().owners(authorizing).build()).build());
         SoltMachineMessage msg = SoltMachineMessage.builder()
                 .header(conn.getHeader())
                 .index(conn.getIndex().getAndIncrement())
                 .deviceId(deviceId)
                 .cmd((short) 7)
-                .data(new DeviceStorageCodec().encode(conn))
+                .data(flashData)
                 .build();
 
         // build hook
@@ -159,15 +164,6 @@ public class DeviceController {
                 conn.getCtx().writeAndFlush(msg);
                 boolean success = hook.getLatch().await(20, TimeUnit.SECONDS);
                 if (success && hook.getResult() != null && hook.getResult()) {
-                    // wait less than timeout duration, and return success
-                    // request latest flash data and return success message
-                    conn.getCtx().writeAndFlush(SoltMachineMessage.builder()
-                            .header(conn.getHeader())
-                            .index(conn.getIndex().getAndIncrement())
-                            .deviceId(deviceId)
-                            .cmd((short) 9)
-                            .data(new byte[0])
-                            .build());
                     return ResponseEntity.ok().body(buildBean(conn));
                 } else if (success) {
                     // wait less than timeout duration, and return failure
