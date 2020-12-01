@@ -57,6 +57,11 @@ public class EventProcessor extends ChannelDuplexHandler {
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         try {
+            Attribute<Object> attr = ctx.channel().attr(AttributeKey.valueOf("Event-Skipped"));
+            if (attr.get() != null) {
+                return;
+            }
+
             String deviceId = ctx.channel().attr(AttributeKey.<String>valueOf("DeviceId")).get();
             if (deviceId != null) {
                 Date d = new Date();
@@ -80,11 +85,6 @@ public class EventProcessor extends ChannelDuplexHandler {
     }
 
     private void processEvent(ChannelHandlerContext ctx, SoltMachineMessage msg) {
-        Attribute<Object> attr = ctx.channel().attr(AttributeKey.valueOf("Event-Skipped"));
-        if (attr.get() != null) {
-            return;
-        }
-
         Map<String, String> details;
         Connection conn;
         switch (msg.getCmd()) {
