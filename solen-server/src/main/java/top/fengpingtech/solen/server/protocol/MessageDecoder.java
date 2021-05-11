@@ -1,10 +1,11 @@
-package top.fengpingtech.solen.protocol;
+package top.fengpingtech.solen.server.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.fengpingtech.solen.server.model.SoltMachineMessage;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -16,7 +17,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) {
         int startIndex = msg.readerIndex();
-        short header = msg.readShortLE();
+        int header = msg.readShortLE();
         short length = msg.readShortLE();
 
         byte index = msg.readByte();

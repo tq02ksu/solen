@@ -1,11 +1,11 @@
-package top.fengpingtech.solen.protocol;
+package top.fengpingtech.solen.server.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.Attribute;
 import io.netty.util.AttributeKey;
-import org.springframework.beans.BeanUtils;
+import top.fengpingtech.solen.server.model.SoltMachineMessage;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,15 +21,9 @@ public class SerialMessagePacker extends MessageToMessageDecoder<SoltMachineMess
     private static final List<Byte> TEXT_TERMINATORS = Collections.unmodifiableList(
             Arrays.asList((byte) 0x00, (byte) 0x0a));
 
-    private final ConnectionManager connectionManager;
-
-    public SerialMessagePacker(ConnectionManager connectionManager) {
-        this.connectionManager = connectionManager;
-    }
-
     @Override
     protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) throws Exception {
-        if (msg.getCmd() != 128 || !connectionManager.getStore().containsKey(msg.getDeviceId())) {
+        if (msg.getCmd() != 128) {
             out.add(msg);
             return;
         }
@@ -61,9 +55,18 @@ public class SerialMessagePacker extends MessageToMessageDecoder<SoltMachineMess
 
     private Object generateMessage(SoltMachineMessage msg, byte[] bytes) {
         SoltMachineMessage message = new SoltMachineMessage();
-        BeanUtils.copyProperties(msg, message);
+        copyProperties(msg, message);
         message.setData(bytes);
         return message;
+    }
+
+    private void copyProperties(SoltMachineMessage source, SoltMachineMessage target) {
+        target.setHeader(source.getHeader());
+        target.setDeviceId(source.getDeviceId());
+        target.setIdCode(source.getIdCode());
+        target.setCmd(source.getCmd());
+        target.setData(source.getData());
+        target.setIndex(source.getIndex());
     }
 
     private SplitResult split(ChannelHandlerContext ctx, byte[] data, byte[] buffer) {

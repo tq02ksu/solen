@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.protocol;
+package top.fengpingtech.solen.server.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;

@@ -1,6 +1,8 @@
-package top.fengpingtech.solen.model;
+package top.fengpingtech.solen.server.model;
 
 public enum EventType {
+
+
     /**
      * device connect
      */
@@ -39,5 +41,5 @@ public enum EventType {
     /**
      * 发送开关机
      */
-    CONTROL_SENDING,
+    CONTROL_SENDING;
 }
