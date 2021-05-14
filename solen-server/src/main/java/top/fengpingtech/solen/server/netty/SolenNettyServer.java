@@ -109,7 +109,9 @@ public class SolenNettyServer implements SolenServer {
                                 .addLast(new MessageEncoder())
                                 .addLast(new MessageDecoder())
                                 .addLast(new SerialMessagePacker())
-                                .addLast(new EventProcessorAdapter(serverProperties.getEventProcessor()));
+                                .addLast(new EventProcessorAdapter(
+                                        serverProperties.getEventProcessor(),
+                                        serverProperties.getEventIdGenerator()));
                     }
                 });
         future = bootstrap.bind(serverProperties.getPort());
