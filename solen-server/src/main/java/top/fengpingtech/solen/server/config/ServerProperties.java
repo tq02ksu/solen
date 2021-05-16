@@ -7,13 +7,11 @@ import top.fengpingtech.solen.server.IdGenerator;
 @Data
 public class ServerProperties {
 
-    private int port = 7889;
+    private Integer port;
 
-    private int ioThreads = 2;
+    private Integer ioThreads;
 
-    private int workerThreads = Runtime.getRuntime().availableProcessors() * 2;
-
-    private Boolean daemon;
+    private Integer workerThreads;
 
     private EventProcessor eventProcessor;
 

@@ -105,7 +105,8 @@ public class SolenNettyServer implements SolenServer {
                                 .addLast(new ReadTimeoutHandler(600))
                                 .addLast(new PacketPreprocessor())
                                 .addLast(new ReadTimeoutHandler(600))
-                                .addLast(new ConnectionKeeperHandler())
+                                .addLast(new ConnectionKeeperHandler(
+                                        serverProperties.getEventProcessor(), serverProperties.getEventIdGenerator()))
                                 .addLast(new MessageEncoder())
                                 .addLast(new MessageDecoder())
                                 .addLast(new SerialMessagePacker())
@@ -114,18 +115,12 @@ public class SolenNettyServer implements SolenServer {
                                         serverProperties.getEventIdGenerator()));
                     }
                 });
-        future = bootstrap.bind(serverProperties.getPort());
         try {
-            if (!serverProperties.getDaemon()) {
-                future.sync();
-            }
+            future = bootstrap.bind(serverProperties.getPort()).sync();
         } catch (InterruptedException e) {
-            logger.error("netty Server failed to start, {}", e.getMessage());
+            logger.info("error while sync bind");
         }
-
-        if (logger.isInfoEnabled()) {
-            logger.info("netty server started on port = {} success", serverProperties.getPort());
-        }
+        logger.info("netty server started on port = {} success", serverProperties.getPort());
     }
 
     @Override
