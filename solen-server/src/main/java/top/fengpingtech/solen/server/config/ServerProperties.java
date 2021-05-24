@@ -4,6 +4,8 @@ import lombok.Data;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.IdGenerator;
 
+import java.util.List;
+
 @Data
 public class ServerProperties {
 

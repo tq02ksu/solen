@@ -1,4 +1,4 @@
-package top.fengpingtech.solen;
+package top.fengpingtech.solen.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -13,10 +13,10 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import top.fengpingtech.solen.protocol.MessageDebugger;
-import top.fengpingtech.solen.protocol.MessageDecoder;
-import top.fengpingtech.solen.protocol.MessageEncoder;
-import top.fengpingtech.solen.protocol.SoltMachineMessage;
+import top.fengpingtech.solen.server.model.SoltMachineMessage;
+import top.fengpingtech.solen.server.protocol.MessageDebugger;
+import top.fengpingtech.solen.server.protocol.MessageDecoder;
+import top.fengpingtech.solen.server.protocol.MessageEncoder;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Random;
@@ -27,7 +27,7 @@ public class ClientPerformanceMain {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            for (int i = 0; i < 2; i ++) {
+            for (int i = 0; i < 200; i ++) {
                 long deviceId = 55520000000L + new Random().nextInt(10000000);
                 Bootstrap b = new Bootstrap();
                 b.group(group)

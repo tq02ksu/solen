@@ -33,9 +33,9 @@ public class ConnectionKeeperHandler extends ChannelDuplexHandler {
             ConnectionEvent event = new ConnectionEvent();
             event.setType(EventType.DISCONNECT);
             event.setEventId(idGenerator.nextVal());
+            event.setDeviceId(deviceId);
             eventProcessor.processEvents(Collections.singletonList(event));
-
-
+            ctx.channel().closeFuture();
         } else {
               super.exceptionCaught(ctx, cause);
           }

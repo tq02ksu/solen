@@ -6,7 +6,6 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.Assert;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.IdGenerator;
 import top.fengpingtech.solen.server.model.BaseStation;
@@ -72,7 +71,7 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
     private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg) {
         if (msg.getCmd() == 0) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
-            Assert.isTrue(data.readableBytes() == 8,
+            isTrue(data.readableBytes() == 8,
                     "register packet length expect to 8, but is " + data.readableBytes());
             long lac = data.readUnsignedIntLE();
             long ci = data.readUnsignedIntLE();
@@ -143,6 +142,12 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
             event.setLng(lng);
             event.setIccId(iccId);
             delegate.processEvents(Collections.singletonList(event));
+        }
+    }
+
+    private void isTrue(boolean b, String msg) {
+        if (!b) {
+            throw new IllegalArgumentException(msg);
         }
     }
 

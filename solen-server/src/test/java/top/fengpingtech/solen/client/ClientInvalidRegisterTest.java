@@ -1,4 +1,4 @@
-package top.fengpingtech.solen;
+package top.fengpingtech.solen.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -12,15 +12,15 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import org.springframework.core.io.ClassPathResource;
-import top.fengpingtech.solen.protocol.MessageDebugger;
-import top.fengpingtech.solen.protocol.MessageDecoder;
+import top.fengpingtech.solen.server.protocol.MessageDebugger;
+import top.fengpingtech.solen.server.protocol.MessageDecoder;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -57,9 +57,10 @@ public class ClientInvalidRegisterTest {
     private static class DeviceRegisterHandler extends ChannelInboundHandlerAdapter {
         @Override
         public void channelActive(ChannelHandlerContext ctx) throws Exception {
-            ClassPathResource resource = new ClassPathResource("/invalid-register.txt");
             try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(resource.getInputStream(), StandardCharsets.UTF_8))) {
+                    new InputStreamReader(Objects.requireNonNull(
+                            DeviceRegisterHandler.class.getClassLoader()
+                                    .getResourceAsStream("/invalid-register.txt")), StandardCharsets.UTF_8))) {
                 for (String line = reader.readLine(); line != null; line = reader.readLine()) {
                     if (line.matches("(//|#).*")) {
                         continue;

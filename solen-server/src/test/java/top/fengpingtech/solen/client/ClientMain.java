@@ -1,4 +1,4 @@
-package top.fengpingtech.solen;
+package top.fengpingtech.solen.client;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
@@ -9,9 +9,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
-import top.fengpingtech.solen.protocol.MessageDebugger;
-import top.fengpingtech.solen.protocol.MessageDecoder;
-import top.fengpingtech.solen.protocol.MessageEncoder;
+import top.fengpingtech.solen.server.protocol.MessageDebugger;
+import top.fengpingtech.solen.server.protocol.MessageDecoder;
+import top.fengpingtech.solen.server.protocol.MessageEncoder;
 
 public class ClientMain {
     public static void main(String[] args) throws Exception {
@@ -29,7 +29,7 @@ public class ClientMain {
                             p.addLast("debugger", new MessageDebugger());
                             p.addLast(new MessageEncoder());
                             p.addLast(new MessageDecoder());
-                            p.addLast(new ClientTest.ClientFragmentedRegisterHandler("55520041112"));
+                            p.addLast(new ClientFragmentedRegisterHandler("55520041112"));
                         }
                     });
 
