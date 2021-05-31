@@ -37,7 +37,7 @@ public class MessageDebugger extends ChannelDuplexHandler {
             while (byteBuf.isReadable()) {
                 tmp.append(String.format("%02x ", byteBuf.readByte() & 0xFF));
             }
-            logger.info("{}: {} {}", channel, comment, tmp.toString());
+            logger.debug("{}: {} {}", channel, comment, tmp);
             byteBuf.resetReaderIndex();
         }
     }

@@ -4,4 +4,6 @@ public interface SolenServer {
     void start();
 
     void stop();
+
+    DeviceService getDeviceService();
 }

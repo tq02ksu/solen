@@ -23,10 +23,10 @@ import io.netty.util.concurrent.AbstractEventExecutorGroup;
 import io.netty.util.concurrent.DefaultThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import top.fengpingtech.solen.server.DeviceService;
 import top.fengpingtech.solen.server.SolenServer;
 import top.fengpingtech.solen.server.config.ServerProperties;
 import top.fengpingtech.solen.server.protocol.ConnectionKeeperHandler;
-import top.fengpingtech.solen.server.protocol.MessageDebugger;
 import top.fengpingtech.solen.server.protocol.MessageDecoder;
 import top.fengpingtech.solen.server.protocol.MessageEncoder;
 import top.fengpingtech.solen.server.protocol.PacketPreprocessor;
@@ -45,8 +45,16 @@ public class SolenNettyServer implements SolenServer {
 
     private List<MultithreadEventLoopGroup> executors;
 
+    private final ConnectionKeeperHandler keeperHandler;
+
+    private final NettyDeviceService deviceService;
+
     public SolenNettyServer(ServerProperties serverProperties) {
         this.serverProperties = serverProperties;
+
+        this.keeperHandler = new ConnectionKeeperHandler();
+
+        this.deviceService = new NettyDeviceService(keeperHandler);
     }
 
     @Override
@@ -101,14 +109,12 @@ public class SolenNettyServer implements SolenServer {
                         ch.pipeline()
                                 .addLast(new TracingLogHandler())
                                 .addLast(new LoggingHandler())
-                                .addLast(new MessageDebugger())
                                 .addLast(new ReadTimeoutHandler(600))
                                 .addLast(new PacketPreprocessor())
                                 .addLast(new ReadTimeoutHandler(600))
-                                .addLast(new ConnectionKeeperHandler(
-                                        serverProperties.getEventProcessor(), serverProperties.getEventIdGenerator()))
                                 .addLast(new MessageEncoder())
                                 .addLast(new MessageDecoder())
+                                .addLast(keeperHandler)
                                 .addLast(new SerialMessagePacker())
                                 .addLast(new EventProcessorAdapter(
                                         serverProperties.getEventProcessor(),
@@ -131,5 +137,10 @@ public class SolenNettyServer implements SolenServer {
         } catch (InterruptedException e) {
             logger.info("error while close server!", e);
         }
+    }
+
+    @Override
+    public DeviceService getDeviceService() {
+        return deviceService;
     }
 }

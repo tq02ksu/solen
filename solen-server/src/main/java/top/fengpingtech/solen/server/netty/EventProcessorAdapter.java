@@ -26,6 +26,8 @@ import java.util.List;
 public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMessage> {
     private static final Logger logger = LoggerFactory.getLogger(EventProcessorAdapter.class);
 
+    private static final AttributeKey<String> DEVICE_ID_ATTRIBUTE_KEY = AttributeKey.valueOf("DeviceId");
+
     private final EventProcessor delegate;
 
     private final IdGenerator eventIdGenerator;
@@ -37,35 +39,7 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
 
     @Override
     protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
-        List<Object> replies = new ArrayList<>();
-        sendReply(msg, replies);
-
-        synchronized (ctx.channel()) {
-            for (Object o : replies) {
-                ctx.pipeline().write(o);
-            }
-            ctx.pipeline().flush();
-        }
-
         processMessage(ctx, msg);
-        out.add(msg);
-    }
-
-
-    private void sendReply(SoltMachineMessage message, List<Object> out) {
-        if (message.getCmd() == 2 || message.getCmd() == 128) {
-            // skip for reply message for reply and message
-            return;
-        }
-
-        out.add(SoltMachineMessage.builder()
-                .header(message.getHeader())
-                .index(message.getIndex())
-                .idCode(message.getIdCode())
-                .cmd((short) 2)
-                .deviceId(message.getDeviceId())
-                .data(new byte[]{message.getCmd().byteValue()})  // arg==0
-                .build());
     }
 
     private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg) {
@@ -152,6 +126,7 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
     }
 
     void setEventValue(SoltMachineMessage msg, Event event, EventType type) {
+        event.setConnectionId(msg.getConnectionId());
         event.setEventId(eventIdGenerator.nextVal());
         event.setDeviceId(msg.getDeviceId());
         event.setType(type);
@@ -175,5 +150,18 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
                             .build());
         }
         return stations;
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        String deviceId = ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).get();
+        if (deviceId != null) {
+            ConnectionEvent event = new ConnectionEvent();
+            event.setType(EventType.DISCONNECT);
+            event.setEventId(eventIdGenerator.nextVal());
+            event.setDeviceId(deviceId);
+            event.setConnectionId(ctx.channel().id().asLongText());
+            delegate.processEvents(Collections.singletonList(event));
+        }
     }
 }

@@ -11,6 +11,8 @@ public class ServerProperties {
 
     private Integer port;
 
+    private Integer readTimeout;
+
     private Integer ioThreads;
 
     private Integer workerThreads;

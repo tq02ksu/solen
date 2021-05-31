@@ -11,7 +11,6 @@ import org.slf4j.MDC;
 import java.net.SocketAddress;
 
 public class TracingLogHandler extends ChannelDuplexHandler {
-    private static final Logger logger = LoggerFactory.getLogger(TracingLogHandler.class);
 
     @Override
     public void channelRegistered(ChannelHandlerContext ctx) {

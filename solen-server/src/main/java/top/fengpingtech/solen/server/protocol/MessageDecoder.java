@@ -59,6 +59,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         }
 
         out.add(SoltMachineMessage.builder()
+                .connectionId(ctx.channel().id().asLongText())
                 .header(header)
                 .index(index & 0xFF)
                 .idCode(idCode)

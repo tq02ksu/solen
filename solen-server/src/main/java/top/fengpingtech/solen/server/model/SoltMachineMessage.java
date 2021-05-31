@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @Builder
 public class SoltMachineMessage {
 
+    private String connectionId;
+
     /**
      * new byte[] {0x77, 0x33}
      */

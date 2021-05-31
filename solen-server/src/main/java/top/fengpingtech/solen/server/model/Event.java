@@ -6,6 +6,8 @@ import java.util.Date;
 
 @Data
 public class Event {
+    private String connectionId;
+
     private Long eventId;
     private String deviceId;
     private EventType type;
