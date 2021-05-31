@@ -1,7 +1,7 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import top.fengpingtech.solen.model.Tenant;
+import solen.model.Tenant;
 
 public class JwtAuthenticationToken extends UsernamePasswordAuthenticationToken {
     private final Tenant tenant;

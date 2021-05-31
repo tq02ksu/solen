@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.core.Authentication;

@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -6,7 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import top.fengpingtech.solen.model.Tenant;
+import solen.model.Tenant;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;

@@ -1,9 +1,7 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.stereotype.Component;
-import top.fengpingtech.solen.model.Connection;
-import top.fengpingtech.solen.model.Tenant;
-import top.fengpingtech.solen.service.AntMatchService;
+import top.fengpingtech.solen.app.bean.Connection;
 
 import java.util.ArrayList;
 import java.util.Arrays;

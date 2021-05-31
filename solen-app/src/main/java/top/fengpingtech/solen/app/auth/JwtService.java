@@ -1,11 +1,11 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
-import top.fengpingtech.solen.model.Tenant;
+import solen.model.Tenant;
 
 import java.util.Date;
 import java.util.HashMap;

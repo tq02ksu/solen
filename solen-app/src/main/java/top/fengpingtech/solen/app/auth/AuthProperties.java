@@ -1,7 +1,6 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import top.fengpingtech.solen.model.Tenant;
 
 import java.util.ArrayList;
 import java.util.List;

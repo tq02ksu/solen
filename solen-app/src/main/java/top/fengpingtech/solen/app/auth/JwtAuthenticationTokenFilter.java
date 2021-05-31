@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -6,7 +6,7 @@ import org.springframework.security.authentication.AuthenticationServiceExceptio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import top.fengpingtech.solen.model.Tenant;
+import solen.model.Tenant;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -29,7 +29,6 @@ public class JwtAuthenticationTokenFilter  extends UsernamePasswordAuthenticatio
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request,
                                                 HttpServletResponse response) throws AuthenticationException {
-
         // 从输入流中获取到登录的信息
         try (InputStream in = request.getInputStream()) {
             Tenant tenant = new ObjectMapper().readValue(in, Tenant.class);

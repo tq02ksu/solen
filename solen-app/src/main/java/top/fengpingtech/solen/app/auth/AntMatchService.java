@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.service;
+package top.fengpingtech.solen.app.auth;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;

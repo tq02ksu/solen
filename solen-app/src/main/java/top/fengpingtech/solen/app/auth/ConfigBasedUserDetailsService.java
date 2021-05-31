@@ -1,11 +1,11 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.springframework.beans.BeanUtils;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
-import top.fengpingtech.solen.model.Tenant;
+import solen.model.Tenant;
 
 @Component
 public class ConfigBasedUserDetailsService implements UserDetailsService {

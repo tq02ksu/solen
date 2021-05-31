@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.model;
+package top.fengpingtech.solen.app.auth;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

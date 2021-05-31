@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
