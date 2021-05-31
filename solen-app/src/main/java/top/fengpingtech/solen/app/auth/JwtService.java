@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import solen.model.Tenant;
+import top.fengpingtech.solen.app.config.AuthProperties;
 
 import java.util.Date;
 import java.util.HashMap;

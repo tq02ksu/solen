@@ -6,6 +6,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import solen.model.Tenant;
+import top.fengpingtech.solen.app.config.AuthProperties;
 
 @Component
 public class ConfigBasedUserDetailsService implements UserDetailsService {

@@ -1,7 +1,8 @@
 package top.fengpingtech.solen.app.auth;
 
 import org.springframework.stereotype.Component;
-import top.fengpingtech.solen.app.bean.Connection;
+import top.fengpingtech.solen.app.config.AuthProperties;
+import top.fengpingtech.solen.app.model.Connection;
 
 import java.util.ArrayList;
 import java.util.Arrays;

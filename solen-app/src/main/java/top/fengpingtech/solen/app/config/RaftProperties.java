@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.service;
+package top.fengpingtech.solen.app.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
