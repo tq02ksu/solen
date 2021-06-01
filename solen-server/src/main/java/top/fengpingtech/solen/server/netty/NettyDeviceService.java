@@ -1,5 +1,6 @@
 package top.fengpingtech.solen.server.netty;
 
+import io.netty.channel.Channel;
 import top.fengpingtech.solen.server.DeviceService;
 import top.fengpingtech.solen.server.model.Device;
 import top.fengpingtech.solen.server.model.SoltMachineMessage;
@@ -24,18 +25,16 @@ public class NettyDeviceService implements DeviceService {
         }
 
         int index = device.getIndex().getAndIncrement();
-        SoltMachineMessage msg = SoltMachineMessage.builder()
-                .index(index)
-                .deviceId(deviceId)
-                .cmd((short) 129)
-                .data(message.getBytes(StandardCharsets.UTF_8))
-
-                .build();
-
-        device.getConnections().forEach(ch -> {
-            synchronized (ch) {
-                ch.pipeline().writeAndFlush(msg);
-            }
+        device.getConnections().forEach(conn -> {
+            Channel ch = conn.getChannel();
+            SoltMachineMessage msg = SoltMachineMessage.builder()
+                    .index(index)
+                    .idCode(conn.getIdCode())
+                    .deviceId(deviceId)
+                    .cmd((short) 129)
+                    .data(message.getBytes(StandardCharsets.UTF_8))
+                    .build();
+            ch.pipeline().writeAndFlush(msg);
         });
     }
 }

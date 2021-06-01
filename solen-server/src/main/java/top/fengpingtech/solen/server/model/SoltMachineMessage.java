@@ -27,8 +27,7 @@ public class SoltMachineMessage {
     /**
      * 识别码，小端表示为0x79 0x75 0x77 0x65 0x6E 0x36 0x30 0x32
      */
-    @Builder.Default
-    private Long idCode = 0x230363E656775797L;
+    private Long idCode;
 
     private String deviceId;
 

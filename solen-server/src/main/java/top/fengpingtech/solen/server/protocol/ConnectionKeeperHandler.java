@@ -34,23 +34,25 @@ public class ConnectionKeeperHandler extends ChannelDuplexHandler {
         if (msg instanceof SoltMachineMessage) {
             sendReply(ctx, (SoltMachineMessage) msg);
             String deviceId = ((SoltMachineMessage) msg).getDeviceId();
+            long idCode = ((SoltMachineMessage) msg).getIdCode();
             ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).setIfAbsent(deviceId);
 
             deviceKeeper.computeIfAbsent(deviceId, (k) -> {
                 Device d = new Device();
                 d.setIndex(new AtomicInteger(0));
                 d.setDeviceId(k);
-                d.setConnections(Collections.singletonList(ctx.channel()));
+                d.setConnections(Collections.singletonList(new Device.Connection(ctx.channel(), idCode)));
                 return d;
             });
 
-            if (!deviceKeeper.get(deviceId).getConnections().contains(ctx.channel())) {
+            Device.Connection conn = new Device.Connection(ctx.channel(), idCode);
+            if (!deviceKeeper.get(deviceId).getConnections().contains(conn)) {
                 deviceKeeper.computeIfPresent(deviceId, (key, oldVal) -> {
                    Device d = new Device();
                    d.setDeviceId(key);
                    d.setConnections(
                            Collections.unmodifiableList(
-                                   Stream.concat(oldVal.getConnections().stream(), Stream.of(ctx.channel()))
+                                   Stream.concat(oldVal.getConnections().stream(), Stream.of(conn))
                                    .collect(Collectors.toList())));
                    return d;
                 });

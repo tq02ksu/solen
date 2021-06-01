@@ -1,8 +1,9 @@
-package top.fengpingtech.solen.protocol;
+package top.fengpingtech.solen.server.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;
+import top.fengpingtech.solen.server.model.SoltMachineMessage;
 
 public class MessageEncoderTest {
     MessageEncoder encoder = new MessageEncoder();

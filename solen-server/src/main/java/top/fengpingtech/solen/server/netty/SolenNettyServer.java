@@ -59,6 +59,7 @@ public class SolenNettyServer implements SolenServer {
 
     @Override
     public void start() {
+        setDefaultValue();
         ServerBootstrap bootstrap = new ServerBootstrap();
         MultithreadEventLoopGroup bossGroup;
         MultithreadEventLoopGroup workGroup;
@@ -127,6 +128,12 @@ public class SolenNettyServer implements SolenServer {
             logger.info("error while sync bind");
         }
         logger.info("netty server started on port = {} success", serverProperties.getPort());
+    }
+
+    private void setDefaultValue() {
+        if (serverProperties.getEventIdGenerator() == null) {
+            serverProperties.setEventIdGenerator(() -> 0L);
+        }
     }
 
     @Override

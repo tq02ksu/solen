@@ -1,10 +1,10 @@
-package top.fengpingtech.solen.protocol;
+package top.fengpingtech.solen.server.protocol;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class SlotMachineInBoundHandlerTest {
 
