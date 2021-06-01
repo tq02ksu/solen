@@ -1,8 +1,6 @@
 package top.fengpingtech.solen.server.model;
 
 public enum EventType {
-
-
     /**
      * device connect
      */
@@ -27,11 +25,6 @@ public enum EventType {
      * 属性更新
      */
     ATTRIBUTE_UPDATE,
-
-    /**
-     * 状态更新
-     */
-    STATUS_UPDATE,
 
     /**
      * 定位信息

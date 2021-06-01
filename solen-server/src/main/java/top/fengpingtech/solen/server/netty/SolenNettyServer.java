@@ -45,16 +45,16 @@ public class SolenNettyServer implements SolenServer {
 
     private List<MultithreadEventLoopGroup> executors;
 
-    private final ConnectionKeeperHandler keeperHandler;
+    private final ConnectionHolder connectionHolder;
 
     private final NettyDeviceService deviceService;
 
     public SolenNettyServer(ServerProperties serverProperties) {
         this.serverProperties = serverProperties;
 
-        this.keeperHandler = new ConnectionKeeperHandler();
+        this.connectionHolder = new ConnectionHolder();
 
-        this.deviceService = new NettyDeviceService(keeperHandler);
+        this.deviceService = new NettyDeviceService(connectionHolder);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class SolenNettyServer implements SolenServer {
                                 .addLast(new ReadTimeoutHandler(600))
                                 .addLast(new MessageEncoder())
                                 .addLast(new MessageDecoder())
-                                .addLast(keeperHandler)
+                                .addLast(new ConnectionKeeperHandler(connectionHolder))
                                 .addLast(new SerialMessagePacker())
                                 .addLast(new EventProcessorAdapter(
                                         serverProperties.getEventProcessor(),

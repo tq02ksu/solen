@@ -10,15 +10,15 @@ import java.nio.charset.StandardCharsets;
 
 public class NettyDeviceService implements DeviceService {
 
-    private final ConnectionKeeperHandler keeperHandler;
+    private final ConnectionHolder connectionHolder;
 
-    public NettyDeviceService(ConnectionKeeperHandler keeperHandler) {
-        this.keeperHandler = keeperHandler;
+    public NettyDeviceService(ConnectionHolder connectionHolder) {
+        this.connectionHolder = connectionHolder;
     }
 
     @Override
     public void sendMessage(String deviceId, String message) {
-        Device device = keeperHandler.getDevice(deviceId);
+        Device device = connectionHolder.getDevice(deviceId);
 
         if (device == null) {
             throw new IllegalArgumentException("device with id = " + deviceId + " have no live device connection!");
@@ -37,4 +37,5 @@ public class NettyDeviceService implements DeviceService {
             ch.pipeline().writeAndFlush(msg);
         });
     }
+
 }

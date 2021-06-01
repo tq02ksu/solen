@@ -1,7 +1,9 @@
 package top.fengpingtech.solen.server.netty;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelPromise;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
@@ -23,7 +25,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
-public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMessage> {
+public class EventProcessorAdapter extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(EventProcessorAdapter.class);
 
     private static final AttributeKey<String> DEVICE_ID_ATTRIBUTE_KEY = AttributeKey.valueOf("DeviceId");
@@ -38,8 +40,18 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
     }
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, SoltMachineMessage msg, List<Object> out) {
-        processMessage(ctx, msg);
+    public void channelRead(ChannelHandlerContext ctx, Object msg) {
+        if (msg instanceof SoltMachineMessage) {
+            processMessage(ctx, (SoltMachineMessage) msg);
+        }
+    }
+
+    @Override
+    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+        if (msg instanceof SoltMachineMessage) {
+            processMessage(ctx, (SoltMachineMessage) msg);
+        }
+        super.write(ctx, msg, promise);
     }
 
     private void processMessage(ChannelHandlerContext ctx, SoltMachineMessage msg) {
@@ -85,6 +97,11 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
             setEventValue(msg, event, EventType.MESSAGE_RECEIVING);
             event.setMessage(new String(msg.getData(), StandardCharsets.UTF_8));
             delegate.processEvents(Collections.singletonList(event));
+        } else if (msg.getCmd() == 129) {
+            MessageEvent event = new MessageEvent();
+            setEventValue(msg, event, EventType.MESSAGE_SENDING);
+            event.setMessage(new String(msg.getData(), StandardCharsets.UTF_8));
+            delegate.processEvents(Collections.singletonList(event));
         } else if (msg.getCmd() == 5) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
             int accessType = data.readByte();
@@ -107,7 +124,6 @@ public class EventProcessorAdapter extends MessageToMessageDecoder<SoltMachineMe
             logger.info("receiving gprs data: accessType={}, imei={}, cdma={}, "
                             + "networkType={}, stations={}, iccId={}",
                     accessType, imei, cdma, networkType, stations, iccId);
-
 
             LocationEvent event = new LocationEvent();
             setEventValue(msg, event, EventType.LOCATION_CHANGE);

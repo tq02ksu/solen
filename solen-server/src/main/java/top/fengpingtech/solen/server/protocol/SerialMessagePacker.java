@@ -67,6 +67,7 @@ public class SerialMessagePacker extends MessageToMessageDecoder<SoltMachineMess
         target.setCmd(source.getCmd());
         target.setData(source.getData());
         target.setIndex(source.getIndex());
+        target.setConnectionId(source.getConnectionId());
     }
 
     private SplitResult split(ChannelHandlerContext ctx, byte[] data, byte[] buffer) {
