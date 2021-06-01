@@ -16,7 +16,7 @@ public class NettyDeviceService implements DeviceService {
     }
 
     @Override
-    public void sentMessage(String deviceId, String message) {
+    public void sendMessage(String deviceId, String message) {
         Device device = keeperHandler.getDevice(deviceId);
 
         if (device == null) {
@@ -27,7 +27,7 @@ public class NettyDeviceService implements DeviceService {
         SoltMachineMessage msg = SoltMachineMessage.builder()
                 .index(index)
                 .deviceId(deviceId)
-                .cmd((short) 128)
+                .cmd((short) 129)
                 .data(message.getBytes(StandardCharsets.UTF_8))
 
                 .build();
