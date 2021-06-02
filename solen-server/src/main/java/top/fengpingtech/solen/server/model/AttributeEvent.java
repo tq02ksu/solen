@@ -7,7 +7,7 @@ import lombok.ToString;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class StatusEvent extends Event {
+public class AttributeEvent extends Event {
     private Integer inputStat;
 
     private Integer outputStat;
