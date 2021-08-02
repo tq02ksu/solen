@@ -14,16 +14,16 @@ import java.util.stream.Stream;
 public class ConnectionHolder {
     private final ConcurrentHashMap<String, Device> deviceKeeper = new ConcurrentHashMap<>();
 
-    public void add(String deviceId, long idCode, Channel channel) {
+    public void add(String deviceId, long idCode, Channel channel, Integer header) {
+        Device.Connection conn = new Device.Connection(channel, idCode, header);
         deviceKeeper.computeIfAbsent(deviceId, (k) -> {
             Device d = new Device();
             d.setIndex(new AtomicInteger(0));
             d.setDeviceId(k);
-            d.setConnections(Collections.singletonList(new Device.Connection(channel, idCode)));
+            d.setConnections(Collections.singletonList(conn));
             return d;
         });
 
-        Device.Connection conn = new Device.Connection(channel, idCode);
         if (!deviceKeeper.get(deviceId).getConnections().contains(conn)) {
             deviceKeeper.computeIfPresent(deviceId, (key, oldVal) -> {
                 Device d = new Device();
@@ -38,7 +38,7 @@ public class ConnectionHolder {
     }
 
     public void remove(String deviceId, Channel channel ) {
-        Device.Connection conn = new Device.Connection(channel, 0L);
+        Device.Connection conn = new Device.Connection(channel, 0L, 0);
         Device device = deviceKeeper.computeIfPresent(deviceId, (key, oldVal) -> {
             Device d = new Device();
             d.setDeviceId(key);

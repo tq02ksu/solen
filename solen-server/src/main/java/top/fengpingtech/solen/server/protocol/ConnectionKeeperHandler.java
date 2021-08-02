@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,13 +34,22 @@ public class ConnectionKeeperHandler extends ChannelDuplexHandler {
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (msg instanceof SoltMachineMessage) {
             sendReply(ctx, (SoltMachineMessage) msg);
+            syncControlSender(ctx, (SoltMachineMessage) msg);
             String deviceId = ((SoltMachineMessage) msg).getDeviceId();
             long idCode = ((SoltMachineMessage) msg).getIdCode();
+            Integer header = ((SoltMachineMessage) msg).getHeader();
             ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).setIfAbsent(deviceId);
 
-            connectionHolder.add(deviceId, idCode, ctx.channel());
+            connectionHolder.add(deviceId, idCode, ctx.channel(), header);
         }
         super.channelRead(ctx, msg);
+    }
+
+    private void syncControlSender(ChannelHandlerContext ctx, SoltMachineMessage msg) {
+        Device device = connectionHolder.getDevice(msg.getDeviceId());
+        if (device != null) {
+            device.getControlSyncs().forEach(CountDownLatch::countDown);
+        }
     }
 
     void sendReply(ChannelHandlerContext ctx, SoltMachineMessage msg) {

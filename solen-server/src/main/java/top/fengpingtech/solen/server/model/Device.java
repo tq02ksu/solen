@@ -6,6 +6,8 @@ import lombok.Data;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Data
@@ -16,6 +18,8 @@ public class Device {
 
     private List<Connection> connections;
 
+    private List<CountDownLatch> controlSyncs = new CopyOnWriteArrayList<>();
+
     @Data
     @AllArgsConstructor
     public static class Connection {
@@ -23,6 +27,9 @@ public class Device {
         private Channel channel;
 
         private Long idCode;
+
+        private Integer header;
+
         public int hashCode() {
             return channel.hashCode();
         }
