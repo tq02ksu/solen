@@ -17,6 +17,8 @@ public class ServerProperties {
 
     private Integer workerThreads;
 
+    private Boolean daemon;
+
     private EventProcessor eventProcessor;
 
     private IdGenerator eventIdGenerator;

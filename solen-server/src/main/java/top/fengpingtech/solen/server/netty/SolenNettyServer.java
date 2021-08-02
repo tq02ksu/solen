@@ -57,6 +57,11 @@ public class SolenNettyServer implements SolenServer {
         this.deviceService = new NettyDeviceService(connectionHolder);
     }
 
+    DefaultThreadFactory threadFactory(String poolName) {
+        return new DefaultThreadFactory(poolName,
+                serverProperties.getDaemon() != null && serverProperties.getDaemon());
+    }
+
     @Override
     public void start() {
         setDefaultValue();
@@ -65,26 +70,26 @@ public class SolenNettyServer implements SolenServer {
         MultithreadEventLoopGroup workGroup;
         if (Epoll.isAvailable()) {
             bossGroup = new EpollEventLoopGroup(serverProperties.getIoThreads(),
-                    new DefaultThreadFactory("netty-boss", true));
+                    threadFactory("netty-boss"));
 
             workGroup = new EpollEventLoopGroup(serverProperties.getWorkerThreads(),
-                    new DefaultThreadFactory("netty-worker", true));
+                    threadFactory("netty-worker"));
             bootstrap.channel(EpollServerSocketChannel.class);
             bootstrap.option(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
             bootstrap.childOption(EpollChannelOption.EPOLL_MODE, EpollMode.EDGE_TRIGGERED);
             logger.info("Use epoll edge trigger mode.");
         } else if (KQueue.isAvailable()) {
             bossGroup = new KQueueEventLoopGroup(serverProperties.getIoThreads(),
-                    new DefaultThreadFactory("netty-boss", true));
+                    threadFactory("netty-boss"));
             workGroup = new KQueueEventLoopGroup(serverProperties.getWorkerThreads(),
-                    new DefaultThreadFactory("netty-worker", true));
+                    threadFactory("netty-worker"));
             bootstrap.channel(KQueueServerSocketChannel.class);
 
         } else {
             bossGroup = new NioEventLoopGroup(serverProperties.getIoThreads(),
-                    new DefaultThreadFactory("netty-boss", true));
+                    threadFactory("netty-boss"));
             workGroup = new NioEventLoopGroup(serverProperties.getWorkerThreads(),
-                    new DefaultThreadFactory("netty-worker", true));
+                    threadFactory("netty-worker"));
 
             // ((NioEventLoopGroup) bossGroup).setIoRatio(100);
             // ((NioEventLoopGroup) workGroup).setIoRatio(100);

@@ -4,12 +4,12 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
-import io.netty.handler.codec.MessageToMessageDecoder;
 import io.netty.util.AttributeKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.IdGenerator;
+import top.fengpingtech.solen.server.model.AttributeEvent;
 import top.fengpingtech.solen.server.model.BaseStation;
 import top.fengpingtech.solen.server.model.ConnectionEvent;
 import top.fengpingtech.solen.server.model.Event;
@@ -17,7 +17,6 @@ import top.fengpingtech.solen.server.model.EventType;
 import top.fengpingtech.solen.server.model.LocationEvent;
 import top.fengpingtech.solen.server.model.MessageEvent;
 import top.fengpingtech.solen.server.model.SoltMachineMessage;
-import top.fengpingtech.solen.server.model.StatusEvent;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -82,7 +81,7 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
             int uptime = data.readIntLE();
             data.release();
 
-            StatusEvent event = new StatusEvent();
+            AttributeEvent event = new AttributeEvent();
             setEventValue(msg, event, EventType.ATTRIBUTE_UPDATE);
             event.setInputStat(inputStat);
             event.setOutputStat(outputStat);

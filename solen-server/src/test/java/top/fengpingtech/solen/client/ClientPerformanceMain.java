@@ -27,7 +27,7 @@ public class ClientPerformanceMain {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            for (int i = 0; i < 200; i ++) {
+            for (int i = 0; i < 1; i ++) {
                 long deviceId = 55520000000L + new Random().nextInt(10000000);
                 Bootstrap b = new Bootstrap();
                 b.group(group)
@@ -46,9 +46,9 @@ public class ClientPerformanceMain {
                         });
 
                 // Start the client.
-                ChannelFuture f = b.connect("localhost", 7889).sync();
+                ChannelFuture f = b.connect("fengping-tech.top", 54321).sync();
             }
-            Thread.sleep(100000000);
+            Thread.sleep(Long.MAX_VALUE);
             // Wait until the connection is closed.
 //            f.channel().close().sync();
         } finally {
