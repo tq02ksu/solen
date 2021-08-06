@@ -5,7 +5,6 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
-import solen.model.Tenant;
 import top.fengpingtech.solen.app.config.AuthProperties;
 
 import java.util.Date;
@@ -25,7 +24,7 @@ public class JwtService {
 
     public JwtService(AuthProperties authProperties) {
         this.authProperties = authProperties;
-        jwtSecret = authProperties.getJwt().getSecret() + UUID.randomUUID().toString();
+        jwtSecret = authProperties.getJwt().getSecret() + UUID.randomUUID();
     }
 
     /**

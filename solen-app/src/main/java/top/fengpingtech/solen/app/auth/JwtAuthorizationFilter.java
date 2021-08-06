@@ -6,7 +6,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import solen.model.Tenant;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -37,7 +36,7 @@ public class JwtAuthorizationFilter extends BasicAuthenticationFilter {
             String principal = authentication == null ? null : authentication.getPrincipal().toString();
             try {
                 request = principal == null ? request
-                        : new HeadersOverrideRequest(request, "Authorization-Principal", principal);
+                        : new HeadersOverrideRequest(request, SecurityContext.HEADER_PRINCIPAL_NAME, principal);
                 super.doFilterInternal(request, response, chain);
             } finally {
                 SecurityContextHolder.getContext().setAuthentication(null);

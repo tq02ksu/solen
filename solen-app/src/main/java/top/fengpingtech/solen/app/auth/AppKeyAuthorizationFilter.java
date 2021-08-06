@@ -36,7 +36,7 @@ public class AppKeyAuthorizationFilter extends BasicAuthenticationFilter {
             String principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString();
             try {
                 super.doFilterInternal(
-                        new HeadersOverrideRequest(request, "Authorization-Principal", principal),
+                        new HeadersOverrideRequest(request, SecurityContext.HEADER_PRINCIPAL_NAME, principal),
                         response, chain);
 
             } finally {
