@@ -30,7 +30,7 @@ public class AuthProperties {
         this.jwt = jwt;
     }
 
-    static class JwtProperties {
+    public static class JwtProperties {
         private Long ttl;
         private String secret;
 

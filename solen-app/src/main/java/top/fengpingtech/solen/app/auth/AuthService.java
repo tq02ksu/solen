@@ -4,6 +4,8 @@ import org.springframework.stereotype.Component;
 import top.fengpingtech.solen.app.config.AuthProperties;
 import top.fengpingtech.solen.app.model.Connection;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -39,13 +41,14 @@ public class AuthService {
         return antMatchService.antMatch(tenant.getDevicePatterns(), conn.getDeviceId());
     }
 
-    public Tenant getTenant(String appKey) {
-        if (appKey == null) {
+    public Tenant getTenant() {
+        String principal = SecurityContext.getPrincipal();
+        if (principal == null) {
             return null;
         }
         return authProperties.getTenants()
                 .stream()
-                .filter(t -> t.getAppKey().equalsIgnoreCase(appKey))
+                .filter(t -> t.getAppKey().equalsIgnoreCase(principal))
                 .findFirst().orElseThrow(IllegalStateException::new);
     }
 
@@ -66,5 +69,20 @@ public class AuthService {
         }
 
         return tenant.getDevicePatterns();
+    }
+
+    public void fillAuthPredicate(Path<String> devicePath, CriteriaBuilder cb, List<javax.persistence.criteria.Predicate> list) {
+        Tenant tenant = getTenant();
+        if (tenant != null) {
+            javax.persistence.criteria.Predicate[] patternPredicates = tenant.getDevicePatterns().stream()
+                    .map(s -> s.replace("**", "%"))
+                    .map(s -> cb.like(devicePath, s))
+                    .toArray(javax.persistence.criteria.Predicate[]::new);
+            list.add(cb.or(patternPredicates));
+        }
+    }
+
+    public void checkAuth(Long deviceId) {
+
     }
 }

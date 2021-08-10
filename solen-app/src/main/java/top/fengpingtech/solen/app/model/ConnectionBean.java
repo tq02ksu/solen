@@ -1,9 +1,7 @@
-package top.fengpingtech.solen.bean;
+package top.fengpingtech.solen.app.model;
 
 import lombok.Data;
 import org.springframework.beans.BeanUtils;
-import top.fengpingtech.solen.model.Connection;
-import top.fengpingtech.solen.model.ConnectionStatus;
 
 import java.util.Date;
 import java.util.LinkedList;

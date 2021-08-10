@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.bean;
+package top.fengpingtech.solen.app.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

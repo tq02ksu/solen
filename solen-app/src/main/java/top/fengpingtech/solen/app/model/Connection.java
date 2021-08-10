@@ -1,11 +1,10 @@
-package top.fengpingtech.solen.model;
+package top.fengpingtech.solen.app.model;
 
 import io.netty.channel.ChannelHandlerContext;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import top.fengpingtech.solen.bean.Coordinate;
 
 import java.util.Date;
 import java.util.LinkedList;
