@@ -1,8 +1,8 @@
-package top.fengpingtech.solen.service;
+package top.fengpingtech.solen.app.service;
 
 import org.springframework.stereotype.Service;
-import top.fengpingtech.solen.bean.Coordinate;
-import top.fengpingtech.solen.bean.CoordinateSystem;
+import top.fengpingtech.solen.app.model.Coordinate;
+import top.fengpingtech.solen.app.model.CoordinateSystem;
 
 /**
  * 坐标转换
@@ -23,7 +23,7 @@ public class CoordinateTransformationService {
      * @param c coordinate to be process
      * @return coordinate transformed
      */
-    public Coordinate gcj02ToBd09( Coordinate c) {
+    public Coordinate gcj02ToBd09(Coordinate c) {
         double lng = c.getLng(), lat = c.getLat();
         double z = Math.sqrt(lng * lng + lat * lat) + 0.00002 * Math.sin(lat * xPi);
         double theta = Math.atan2(lat, lng) + 0.000003 * Math.cos(lng * xPi);
