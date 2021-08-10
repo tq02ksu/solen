@@ -1,4 +1,4 @@
-package top.fengpingtech.solen.auth;
+package top.fengpingtech.solen.app.auth;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
