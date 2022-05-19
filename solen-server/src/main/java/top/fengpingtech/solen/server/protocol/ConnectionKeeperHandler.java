@@ -10,14 +10,8 @@ import top.fengpingtech.solen.server.model.Device;
 import top.fengpingtech.solen.server.model.SoltMachineMessage;
 import top.fengpingtech.solen.server.netty.ConnectionHolder;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class ConnectionKeeperHandler extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(ConnectionKeeperHandler.class);
