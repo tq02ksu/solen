@@ -27,6 +27,7 @@ public class ConnectionHolder {
         if (!deviceKeeper.get(deviceId).getConnections().contains(conn)) {
             deviceKeeper.computeIfPresent(deviceId, (key, oldVal) -> {
                 Device d = new Device();
+                d.setIndex(new AtomicInteger(0));
                 d.setDeviceId(key);
                 d.setConnections(
                         Collections.unmodifiableList(
