@@ -40,6 +40,7 @@ public class SolenServerDemoApplication {
             }
         }); // 提供事件ID生成器，如果不关注也可以
         properties.setIoThreads(2); // IO线程数，一般为2-4就够
+        properties.setDaemon(true);
         properties.setWorkerThreads(4); // 工作线程数，可以根据服务器处理能力和事件处理速度综合考虑，为CPU核数的2-10倍。一般不要超过500
         SolenNettyServer solenNettyServer = new SolenNettyServer(properties);
         solenNettyServer.start();
@@ -81,8 +82,8 @@ public class SolenServerDemoApplication {
             Assert.isTrue(args.length == 3, "argument length must be three");
             String deviceId = args[1];
             String message = args[2];
-            solenServer.getDeviceService().sentMessage(deviceId, message);
-            System.out.printf("message sent");
+            solenServer.getDeviceService().sendMessage(deviceId, message);
+            System.out.println("message sent");
         } catch (Exception e) {
             logger.error("error while handle send", e);
         }
