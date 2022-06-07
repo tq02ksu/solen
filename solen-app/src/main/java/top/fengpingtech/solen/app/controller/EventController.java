@@ -12,7 +12,7 @@ import top.fengpingtech.solen.app.auth.Tenant;
 import top.fengpingtech.solen.app.controller.bean.EventBean;
 import top.fengpingtech.solen.app.controller.bean.EventQueryRequest;
 import top.fengpingtech.solen.app.domain.EventDomain;
-import top.fengpingtech.solen.app.repo.EventRepository;
+import top.fengpingtech.solen.app.repository.EventRepository;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;

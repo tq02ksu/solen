@@ -93,7 +93,7 @@ public class SecurityTest {
             KeyFactory keyf = KeyFactory.getInstance("RSA");
             PrivateKey priKey = keyf.generatePrivate(priPKCS8);
 
-            java.security.Signature signature = java.security.Signature
+            Signature signature = Signature
                     .getInstance("SHA1WithRSA");
 
             signature.initSign(priKey);

@@ -6,11 +6,11 @@ import top.fengpingtech.solen.app.model.Connection;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
+import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Predicate;
 
 @Component
 public class AuthService {
@@ -71,7 +71,7 @@ public class AuthService {
         return tenant.getDevicePatterns();
     }
 
-    public void fillAuthPredicate(Path<String> devicePath, CriteriaBuilder cb, List<javax.persistence.criteria.Predicate> list) {
+    public void fillAuthPredicate(Path<String> devicePath, CriteriaBuilder cb, List<Predicate> list) {
         Tenant tenant = getTenant();
         if (tenant != null) {
             javax.persistence.criteria.Predicate[] patternPredicates = tenant.getDevicePatterns().stream()

@@ -1,69 +1,85 @@
-package top.fengpingtech.solen.app.service;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-import top.fengpingtech.solen.app.domain.ConnectionDomain;
-import top.fengpingtech.solen.app.domain.DeviceDomain;
-import top.fengpingtech.solen.app.domain.EventDomain;
-import top.fengpingtech.solen.app.repository.ConnectionRepository;
-import top.fengpingtech.solen.app.repository.DeviceRepository;
-import top.fengpingtech.solen.app.repository.EventRepository;
-import top.fengpingtech.solen.server.EventProcessor;
-import top.fengpingtech.solen.server.model.ConnectionEvent;
-import top.fengpingtech.solen.server.model.Event;
-
-import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-@Service
-@Transactional
-public class EventService implements EventProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(EventService.class);
-
-    private final DeviceRepository deviceRepository;
-
-    private final ConnectionRepository connectionRepository;
-
-    private final EventRepository eventRepository;
-
-    public EventService(DeviceRepository deviceRepository, ConnectionRepository connectionRepository, EventRepository eventRepository) {
-        this.deviceRepository = deviceRepository;
-        this.connectionRepository = connectionRepository;
-        this.eventRepository = eventRepository;
-    }
-
-    @Override
-    public void processEvents(List<Event> events) {
-
-        List<EventDomain> list = new ArrayList<>();
-
-        for (Event event : events) {
-            switch (event.getType()) {
-                case CONNECT:
-                    processConnect((ConnectionEvent) event);
-                    break;
-                case DISCONNECT:
-                    processDisconnect(event);
-                case CONTROL_SENDING:
-                    break;
-                case ATTRIBUTE_UPDATE:
-                    break;
-                case MESSAGE_RECEIVING:
-                    break;
-                case MESSAGE_SENDING:
-                    break;
-                case LOCATION_CHANGE:
-                    break;
-                default:
-                    throw new IllegalStateException("unknown event type");
-            }
-        }
-
-        eventRepository.saveAll(list);
-
+//package top.fengpingtech.solen.app.service;
+//
+//import io.netty.channel.ChannelDuplexHandler;
+//import io.netty.channel.ChannelHandlerContext;
+//import io.netty.channel.ChannelPromise;
+//import io.netty.util.Attribute;
+//import io.netty.util.AttributeKey;
+//import org.slf4j.Logger;
+//import org.slf4j.LoggerFactory;
+//
+//import java.nio.charset.StandardCharsets;
+//import java.util.Collections;
+//import java.util.Date;
+//import java.util.HashMap;
+//import java.util.Map;
+//
+//public class EventProcessor1 extends ChannelDuplexHandler {
+//    private static final Logger logger = LoggerFactory.getLogger(EventProcessor1.class);
+//
+//    private final ConnectionManager connectionManager;
+//    private final EventRepository eventRepository;
+//
+//    public EventProcessor1(ConnectionManager connectionManager, EventRepository eventRepository) {
+//        this.connectionManager = connectionManager;
+//        this.eventRepository = eventRepository;
+//    }
+//
+//    @Override
+//    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+//        if (msg instanceof SoltMachineMessage) {
+//            processEvent(ctx, (SoltMachineMessage) msg);
+//        } else {
+//            super.channelRead(ctx, msg);
+//        }
+//
+//    }
+//
+//    @Override
+//    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+//        try {
+//            if (msg instanceof SoltMachineMessage) {
+//                processEvent(ctx, (SoltMachineMessage) msg);
+//            }
+//        } finally {
+//            super.write(ctx, msg, promise);
+//        }
+//    }
+//
+//    @Override
+//    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+//        try {
+//            Attribute<Object> attr = ctx.channel().attr(AttributeKey.valueOf("Event-Skipped"));
+//            if (attr.get() != null) {
+//                return;
+//            }
+//
+//            String deviceId = ctx.channel().attr(AttributeKey.<String>valueOf("DeviceId")).get();
+//            if (deviceId != null) {
+//                Date d = new Date();
+//                eventRepository.add(
+//                        Event.builder()
+//                                .deviceId(deviceId)
+//                                .type(EventType.DISCONNECT)
+//                                .time(d)
+//                                .build());
+//                eventRepository.add(
+//                        Event.builder()
+//                                .deviceId(deviceId)
+//                                .type(EventType.STATUS_UPDATE)
+//                                .time(d)
+//                                .details(Collections.singletonMap("status", ConnectionStatus.DISCONNECTED.name()))
+//                                .build());
+//            }
+//        } finally {
+//            super.channelUnregistered(ctx);
+//        }
+//    }
+//
+//    private void processEvent(ChannelHandlerContext ctx, SoltMachineMessage msg) {
+//        Map<String, String> details;
+//        Connection conn;
+//        switch (msg.getCmd()) {
 //            case 0:
 //                Date d = new Date();
 //                eventRepository.add(
@@ -154,12 +170,12 @@ public class EventService implements EventProcessor {
 //
 //                details = Collections.singletonMap("content", new String(msg.getData(), StandardCharsets.UTF_8));
 //                eventRepository.add(
-//                        Event.builder()
-//                                .deviceId(msg.getDeviceId())
-//                                .type(EventType.MESSAGE_RECEIVING)
-//                                .time(d)
-//                                .details(details)
-//                                .build());
+//                    Event.builder()
+//                            .deviceId(msg.getDeviceId())
+//                            .type(EventType.MESSAGE_RECEIVING)
+//                            .time(d)
+//                            .details(details)
+//                            .build());
 //                break;
 //            case 129:
 //                d = new Date();
@@ -175,33 +191,5 @@ public class EventService implements EventProcessor {
 //            default:
 //                // do nothing
 //        }
-    }
-
-    private void processDisconnect(Event event) {
-    }
-
-    private ConnectionDomain processConnect(ConnectionEvent event) {
-        String connectionId = event.getConnectionId();
-        Optional<ConnectionDomain> connection = connectionRepository.findById(connectionId);
-
-        if (!connection.isPresent()) {
-            connection = Optional.of(ConnectionDomain.builder().build());
-        }
-
-        Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
-
-        if (!device.isPresent()) {
-            DeviceDomain deviceDomain = DeviceDomain.builder()
-                    .deviceId(event.getDeviceId())
-                    .build();
-            deviceRepository.save(deviceDomain);
-            device = Optional.of(deviceDomain);
-        }
-        // save
-        ConnectionDomain domain = connection.get();
-        domain.setDevice(device.get());
-        domain.setLac(event.getLac());
-        domain.setCi(event.getCi());
-        return connectionRepository.save(domain);
-    }
-}
+//    }
+//}

@@ -3,18 +3,10 @@ package top.fengpingtech.solen.app.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.app.domain.support.MapConverter;
 import top.fengpingtech.solen.server.model.EventType;
 
-import javax.persistence.Column;
-import javax.persistence.Convert;
-import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
+import javax.persistence.*;
 import java.util.Date;
 import java.util.Map;
 
@@ -22,6 +14,7 @@ import java.util.Map;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
+@Table(name = "event")
 public class EventDomain {
     @Id
     @GeneratedValue
@@ -29,7 +22,7 @@ public class EventDomain {
 
     @ManyToOne
     @JoinColumn(name = "deviceId")
-    private Device device;
+    private DeviceDomain device;
 
     @Enumerated
     private EventType type;

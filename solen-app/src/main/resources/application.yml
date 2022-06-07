@@ -6,6 +6,9 @@ spring:
     time-zone: Asia/Shanghai
   mvc:
     date-format: yyyy-MM-dd HH:mm:ss
+  datasource:
+    url: jdbc:hsqldb:file:solen-data
+    username: sa
 solen:
   server:
     port: 7889
@@ -30,3 +33,5 @@ logging:
   level:
     top.fengpingtech.solen: debug
     io.netty: debug
+  config: config/logback.xml
+  path: log
