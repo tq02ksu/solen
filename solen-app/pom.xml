@@ -104,6 +104,10 @@
             <version>1.4.2.Final</version>
             <optional>true</optional>
         </dependency>
+        <dependency>
+            <groupId>javax.interceptor</groupId>
+            <artifactId>javax.interceptor-api</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
