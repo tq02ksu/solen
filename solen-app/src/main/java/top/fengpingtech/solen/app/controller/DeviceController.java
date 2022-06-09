@@ -19,6 +19,7 @@ import top.fengpingtech.solen.app.auth.AuthService;
 import top.fengpingtech.solen.app.controller.bean.DeviceBean;
 import top.fengpingtech.solen.app.controller.bean.DeviceQueryRequest;
 import top.fengpingtech.solen.app.controller.bean.PageableResponse;
+import top.fengpingtech.solen.app.domain.DeviceDomain;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.service.CoordinateTransformationService;
 import top.fengpingtech.solen.server.DeviceService;
@@ -46,9 +47,9 @@ public class DeviceController {
 
     private final CoordinateTransformationService coordinateTransformationService;
 
-    public DeviceController(SolenServer solenServer, DeviceRepository deviceRepository,
+    public DeviceController(DeviceService deviceService, DeviceRepository deviceRepository,
                             AuthService authService, CoordinateTransformationService coordinateTransformationService) {
-        this.deviceService = solenServer.getDeviceService();
+        this.deviceService = deviceService;
         this.deviceRepository = deviceRepository;
         this.authService = authService;
         this.coordinateTransformationService = coordinateTransformationService;
@@ -67,7 +68,7 @@ public class DeviceController {
         PageRequest page = PageRequest.of(request.getPageNo() - 1, request.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "deviceId"));
 
-        Specification<Device> spec = (root, cq, cb) -> {
+        Specification<DeviceDomain> spec = (root, cq, cb) -> {
             List<Predicate> list = new ArrayList<>();
 
             if (request.getDeviceId() != null) {
@@ -84,7 +85,7 @@ public class DeviceController {
             return cb.and(list.toArray(new Predicate[0]));
         };
 
-        Page<Device> list = deviceRepository.findAll(spec, page);
+        Page<DeviceDomain> list = deviceRepository.findAll(spec, page);
         return PageableResponse.<DeviceBean>builder()
                 .total(list.getTotalElements())
                 .data(list.stream()
@@ -96,23 +97,22 @@ public class DeviceController {
     }
 
     @GetMapping("/device/{deviceId}")
-    public DeviceBean detail(@PathVariable ("deviceId") Long deviceId) {
+    public DeviceBean detail(@PathVariable ("deviceId") String deviceId) {
         authService.checkAuth(deviceId);
-        Optional<Device> device = deviceRepository.findById(deviceId);
+        Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
         return DeviceBean.builder().build();
     }
 
     @DeleteMapping("/device/{deviceId}")
     public Object delete(
-            @PathVariable("deviceId") Long deviceId,
+            @PathVariable("deviceId") String deviceId,
             @RequestParam(required = false, defaultValue = "false") boolean force) {
         authService.checkAuth(deviceId);
-        Optional<Device> device = deviceRepository.findById(deviceId);
+        Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
         deviceRepository.deleteById(deviceId);
 
         return ResponseEntity.ok(buildBean(device.get()));
     }
-
 
     @RequestMapping("/statByField")
     public Map<String, Long> statByField(@RequestParam String field) {
@@ -126,7 +126,7 @@ public class DeviceController {
 
         deviceService.sendControl(String.valueOf(request.getDeviceId()), request.getCtrl());
 
-        Optional<Device> device = deviceRepository.findById(request.getDeviceId());
+        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
 
         return buildBean(device.orElseThrow(IllegalArgumentException::new));
     }
@@ -146,12 +146,12 @@ public class DeviceController {
 
         deviceService.sendMessage(String.valueOf(request.getDeviceId()), request.getData());
 
-        Optional<Device> device = deviceRepository.findById(request.getDeviceId());
+        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
 
         return buildBean(device.orElseThrow(IllegalArgumentException::new));
     }
 
-    private DeviceBean buildBean(Device device) {
+    private DeviceBean buildBean(DeviceDomain device) {
         DeviceBean bean = DeviceBean.builder()
 
                 .build();

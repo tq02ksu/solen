@@ -16,7 +16,7 @@ public class Coordinate {
     private CoordinateSystem system;
 
     // longitude
-    private double lng;
+    private Double lng;
     // latitude
-    private double lat;
+    private Double lat;
 }

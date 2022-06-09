@@ -25,9 +25,9 @@ public class AuthService {
         this.authProperties = authProperties;
     }
 
-    public Predicate<Connection> filter(Tenant tenant) {
-        return conn -> canVisit(tenant, conn);
-    }
+//    public Predicate<Connection> filter(Tenant tenant) {
+//        return conn -> canVisit(tenant, conn);
+//    }
 
     public boolean canVisit(Tenant tenant, Connection conn) {
         return tenant == null || canVisitInternal(tenant, conn);
@@ -82,7 +82,7 @@ public class AuthService {
         }
     }
 
-    public void checkAuth(Long deviceId) {
+    public void checkAuth(String deviceId) {
 
     }
 }

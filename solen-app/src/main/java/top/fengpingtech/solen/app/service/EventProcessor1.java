@@ -25,26 +25,8 @@
 //        this.eventRepository = eventRepository;
 //    }
 //
-//    @Override
-//    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-//        if (msg instanceof SoltMachineMessage) {
-//            processEvent(ctx, (SoltMachineMessage) msg);
-//        } else {
-//            super.channelRead(ctx, msg);
-//        }
 //
-//    }
-//
-//    @Override
-//    public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-//        try {
-//            if (msg instanceof SoltMachineMessage) {
-//                processEvent(ctx, (SoltMachineMessage) msg);
-//            }
-//        } finally {
-//            super.write(ctx, msg, promise);
-//        }
-//    }
+
 //
 //    @Override
 //    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
@@ -122,41 +104,7 @@
 //                    logger.warn("connection not found, skipped for event process {}", msg);
 //                }
 //
-//                break;
-//            case 3:
-//                details = Collections.singletonMap("ctrl", String.valueOf(msg.getData()[0]));
-//                eventRepository.add(
-//                        Event.builder()
-//                                .deviceId(msg.getDeviceId())
-//                                .type(EventType.CONTROL_SENDING)
-//                                .details(details)
-//                                .time(new Date())
-//                                .build());
-//                break;
-//            case 5:
-//                conn = connectionManager.getStore().get(msg.getDeviceId());
-//                if (conn != null) {
-//                    details = new HashMap<>();
-//                    details.put("lat", String.valueOf(conn.getCoordinate().getLat()));
-//                    details.put("lng", String.valueOf(conn.getCoordinate().getLng()));
-//                    CoordinateTransformationService transform = new CoordinateTransformationService();
-//                    Coordinate bd09 = transform.wgs84ToBd09(conn.getCoordinate());
-//                    details.put("bd09Lat", String.valueOf(bd09.getLat()));
-//                    details.put("bd09Lng", String.valueOf(bd09.getLng()));
-//                    Coordinate gcj02 = transform.wgs84ToGcj02(conn.getCoordinate());
-//                    details.put("gcj02Lat", String.valueOf(gcj02.getLat()));
-//                    details.put("gcj02Lng", String.valueOf(gcj02.getLng()));
 //
-//                    eventRepository.add(
-//                            Event.builder()
-//                                    .deviceId(msg.getDeviceId())
-//                                    .type(EventType.LOCATION_CHANGE)
-//                                    .time(new Date())
-//                                    .details(details)
-//                                    .build());
-//                } else {
-//                    logger.warn("connection not found, skipped for event process {}", msg);
-//                }
 //
 //                break;
 //            case 128:

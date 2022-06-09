@@ -1,6 +1,7 @@
 package top.fengpingtech.solen.app.domain;
 
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import top.fengpingtech.solen.app.domain.support.MapConverter;
@@ -11,6 +12,7 @@ import java.util.Date;
 import java.util.Map;
 
 @Data
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity

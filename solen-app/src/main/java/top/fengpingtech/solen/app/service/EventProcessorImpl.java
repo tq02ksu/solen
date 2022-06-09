@@ -6,22 +6,26 @@ import org.springframework.stereotype.Service;
 import top.fengpingtech.solen.app.domain.ConnectionDomain;
 import top.fengpingtech.solen.app.domain.DeviceDomain;
 import top.fengpingtech.solen.app.domain.EventDomain;
+import top.fengpingtech.solen.app.model.Coordinate;
 import top.fengpingtech.solen.app.repository.ConnectionRepository;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.repository.EventRepository;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.model.ConnectionEvent;
 import top.fengpingtech.solen.server.model.Event;
+import top.fengpingtech.solen.server.model.LocationEvent;
+import top.fengpingtech.solen.server.model.MessageEvent;
 
 import javax.transaction.Transactional;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static top.fengpingtech.solen.app.model.CoordinateSystem.WGS84;
 
 @Service
 @Transactional
-public class EventService implements EventProcessor {
-    private static final Logger logger = LoggerFactory.getLogger(EventService.class);
+public class EventProcessorImpl implements EventProcessor {
+    private static final Logger logger = LoggerFactory.getLogger(EventProcessorImpl.class);
 
     private final DeviceRepository deviceRepository;
 
@@ -29,7 +33,8 @@ public class EventService implements EventProcessor {
 
     private final EventRepository eventRepository;
 
-    public EventService(DeviceRepository deviceRepository, ConnectionRepository connectionRepository, EventRepository eventRepository) {
+    public EventProcessorImpl(DeviceRepository deviceRepository,
+                              ConnectionRepository connectionRepository, EventRepository eventRepository) {
         this.deviceRepository = deviceRepository;
         this.connectionRepository = connectionRepository;
         this.eventRepository = eventRepository;
@@ -37,25 +42,36 @@ public class EventService implements EventProcessor {
 
     @Override
     public void processEvents(List<Event> events) {
-
         List<EventDomain> list = new ArrayList<>();
 
         for (Event event : events) {
             switch (event.getType()) {
                 case CONNECT:
-                    processConnect((ConnectionEvent) event);
+                    List<EventDomain> eventDomains = processConnect((ConnectionEvent) event);
+                    list.addAll(eventDomains);
                     break;
                 case DISCONNECT:
-                    processDisconnect(event);
+                    eventDomains = processDisconnect(event);
+                    list.addAll(eventDomains);
+                    break;
                 case CONTROL_SENDING:
+                    eventDomain = processControlSend((MessageEvent) event);
+                    if (eventDomain != null) {
+                        list.add(eventDomain);
+                    }
                     break;
                 case ATTRIBUTE_UPDATE:
+                    eventDomain = processAttributeUpdate((MessageEvent) event);
                     break;
                 case MESSAGE_RECEIVING:
                     break;
                 case MESSAGE_SENDING:
                     break;
                 case LOCATION_CHANGE:
+                    eventDomain = processLocationChange(event);
+                    if (eventDomain != null) {
+                        list.add(eventDomain);
+                    }
                     break;
                 default:
                     throw new IllegalStateException("unknown event type");
@@ -177,10 +193,71 @@ public class EventService implements EventProcessor {
 //        }
     }
 
-    private void processDisconnect(Event event) {
+    private EventDomain processLocationChange(LocationEvent event) {
+        Optional<DeviceDomain> optionalDeviceDomain = deviceRepository.findById(event.getDeviceId());
+
+        if (optionalDeviceDomain.isPresent()) {
+            Coordinate coordinate = new Coordinate(WGS84, event.getLng(), event.getLat());
+            DeviceDomain device = optionalDeviceDomain.get();
+            if (!device.getCoordinate().getLat().equals(event.getLat())
+                    || !device.getCoordinate().getLng().equals(event.getLng())) {
+                device.setCoordinate(coordinate);
+                deviceRepository.save(device);
+            }
+
+            Map<String, String> details = new HashMap<>();
+            details.put("lat", String.valueOf(event.getLat()));
+            details.put("lng", String.valueOf(event.getLng()));
+            CoordinateTransformationService transform = new CoordinateTransformationService();
+            Coordinate bd09 = transform.wgs84ToBd09(coordinate);
+            details.put("bd09Lat", String.valueOf(bd09.getLat()));
+            details.put("bd09Lng", String.valueOf(bd09.getLng()));
+            Coordinate gcj02 = transform.wgs84ToGcj02(coordinate);
+            details.put("gcj02Lat", String.valueOf(gcj02.getLat()));
+            details.put("gcj02Lng", String.valueOf(gcj02.getLng()));
+
+            return EventDomain.builder()
+                    .eventId(event.getEventId())
+                    .device(device.)
+                    .time(event.getTime())
+                    .type(event.getType())
+                    .details(details)
+                    .build();
+        }
+        return null;
     }
 
-    private ConnectionDomain processConnect(ConnectionEvent event) {
+    private EventDomain processAttributeUpdate(MessageEvent event) {
+        Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
+    }
+
+    private EventDomain processControlSend(MessageEvent event) {
+        Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
+        return device.map(deviceDomain -> EventDomain.builder()
+                .eventId(event.getEventId())
+                .type(event.getType())
+                .device(deviceDomain)
+                .details(Collections.singletonMap("ctrl", event.getMessage()))
+                .build()).orElse(null);
+    }
+
+    private List<EventDomain> processDisconnect(Event event) {
+        Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
+
+        if (!device.isPresent()) {
+            return Collections.emptyList();
+        }
+
+        connectionRepository.deleteById(event.getConnectionId());
+        List<ConnectionDomain> connections = connectionRepository.findByDevice(device.get());
+        DeviceDomain deviceDomain = device.get();
+        if (connections.isEmpty()) {
+            deviceDomain.setStatus();
+        }
+
+    }
+
+    private List<EventDomain> processConnect(ConnectionEvent event) {
         String connectionId = event.getConnectionId();
         Optional<ConnectionDomain> connection = connectionRepository.findById(connectionId);
 
@@ -202,6 +279,12 @@ public class EventService implements EventProcessor {
         domain.setDevice(device.get());
         domain.setLac(event.getLac());
         domain.setCi(event.getCi());
-        return connectionRepository.save(domain);
+        domain = connectionRepository.save(domain);
+
+        EventDomain.builder()
+                .eventId(event.getEventId())
+                .device(device.get())
+                .type()
+                .build();
     }
 }

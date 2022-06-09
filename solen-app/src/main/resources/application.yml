@@ -9,6 +9,9 @@ spring:
   datasource:
     url: jdbc:hsqldb:file:solen-data
     username: sa
+  sql:
+    init:
+      schema-locations: [ classpath:schema.sql ]
 solen:
   server:
     port: 7889
