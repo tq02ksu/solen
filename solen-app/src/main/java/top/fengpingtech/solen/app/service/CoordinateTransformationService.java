@@ -1,8 +1,8 @@
 package top.fengpingtech.solen.app.service;
 
 import org.springframework.stereotype.Service;
-import top.fengpingtech.solen.app.model.Coordinate;
-import top.fengpingtech.solen.app.model.CoordinateSystem;
+import top.fengpingtech.solen.app.domain.Coordinate;
+import top.fengpingtech.solen.app.domain.CoordinateSystem;
 
 /**
  * 坐标转换
