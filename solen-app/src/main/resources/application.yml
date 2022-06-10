@@ -11,6 +11,7 @@ spring:
     username: sa
   sql:
     init:
+      mode: always
       schema-locations: [ classpath:schema.sql ]
 solen:
   server:
@@ -38,3 +39,4 @@ logging:
     io.netty: debug
   config: config/logback.xml
   path: log
+debug: true
