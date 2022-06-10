@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Embeddable;
+import javax.persistence.Transient;
 
 @Data
 @AllArgsConstructor
@@ -13,6 +14,8 @@ import javax.persistence.Embeddable;
 @Builder
 @Embeddable
 public class Coordinate {
+
+    @Transient
     private CoordinateSystem system;
 
     // longitude

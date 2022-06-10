@@ -224,12 +224,12 @@ public class EventProcessorImpl implements EventProcessor {
                 .deviceId(event.getDeviceId())
                 .build());
         deviceDomain.setStatus(ConnectionStatus.NORMAL);
+        deviceDomain.setLac(event.getLac());
+        deviceDomain.setCi(event.getCi());
         deviceRepository.save(deviceDomain);
         // connection
         ConnectionDomain domain = connection.get();
         domain.setDevice(deviceDomain);
-        domain.setLac(event.getLac());
-        domain.setCi(event.getCi());
         connectionRepository.save(domain);
 
         return EventDomain.builder()
