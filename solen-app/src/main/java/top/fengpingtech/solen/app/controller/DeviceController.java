@@ -23,7 +23,6 @@ import top.fengpingtech.solen.app.domain.DeviceDomain;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.service.CoordinateTransformationService;
 import top.fengpingtech.solen.server.DeviceService;
-import top.fengpingtech.solen.server.SolenServer;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;

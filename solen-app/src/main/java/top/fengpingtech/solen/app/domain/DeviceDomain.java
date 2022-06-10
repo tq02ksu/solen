@@ -4,7 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import top.fengpingtech.solen.app.model.Coordinate;
 
 import javax.persistence.*;
 import java.util.List;
@@ -19,11 +18,28 @@ public class DeviceDomain {
     @Id
     private String deviceId;
 
-    private Integer status;
+    @Enumerated(value = EnumType.STRING)
+    private ConnectionStatus status;
 
     private Long lac;
 
     private Long ci;
+
+    private String idCode;
+
+    private Integer inputStat;
+
+    private Integer outputStat;
+
+    private Integer rssi;
+
+    private Double voltage;
+
+    private Double temperature;
+
+    private Integer gravity;
+
+    private Integer uptime;
 
     @Embedded
     private Coordinate coordinate;

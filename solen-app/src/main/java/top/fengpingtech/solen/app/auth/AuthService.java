@@ -2,7 +2,7 @@ package top.fengpingtech.solen.app.auth;
 
 import org.springframework.stereotype.Component;
 import top.fengpingtech.solen.app.config.AuthProperties;
-import top.fengpingtech.solen.app.model.Connection;
+import top.fengpingtech.solen.app.domain.DeviceDomain;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.Path;
@@ -29,11 +29,11 @@ public class AuthService {
 //        return conn -> canVisit(tenant, conn);
 //    }
 
-    public boolean canVisit(Tenant tenant, Connection conn) {
-        return tenant == null || canVisitInternal(tenant, conn);
+    public boolean canVisit(Tenant tenant, DeviceDomain deviceDomain) {
+        return tenant == null || canVisitInternal(tenant, deviceDomain);
     }
 
-    private boolean canVisitInternal(Tenant tenant, Connection conn) {
+    private boolean canVisitInternal(Tenant tenant, DeviceDomain conn) {
         if (tenant.getRoles().contains(ROLE_ADMIN)) {
             return true;
         }
