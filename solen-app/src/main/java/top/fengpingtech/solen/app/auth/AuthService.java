@@ -25,15 +25,9 @@ public class AuthService {
         this.authProperties = authProperties;
     }
 
-//    public Predicate<Connection> filter(Tenant tenant) {
-//        return conn -> canVisit(tenant, conn);
-//    }
+    public boolean canVisit(DeviceDomain conn) {
+        Tenant tenant = getTenant();
 
-    public boolean canVisit(Tenant tenant, DeviceDomain deviceDomain) {
-        return tenant == null || canVisitInternal(tenant, deviceDomain);
-    }
-
-    private boolean canVisitInternal(Tenant tenant, DeviceDomain conn) {
         if (tenant.getRoles().contains(ROLE_ADMIN)) {
             return true;
         }
@@ -52,37 +46,14 @@ public class AuthService {
                 .findFirst().orElseThrow(IllegalStateException::new);
     }
 
-    public List<String> getPatterns(Tenant tenant, String deviceId) {
-        if (tenant == null || tenant.getRoles().contains(ROLE_ADMIN)) {
-            return deviceId == null ?
-                    Collections.singletonList("**") : Arrays.asList(deviceId.trim().split("[,| ]+"));
-        }
-
-        if (deviceId != null && !deviceId.isEmpty()) {
-            List<String> patterns = new ArrayList<>();
-            for (String id : deviceId.trim().split("[,| ]+")) {
-                if (antMatchService.antMatch(tenant.getDevicePatterns(), id)) {
-                    patterns.add(id);
-                }
-            }
-            return patterns;
-        }
-
-        return tenant.getDevicePatterns();
-    }
-
     public void fillAuthPredicate(Path<String> devicePath, CriteriaBuilder cb, List<Predicate> list) {
         Tenant tenant = getTenant();
         if (tenant != null) {
-            javax.persistence.criteria.Predicate[] patternPredicates = tenant.getDevicePatterns().stream()
+            Predicate[] patternPredicates = tenant.getDevicePatterns().stream()
                     .map(s -> s.replace("**", "%"))
                     .map(s -> cb.like(devicePath, s))
                     .toArray(javax.persistence.criteria.Predicate[]::new);
             list.add(cb.or(patternPredicates));
         }
-    }
-
-    public void checkAuth(String deviceId) {
-
     }
 }

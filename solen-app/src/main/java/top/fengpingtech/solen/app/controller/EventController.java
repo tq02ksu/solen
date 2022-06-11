@@ -8,10 +8,10 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.fengpingtech.solen.app.auth.AuthService;
-import top.fengpingtech.solen.app.auth.Tenant;
 import top.fengpingtech.solen.app.controller.bean.EventBean;
 import top.fengpingtech.solen.app.controller.bean.EventQueryRequest;
 import top.fengpingtech.solen.app.domain.EventDomain;
+import top.fengpingtech.solen.app.mapper.EventMapper;
 import top.fengpingtech.solen.app.repository.EventRepository;
 
 import javax.persistence.criteria.Predicate;
@@ -27,15 +27,16 @@ public class EventController {
 
     private final AuthService authService;
 
-    public EventController(EventRepository eventRepository, AuthService authService) {
+    private final EventMapper eventMapper;
+
+    public EventController(EventRepository eventRepository, AuthService authService, EventMapper eventMapper) {
         this.eventRepository = eventRepository;
         this.authService = authService;
+        this.eventMapper = eventMapper;
     }
 
     @RequestMapping("/event/list")
     public List<EventBean> list(EventQueryRequest request) {
-        Tenant tenant = authService.getTenant();
-
         if (request.getPageNo() == null) {
             request.setPageNo(1);
         }
@@ -75,7 +76,7 @@ public class EventController {
         };
 
         Page<EventDomain> events = eventRepository.findAll(spec, page);
-        return convert(events.getContent());
+        return eventMapper.mapToBean(events.getContent());
     }
 
     private List<EventBean> convert(List<EventDomain> content) {

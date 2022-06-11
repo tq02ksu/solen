@@ -6,7 +6,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +21,7 @@ import top.fengpingtech.solen.app.controller.bean.PageableResponse;
 import top.fengpingtech.solen.app.domain.Coordinate;
 import top.fengpingtech.solen.app.domain.CoordinateSystem;
 import top.fengpingtech.solen.app.domain.DeviceDomain;
+import top.fengpingtech.solen.app.mapper.DeviceMapper;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.service.CoordinateTransformationService;
 import top.fengpingtech.solen.server.DeviceService;
@@ -46,14 +46,15 @@ public class DeviceController {
 
     private final AuthService authService;
 
-    private final CoordinateTransformationService coordinateTransformationService;
+
+    private final DeviceMapper deviceMapper;
 
     public DeviceController(DeviceService deviceService, DeviceRepository deviceRepository,
-                            AuthService authService, CoordinateTransformationService coordinateTransformationService) {
+                            AuthService authService, DeviceMapper deviceMapper) {
         this.deviceService = deviceService;
         this.deviceRepository = deviceRepository;
         this.authService = authService;
-        this.coordinateTransformationService = coordinateTransformationService;
+        this.deviceMapper = deviceMapper;
     }
 
     @RequestMapping("/list")
@@ -99,20 +100,34 @@ public class DeviceController {
 
     @GetMapping("/device/{deviceId}")
     public DeviceBean detail(@PathVariable ("deviceId") String deviceId) {
-        authService.checkAuth(deviceId);
         Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
-        return DeviceBean.builder().build();
+
+        if (!device.isPresent()) {
+            throw new IllegalArgumentException("device not found!");
+        }
+        DeviceDomain domain = device.get();
+        if (!authService.canVisit(domain)) {
+            throw new IllegalArgumentException("can not visit the device");
+        }
+        return deviceMapper.mapToBean(domain);
+
     }
 
     @DeleteMapping("/device/{deviceId}")
     public Object delete(
             @PathVariable("deviceId") String deviceId,
             @RequestParam(required = false, defaultValue = "false") boolean force) {
-        authService.checkAuth(deviceId);
         Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
+        if (!device.isPresent()) {
+            throw new IllegalArgumentException("device not found!");
+        }
+        DeviceDomain domain = device.get();
+        if (!authService.canVisit(domain)) {
+            throw new IllegalArgumentException("can not visit the device");
+        }
         deviceRepository.deleteById(deviceId);
 
-        return ResponseEntity.ok(buildBean(device.get()));
+        return deviceMapper.mapToBean(domain);
     }
 
     @RequestMapping("/statByField")
@@ -121,15 +136,21 @@ public class DeviceController {
     }
 
     @PostMapping("/sendControl")
-    public DeviceBean sendControl(@RequestBody SendRequest request)
-            throws ExecutionException, InterruptedException {
-        authService.checkAuth(request.getDeviceId());
+    public DeviceBean sendControl(@RequestBody SendRequest request) {
+        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
+        if (!device.isPresent()) {
+            throw new IllegalArgumentException("device not found!");
+        }
+        DeviceDomain domain = device.get();
+        if (!authService.canVisit(domain)) {
+            throw new IllegalArgumentException("can not visit the device");
+        }
 
         deviceService.sendControl(String.valueOf(request.getDeviceId()), request.getCtrl());
 
-        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
 
-        return buildBean(device.orElseThrow(IllegalArgumentException::new));
+
+        return deviceMapper.mapToBean(domain);
     }
 
     @PostMapping("/sendAscii")
@@ -142,29 +163,32 @@ public class DeviceController {
         if (request.getDeviceId() == null) {
             throw new IllegalArgumentException("deviceId can not be null");
         }
-
-        authService.checkAuth(request.getDeviceId());
+        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
+        if (!device.isPresent()) {
+            throw new IllegalArgumentException("device not found!");
+        }
+        DeviceDomain domain = device.get();
+        if (!authService.canVisit(domain)) {
+            throw new IllegalArgumentException("can not visit the device");
+        }
 
         deviceService.sendMessage(String.valueOf(request.getDeviceId()), request.getData());
-
-        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
-
-        return buildBean(device.orElseThrow(IllegalArgumentException::new));
+        return deviceMapper.mapToBean(domain);
     }
 
-    private DeviceBean buildBean(DeviceDomain device) {
-        DeviceBean bean = DeviceBean.builder()
-
-                .build();
-
-        if (device.getLng() != null && device.getLat() != null) {
-            Coordinate coordinate = new Coordinate(CoordinateSystem.WGS84, device.getLng(), device.getLat());
-            bean.setCoordinates(Arrays.asList(
-                    coordinate ,
-                    coordinateTransformationService.wgs84ToBd09(coordinate),
-                    coordinateTransformationService.wgs84ToGcj02(coordinate)
-            ));
-        }
-        return bean;
-    }
+//    private DeviceBean buildBean(DeviceDomain device) {
+//        DeviceBean bean = DeviceBean.builder()
+//
+//                .build();
+//
+//        if (device.getLng() != null && device.getLat() != null) {
+//            Coordinate coordinate = new Coordinate(CoordinateSystem.WGS84, device.getLng(), device.getLat());
+//            bean.setCoordinates(Arrays.asList(
+////                    coordinate ,
+////                    coordinateTransformationService.wgs84ToBd09(coordinate),
+////                    coordinateTransformationService.wgs84ToGcj02(coordinate)
+//            ));
+//        }
+//        return bean;
+//    }
 }
