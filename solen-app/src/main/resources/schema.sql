@@ -16,7 +16,7 @@ create table if not exists device (
 
 
 create table if not exists connection (
-  connection_id varchar(32) not null primary key, -- comment '连接ID',
+  connection_id varchar(64) not null primary key, -- comment '连接ID',
   device_id varchar(32) not null -- comment '设备id',
 );
 
@@ -25,7 +25,7 @@ create index if not exists idx_connection_device_id on connection ( device_id );
 create cached table if not exists event (
   event_id varchar(32) not null primary key,
   device_id varchar(32) not null,
-  type tinyint not null,
+  type varchar(32) not null,
   time datetime not null,
   details varchar(1024) not null
 );

@@ -159,6 +159,10 @@ public class EventProcessorImpl implements EventProcessor {
             deviceDomain.setUptime(event.getUptime());
         }
 
+        if (details.isEmpty()) {
+            return null;
+        }
+
         deviceRepository.save(deviceDomain);
 
         return EventDomain.builder()
@@ -176,6 +180,7 @@ public class EventProcessorImpl implements EventProcessor {
         return device.map(deviceDomain ->
                 EventDomain.builder()
                         .eventId(event.getEventId())
+                        .time(event.getTime())
                         .type(event.getType())
                         .device(deviceDomain)
                         .details(Collections.singletonMap(key, event.getMessage()))
@@ -239,6 +244,7 @@ public class EventProcessorImpl implements EventProcessor {
         deviceRepository.save(deviceDomain);
         // connection
         ConnectionDomain domain = connection.get();
+        domain.setConnectionId(event.getConnectionId());
         domain.setDevice(deviceDomain);
         connectionRepository.save(domain);
 
