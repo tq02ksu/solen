@@ -3,7 +3,6 @@ create table if not exists device (
     status varchar(32) not null , -- default 0comment '状态, '
     lac int not null, --  default 0comment '基站lac'
     ci int not null, -- default 0 comment '基站ci'
-    id_code varchar(32) not null, -- comment '设备id code',
     input_stat tinyint not null, -- default 0, -- comment '输入端状态',
     output_stat tinyint not null, -- default 0, -- comment '输出端状态',
     rssi tinyint not null, -- default 0, -- comment '信号强度',

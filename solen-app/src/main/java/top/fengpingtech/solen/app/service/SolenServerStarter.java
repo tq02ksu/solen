@@ -9,6 +9,7 @@ import top.fengpingtech.solen.server.config.ServerProperties;
 import top.fengpingtech.solen.server.netty.SolenNettyServer;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicLong;
 
 @Component
 public class SolenServerStarter {
@@ -30,6 +31,7 @@ public class SolenServerStarter {
         serverProperties.setIoThreads(this.serverProperties.getIoThreads());
         serverProperties.setWorkerThreads(this.serverProperties.getWorkerThreads());
         serverProperties.setEventProcessor(eventProcessor);
+        serverProperties.setEventIdGenerator(new AtomicLong(0)::getAndIncrement);
         server = new SolenNettyServer(serverProperties);
         server.start();
     }

@@ -37,6 +37,13 @@ logging:
   level:
     top.fengpingtech.solen: debug
     io.netty: debug
-  config: config/logback.xml
+    org:
+      hibernate:
+        SQL: debug
+        type:
+          descriptor:
+            sql:
+              BasicBinder: trace
+#  config: config/logback.xml
   path: log
 debug: true

@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.app.domain.support.MinusOneIntegerNotNullConverter;
+import top.fengpingtech.solen.app.domain.support.MinusOneLongNotNullConverter;
+import top.fengpingtech.solen.app.domain.support.ZeroDoubleNotNullConverter;
 
 import javax.persistence.*;
 import java.util.List;
@@ -21,28 +24,51 @@ public class DeviceDomain {
     @Enumerated(value = EnumType.STRING)
     private ConnectionStatus status;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneLongNotNullConverter.class)
     private Long lac;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneLongNotNullConverter.class)
     private Long ci;
 
-    private String idCode;
-
+    @Column(nullable = false)
+    @Convert(converter = MinusOneIntegerNotNullConverter.class)
     private Integer inputStat;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneIntegerNotNullConverter.class)
     private Integer outputStat;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneIntegerNotNullConverter.class)
     private Integer rssi;
 
+    @Column(nullable = false)
+    @Convert(converter = ZeroDoubleNotNullConverter.class)
     private Double voltage;
 
+    @Column(nullable = false)
+    @Convert(converter = ZeroDoubleNotNullConverter.class)
     private Double temperature;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneIntegerNotNullConverter.class)
     private Integer gravity;
 
+    @Column(nullable = false)
+    @Convert(converter = MinusOneIntegerNotNullConverter.class)
     private Integer uptime;
 
-    @Embedded
-    private Coordinate coordinate;
+    // longitude
+    @Column(nullable = false)
+    @Convert(converter = ZeroDoubleNotNullConverter.class)
+    private Double lng;
+
+    // latitude
+    @Column(nullable = false)
+    @Convert(converter = ZeroDoubleNotNullConverter.class)
+    private Double lat;
 
     @OneToMany
     private List<ConnectionDomain> connection;

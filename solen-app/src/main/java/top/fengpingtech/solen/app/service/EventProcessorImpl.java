@@ -35,6 +35,14 @@ public class EventProcessorImpl implements EventProcessor {
 
     @Override
     public void processEvents(List<Event> events) {
+        try {
+            processEventsInternal(events);
+        } catch (Throwable e) {
+            logger.error("error while process events: {}", events, e);
+        }
+    }
+
+    public void processEventsInternal(List<Event> events) {
         List<EventDomain> list = new ArrayList<>();
 
         for (Event event : events) {
@@ -75,9 +83,10 @@ public class EventProcessorImpl implements EventProcessor {
         if (optionalDeviceDomain.isPresent()) {
             Coordinate coordinate = new Coordinate(WGS84, event.getLng(), event.getLat());
             DeviceDomain device = optionalDeviceDomain.get();
-            if (!device.getCoordinate().getLat().equals(event.getLat())
-                    || !device.getCoordinate().getLng().equals(event.getLng())) {
-                device.setCoordinate(coordinate);
+            if (!device.getLat().equals(event.getLat())
+                    || !device.getLng().equals(event.getLng())) {
+                device.setLng(event.getLng());
+                device.setLat(event.getLat());
                 deviceRepository.save(device);
             }
 
@@ -222,6 +231,7 @@ public class EventProcessorImpl implements EventProcessor {
         Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
         DeviceDomain deviceDomain = device.orElseGet(() -> DeviceDomain.builder()
                 .deviceId(event.getDeviceId())
+                .status(ConnectionStatus.NORMAL)
                 .build());
         deviceDomain.setStatus(ConnectionStatus.NORMAL);
         deviceDomain.setLac(event.getLac());

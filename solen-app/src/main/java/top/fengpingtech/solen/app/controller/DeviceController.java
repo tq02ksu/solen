@@ -19,6 +19,8 @@ import top.fengpingtech.solen.app.auth.AuthService;
 import top.fengpingtech.solen.app.controller.bean.DeviceBean;
 import top.fengpingtech.solen.app.controller.bean.DeviceQueryRequest;
 import top.fengpingtech.solen.app.controller.bean.PageableResponse;
+import top.fengpingtech.solen.app.domain.Coordinate;
+import top.fengpingtech.solen.app.domain.CoordinateSystem;
 import top.fengpingtech.solen.app.domain.DeviceDomain;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.service.CoordinateTransformationService;
@@ -155,11 +157,12 @@ public class DeviceController {
 
                 .build();
 
-        if (device.getCoordinate() != null) {
+        if (device.getLng() != null && device.getLat() != null) {
+            Coordinate coordinate = new Coordinate(CoordinateSystem.WGS84, device.getLng(), device.getLat());
             bean.setCoordinates(Arrays.asList(
-                    device.getCoordinate(),
-                    coordinateTransformationService.wgs84ToBd09(device.getCoordinate()),
-                    coordinateTransformationService.wgs84ToGcj02(device.getCoordinate())
+                    coordinate ,
+                    coordinateTransformationService.wgs84ToBd09(coordinate),
+                    coordinateTransformationService.wgs84ToGcj02(coordinate)
             ));
         }
         return bean;
