@@ -7,7 +7,7 @@ spring:
   mvc:
     date-format: yyyy-MM-dd HH:mm:ss
   datasource:
-    url: jdbc:hsqldb:file:solen-data
+    url: jdbc:hsqldb:file:data/solen-data
     username: sa
   sql:
     init:
@@ -44,6 +44,4 @@ logging:
           descriptor:
             sql:
               BasicBinder: trace
-#  config: config/logback.xml
-  path: log
 debug: true
