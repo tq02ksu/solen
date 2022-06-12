@@ -195,23 +195,23 @@ public class EventProcessorImpl implements EventProcessor {
             return null;
         }
 
-        connectionRepository.deleteById(event.getConnectionId());
         List<ConnectionDomain> connections = connectionRepository.findByDevice(device.get());
+        // delete current connection
+        connections.stream().filter(c -> c.getConnectionId().equals(event.getConnectionId()))
+                .forEach(connectionRepository::delete);
+        boolean statusChanged = connections.stream().noneMatch(c -> c.getConnectionId().equals(event.getConnectionId()));
         DeviceDomain deviceDomain = device.get();
-        if (connections.isEmpty()) {
+        if (statusChanged) {
             deviceDomain.setStatus(ConnectionStatus.DISCONNECTED);
+            deviceRepository.save(deviceDomain);
         }
 
-        deviceRepository.save(deviceDomain);
-        connectionRepository.deleteById(event.getConnectionId());
-
-        if (connections.isEmpty()) {
-            return EventDomain.builder()
-                    .device(deviceDomain)
-                    .type(event.getType())
-                    .time(event.getTime())
-                    .eventId(event.getEventId())
-                    .build();
+        return statusChanged ?  EventDomain.builder()
+                .device(deviceDomain)
+                .type(event.getType())
+                .time(event.getTime())
+                .eventId(event.getEventId())
+                .build() : null;
 
 //                    EventDomain.builder()
 //                            .device(deviceDomain)
@@ -220,9 +220,6 @@ public class EventProcessorImpl implements EventProcessor {
 //                            .eventId(event.getEventId())
 //                            .details(Collections.singletonMap("status", ConnectionStatus.DISCONNECTED.name()))
 //                            .build()
-        }
-
-        return null;
     }
 
     private EventDomain processConnect(ConnectionEvent event) {

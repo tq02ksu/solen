@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+    <include resource="org/springframework/boot/logging/logback/console-appender.xml"/>
+
+    <property name="LOG_LEVEL_PATTERN" value="%5p [${spring.cloud.config.name:${spring.application.name:-}},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]" />
+
+    <property name="LOG_FILE_MAX_HISTORY" value="7" />
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/app.log}"/>
+    <property name="LOG_FILE_ERROR" value="${LOG_FILE_ERROR:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/error.log}"/>
+    <property name="LOG_FILE_DEBUG" value="${LOG_FILE_DEBUG:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/debug.log}"/>
+
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_FILE}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${LOG_FILE_MAX_HISTORY:-0}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="FILE_ERROR"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_FILE_ERROR}</file>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>error</level>
+        </filter>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_ERROR}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${LOG_FILE_MAX_HISTORY:-0}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="FILE_DEBUG"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <encoder>
+            <pattern>${FILE_LOG_PATTERN}</pattern>
+        </encoder>
+        <file>${LOG_FILE_DEBUG}</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_FILE_DEBUG}.%d{yyyy-MM-dd}</fileNamePattern>
+            <maxHistory>${LOG_FILE_MAX_HISTORY:-0}</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="FILE_ERROR" />
+    </root>
+
+    <logger name="top.fengpingtech" additivity="false">
+        <appender-ref ref="FILE" />
+        <appender-ref ref="FILE_ERROR" />
+    </logger>
+
+    <logger name="io.netty.handler.logging.LoggingHandler" additivity="false">
+        <appender-ref ref="FILE_DEBUG" />
+        <appender-ref ref="FILE_ERROR" />
+    </logger>
+
+    <logger name="org.hibernate.SQL" additivity="false">
+        <appender-ref ref="FILE_DEBUG" />
+        <appender-ref ref="FILE_ERROR" />
+    </logger>
+
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" additivity="false">
+        <appender-ref ref="FILE_DEBUG" />
+        <appender-ref ref="FILE_ERROR" />
+    </logger>
+</configuration>

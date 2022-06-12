@@ -27,7 +27,7 @@ public class ClientPerformanceMain {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            for (int i = 0; i < 2; i ++) {
+            for (int i = 0; i < 500; i ++) {
                 long deviceId = 55520000000L + new Random().nextInt(10000000);
                 Bootstrap b = new Bootstrap();
                 b.group(group)
