@@ -73,7 +73,7 @@ public class DeviceController {
         Specification<DeviceDomain> spec = (root, cq, cb) -> {
             List<Predicate> list = new ArrayList<>();
 
-            if (request.getDeviceId() != null) {
+            if (request.getDeviceId() != null && !request.getDeviceId().isEmpty()) {
                 list.add(root.get("deviceId").in(Arrays.asList(
                         request.getDeviceId().split("[, |]"))));
             }
