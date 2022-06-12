@@ -90,11 +90,7 @@ public class DeviceController {
         Page<DeviceDomain> list = deviceRepository.findAll(spec, page);
         return PageableResponse.<DeviceBean>builder()
                 .total(list.getTotalElements())
-                .data(list.stream()
-                        .map(model -> DeviceBean.builder()
-
-                                .build())
-                        .collect(Collectors.toList()))
+                .data(deviceMapper.mapToBean(list.getContent()))
                 .build();
     }
 
