@@ -38,6 +38,7 @@ public class SolenServerStarter {
         serverProperties.setWorkerThreads(this.serverProperties.getWorkerThreads());
         serverProperties.setEventProcessor(eventProcessor);
         serverProperties.setEventIdGenerator(new AtomicLong(maxId == null ? 0 : maxId + 1)::getAndIncrement);
+        serverProperties.setDaemon(true);
         server = new SolenNettyServer(serverProperties);
         server.start();
     }

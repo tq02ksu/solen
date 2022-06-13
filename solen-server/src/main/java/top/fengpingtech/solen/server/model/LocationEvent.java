@@ -8,11 +8,19 @@ import lombok.ToString;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public class LocationEvent extends Event {
+    /**
+     * using AttributeEvent.imei
+     */
+    @Deprecated
     private String imei;
 
     private Double lat;
 
     private Double lng;
 
+    /**
+     * using AttributeEvent.iccId
+     */
+    @Deprecated
     private String iccId;
 }

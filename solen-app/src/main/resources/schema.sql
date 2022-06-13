@@ -11,7 +11,8 @@ create table if not exists device (
     gravity tinyint not null, -- default 0, -- comment '重力感应',
     uptime int not null, -- default 0 -- comment 开机时间
     lat double not null, -- default 0 comment '纬度'
-    lng double not null -- default 0 comment '经度'
+    lng double not null, -- default 0 comment '经度'
+    icc_id varchar(20) not null -- default '' comment 'icc id'
 ); -- comment '设备' ;
 
 

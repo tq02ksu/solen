@@ -21,4 +21,8 @@ public class AttributeEvent extends Event {
     private Integer gravity;
 
     private Integer uptime;
+
+    private String iccId;
+
+    private String imei;
 }

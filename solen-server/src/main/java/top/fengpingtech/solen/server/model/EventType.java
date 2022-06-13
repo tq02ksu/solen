@@ -12,6 +12,11 @@ public enum EventType {
     DISCONNECT,
 
     /**
+     * 状态更新
+     */
+    STATUS_UPDATE,
+
+    /**
      * 串口接收
      */
     MESSAGE_RECEIVING,

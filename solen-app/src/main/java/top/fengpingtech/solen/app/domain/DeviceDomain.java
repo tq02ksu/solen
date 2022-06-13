@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.app.domain.support.EmptyStringNotNullConverter;
 import top.fengpingtech.solen.app.domain.support.MinusOneIntegerNotNullConverter;
 import top.fengpingtech.solen.app.domain.support.MinusOneLongNotNullConverter;
 import top.fengpingtech.solen.app.domain.support.ZeroDoubleNotNullConverter;
@@ -69,6 +70,10 @@ public class DeviceDomain {
     @Column(nullable = false)
     @Convert(converter = ZeroDoubleNotNullConverter.class)
     private Double lat;
+
+    @Column(length = 20, nullable = false)
+    @Convert(converter = EmptyStringNotNullConverter.class)
+    private String iccId;
 
     @OneToMany
     private List<ConnectionDomain> connection;

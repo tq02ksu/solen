@@ -9,20 +9,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.IdGenerator;
-import top.fengpingtech.solen.server.model.AttributeEvent;
-import top.fengpingtech.solen.server.model.BaseStation;
-import top.fengpingtech.solen.server.model.ConnectionEvent;
-import top.fengpingtech.solen.server.model.Event;
-import top.fengpingtech.solen.server.model.EventType;
-import top.fengpingtech.solen.server.model.LocationEvent;
-import top.fengpingtech.solen.server.model.MessageEvent;
-import top.fengpingtech.solen.server.model.SoltMachineMessage;
+import top.fengpingtech.solen.server.model.*;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class EventProcessorAdapter extends ChannelDuplexHandler {
     private static final Logger logger = LoggerFactory.getLogger(EventProcessorAdapter.class);
@@ -67,7 +57,12 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
             setEventValue(msg, event, EventType.CONNECT);
             event.setLac(lac);
             event.setCi(ci);
-            delegate.processEvents(Collections.singletonList(event));
+
+            StatusEvent status = new StatusEvent();
+            setEventValue(msg, status, EventType.STATUS_UPDATE);
+            status.setStatus(StatusEvent.STATUS_NORMAL);
+
+            delegate.processEvents(Arrays.asList(event, status));
         } else if (msg.getCmd() == 1) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
             byte stat = data.readByte();
@@ -126,11 +121,17 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
 
             LocationEvent event = new LocationEvent();
             setEventValue(msg, event, EventType.LOCATION_CHANGE);
-            event.setImei(imei);
             event.setLat(lat);
             event.setLng(lng);
             event.setIccId(iccId);
-            delegate.processEvents(Collections.singletonList(event));
+            event.setImei(imei);
+
+            AttributeEvent attribute = new AttributeEvent();
+            setEventValue(msg, attribute, EventType.ATTRIBUTE_UPDATE);
+            attribute.setIccId(iccId);
+            attribute.setImei(imei);
+
+            delegate.processEvents(Arrays.asList(event, attribute));
         }
     }
 
@@ -171,12 +172,23 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         String deviceId = ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).get();
         if (deviceId != null) {
+            Date d = new Date();
             ConnectionEvent event = new ConnectionEvent();
             event.setType(EventType.DISCONNECT);
             event.setEventId(eventIdGenerator.nextVal());
             event.setDeviceId(deviceId);
             event.setConnectionId(ctx.channel().id().asLongText());
-            delegate.processEvents(Collections.singletonList(event));
+            event.setTime(d);
+
+            StatusEvent status = new StatusEvent();
+            status.setType(EventType.STATUS_UPDATE);
+            status.setEventId(eventIdGenerator.nextVal());
+            status.setDeviceId(deviceId);
+            status.setConnectionId(ctx.channel().id().asLongText());
+            status.setTime(d);
+            status.setStatus(StatusEvent.STATUS_DISCONNECT);
+
+            delegate.processEvents(Arrays.asList(event, status));
         }
     }
 }
