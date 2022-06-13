@@ -32,3 +32,4 @@ create cached table if not exists event (
 
 create index if not exists idx_event_device_id on event ( device_id );
 create index if not exists idx_event_type on event ( type );
+create index if not exists idx_event_time on event ( time );
