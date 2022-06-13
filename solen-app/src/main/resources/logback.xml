@@ -6,9 +6,9 @@
     <property name="LOG_LEVEL_PATTERN" value="%5p [${spring.cloud.config.name:${spring.application.name:-}},%X{X-B3-TraceId:-},%X{X-B3-SpanId:-},%X{X-Span-Export:-}]" />
 
     <property name="LOG_FILE_MAX_HISTORY" value="7" />
-    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/app.log}"/>
-    <property name="LOG_FILE_ERROR" value="${LOG_FILE_ERROR:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/error.log}"/>
-    <property name="LOG_FILE_DEBUG" value="${LOG_FILE_DEBUG:-${LOG_PATH:-${LOG_TEMP:-${java.io.tmpdir:-log}}}/debug.log}"/>
+    <property name="LOG_FILE" value="${LOG_FILE:-${LOG_PATH:-${LOG_TEMP:-log}}/app.log}"/>
+    <property name="LOG_FILE_ERROR" value="${LOG_FILE_ERROR:-${LOG_PATH:-log}}/error.log}"/>
+    <property name="LOG_FILE_DEBUG" value="${LOG_FILE_DEBUG:-${LOG_PATH:-log}}/debug.log}"/>
 
     <appender name="FILE"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
