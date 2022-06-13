@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import top.fengpingtech.solen.app.domain.ConnectionStatus;
 import top.fengpingtech.solen.app.domain.Coordinate;
 
 import java.util.Date;
@@ -14,15 +15,13 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 public class DeviceBean {
-    private Long deviceId;
+    private String deviceId;
 
     private Long lac;
 
     private Long ci;
 
-    private Integer header;
-
-    private Long idCode;
+    private ConnectionStatus status;
 
     private Integer inputStat;
 
