@@ -113,7 +113,7 @@ public class TracingLogHandler extends ChannelDuplexHandler {
         if (MDC.get("X-B3-TraceId") != null) {
             return false;
         }
-        String channelId = "0x" + ctx.channel().id().asShortText();
+        String channelId = ctx.channel().id().asLongText();
         MDC.put("X-B3-SpanId", channelId);
         MDC.put("spanId", channelId);
 
