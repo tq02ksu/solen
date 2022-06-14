@@ -19,7 +19,10 @@ import top.fengpingtech.solen.server.protocol.MessageDecoder;
 import top.fengpingtech.solen.server.protocol.MessageEncoder;
 
 import java.nio.charset.StandardCharsets;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -27,8 +30,15 @@ public class ClientPerformanceMain {
     public static void main(String[] args) throws Exception {
         EventLoopGroup group = new NioEventLoopGroup();
         try {
-            for (int i = 0; i < 500; i ++) {
+            Set<Long> deviceSet = new HashSet<>();
+            for (int i = 0; i < 1000; i ++) {
                 long deviceId = 55520000000L + new Random().nextInt(10000000);
+
+                if (deviceSet.contains(deviceId)) {
+                    continue;
+                }
+                deviceSet.add(deviceId);
+
                 Bootstrap b = new Bootstrap();
                 b.group(group)
                         .channel(NioSocketChannel.class)

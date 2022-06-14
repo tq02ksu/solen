@@ -1,12 +1,11 @@
 package top.fengpingtech.solen.app.mapper;
 
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.ReportingPolicy;
+import org.mapstruct.*;
 import top.fengpingtech.solen.app.controller.bean.DeviceBean;
 import top.fengpingtech.solen.app.domain.Coordinate;
 import top.fengpingtech.solen.app.domain.CoordinateSystem;
 import top.fengpingtech.solen.app.domain.DeviceDomain;
+import top.fengpingtech.solen.app.domain.EventDomain;
 import top.fengpingtech.solen.app.service.CoordinateTransformationService;
 
 import java.util.Arrays;
@@ -15,8 +14,13 @@ import java.util.List;
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DeviceMapper {
     @Mapping(target = "coordinates", expression = "java(getCoordinates(domain))")
-    DeviceBean mapToBean(DeviceDomain domain);
+    DeviceBean mapToBean(DeviceDomain domain, List<EventDomain> events);
 
+    @Named(value = "mapToBean4List")
+    @Mapping(target = "coordinates", expression = "java(getCoordinates(domain))")
+    DeviceBean mapToBeanSummary(DeviceDomain domain);
+
+    @IterableMapping(qualifiedByName = "mapToBean4List")
     List<DeviceBean> mapToBean(List<DeviceDomain> domain);
 
     default List<Coordinate> getCoordinates(DeviceDomain domain) {

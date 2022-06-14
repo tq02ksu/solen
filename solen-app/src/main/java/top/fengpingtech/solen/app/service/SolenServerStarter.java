@@ -18,26 +18,21 @@ public class SolenServerStarter {
 
     private final EventProcessor eventProcessor;
 
-    private final EventRepository eventRepository;
-
     private SolenServer server;
 
-    public SolenServerStarter(SolenServerProperties serverProperties, EventProcessor eventProcessor, EventRepository eventRepository) {
+    public SolenServerStarter(SolenServerProperties serverProperties, EventProcessor eventProcessor) {
         this.serverProperties = serverProperties;
         this.eventProcessor = eventProcessor;
-        this.eventRepository = eventRepository;
     }
 
     @PostConstruct
     public void init() {
-        Long maxId = eventRepository.getMaxId();
-
         ServerProperties serverProperties = new ServerProperties();
         serverProperties.setPort(this.serverProperties.getPort());
         serverProperties.setIoThreads(this.serverProperties.getIoThreads());
         serverProperties.setWorkerThreads(this.serverProperties.getWorkerThreads());
         serverProperties.setEventProcessor(eventProcessor);
-        serverProperties.setEventIdGenerator(new AtomicLong(maxId == null ? 0 : maxId + 1)::getAndIncrement);
+        serverProperties.setEventIdGenerator(() -> null);
         serverProperties.setDaemon(true);
         server = new SolenNettyServer(serverProperties);
         server.start();

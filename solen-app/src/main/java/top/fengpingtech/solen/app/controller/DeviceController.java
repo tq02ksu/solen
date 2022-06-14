@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +19,13 @@ import top.fengpingtech.solen.app.auth.AuthService;
 import top.fengpingtech.solen.app.controller.bean.DeviceBean;
 import top.fengpingtech.solen.app.controller.bean.DeviceQueryRequest;
 import top.fengpingtech.solen.app.controller.bean.PageableResponse;
-import top.fengpingtech.solen.app.domain.Coordinate;
-import top.fengpingtech.solen.app.domain.CoordinateSystem;
 import top.fengpingtech.solen.app.domain.DeviceDomain;
+import top.fengpingtech.solen.app.domain.EventDomain;
 import top.fengpingtech.solen.app.mapper.DeviceMapper;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
-import top.fengpingtech.solen.app.service.CoordinateTransformationService;
+import top.fengpingtech.solen.app.repository.EventRepository;
 import top.fengpingtech.solen.server.DeviceService;
+import top.fengpingtech.solen.server.model.EventType;
 
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
@@ -32,8 +33,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -46,14 +45,16 @@ public class DeviceController {
 
     private final AuthService authService;
 
+    private final EventRepository eventRepository;
 
     private final DeviceMapper deviceMapper;
 
     public DeviceController(DeviceService deviceService, DeviceRepository deviceRepository,
-                            AuthService authService, DeviceMapper deviceMapper) {
+                            AuthService authService, EventRepository eventRepository, DeviceMapper deviceMapper) {
         this.deviceService = deviceService;
         this.deviceRepository = deviceRepository;
         this.authService = authService;
+        this.eventRepository = eventRepository;
         this.deviceMapper = deviceMapper;
     }
 
@@ -105,7 +106,11 @@ public class DeviceController {
         if (!authService.canVisit(domain)) {
             throw new IllegalArgumentException("can not visit the device");
         }
-        return deviceMapper.mapToBean(domain);
+
+        Pageable pageable = PageRequest.of(0, 10, Sort.by("time").descending());
+        Page<EventDomain> events = eventRepository.findByDeviceAndType(domain, EventType.MESSAGE_RECEIVING, pageable);
+
+        return deviceMapper.mapToBean(domain, events.getContent());
 
     }
 
@@ -123,7 +128,7 @@ public class DeviceController {
         }
         deviceRepository.deleteById(deviceId);
 
-        return deviceMapper.mapToBean(domain);
+        return deviceMapper.mapToBeanSummary(domain);
     }
 
     @RequestMapping("/statByField")
@@ -146,7 +151,7 @@ public class DeviceController {
 
 
 
-        return deviceMapper.mapToBean(domain);
+        return deviceMapper.mapToBeanSummary(domain);
     }
 
     @PostMapping("/sendAscii")
@@ -169,7 +174,7 @@ public class DeviceController {
         }
 
         deviceService.sendMessage(String.valueOf(request.getDeviceId()), request.getData());
-        return deviceMapper.mapToBean(domain);
+        return deviceMapper.mapToBeanSummary(domain);
     }
 
 //    private DeviceBean buildBean(DeviceDomain device) {

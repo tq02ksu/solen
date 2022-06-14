@@ -17,7 +17,7 @@ public class ConnectionDomain {
     @Id
     private String connectionId;
 
-    @ManyToOne(cascade = CascadeType.PERSIST)
+    @ManyToOne
     @JoinColumn(name = "deviceId")
     private DeviceDomain device;
 }

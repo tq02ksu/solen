@@ -24,4 +24,19 @@ class DeviceControllerTest extends SolenApplicationTests {
         System.out.println(response);
     }
 
+    @Test
+    void detail() {
+        DeviceQueryRequest request = new DeviceQueryRequest();
+        // pageSize=10&pageNo=1&deviceId=&appKey=test&requestTime=1655040830&sign=c023ca9a6f93bf484a81b063876fd9cc
+        request.setPageNo(1);
+        request.setPageSize(10);
+        PageableResponse<DeviceBean> response = deviceController.list(request);
+
+        assertTrue(response.getTotal() > 0);
+
+        String deviceId = response.getData().get(0).getDeviceId();
+
+        DeviceBean device = deviceController.detail(deviceId);
+        System.out.println(device);
+    }
 }

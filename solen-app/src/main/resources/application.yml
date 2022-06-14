@@ -37,7 +37,7 @@ logging:
   path: log
   level:
     top.fengpingtech.solen: debug
-    io.netty: debug
+    io.netty: info
     org:
       hibernate:
         SQL: debug
@@ -45,4 +45,3 @@ logging:
           descriptor:
             sql:
               BasicBinder: trace
-debug: true

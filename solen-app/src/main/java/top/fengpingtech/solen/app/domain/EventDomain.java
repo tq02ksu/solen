@@ -19,6 +19,7 @@ import java.util.Map;
 @Table(name = "event")
 public class EventDomain {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long eventId;
 
     @ManyToOne
