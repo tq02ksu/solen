@@ -115,18 +115,23 @@ public class TracingLogHandler extends ChannelDuplexHandler {
         }
         String channelId = "0x" + ctx.channel().id().asShortText();
         MDC.put("X-B3-SpanId", channelId);
+        MDC.put("spanId", channelId);
 
         String deviceId = ctx.channel().attr( AttributeKey.<String>valueOf("DeviceId")).get();
         if (deviceId != null) {
             MDC.put("X-B3-TraceId", deviceId);
+            MDC.put("traceId", deviceId);
         } else {
             MDC.remove("X-B3-TraceId");
+            MDC.remove("traceId");
         }
         return true;
     }
 
     private void clean() {
         MDC.remove("X-B3-TraceId");
+        MDC.remove("traceId");
         MDC.remove("X-B3-SpanId");
+        MDC.remove("spanId");
     }
 }
