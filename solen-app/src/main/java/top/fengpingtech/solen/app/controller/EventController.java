@@ -58,7 +58,7 @@ public class EventController {
             }
 
             if (request.getDeviceId() != null) {
-                list.add(root.get("deviceId").in(Arrays.asList(request.getDeviceId().split("[, |]"))));
+                list.add(root.get("device").get("deviceId").in(Arrays.asList(request.getDeviceId().split("[, |]"))));
             }
 
             if (request.getStartId() != null) {
