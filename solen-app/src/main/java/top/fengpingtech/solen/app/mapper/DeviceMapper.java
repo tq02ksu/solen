@@ -10,10 +10,12 @@ import top.fengpingtech.solen.app.service.CoordinateTransformationService;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Mapper(componentModel = "spring", unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface DeviceMapper {
     @Mapping(target = "coordinates", expression = "java(getCoordinates(domain))")
+    @Mapping(target = "reports", expression = "java(getReports(events))")
     DeviceBean mapToBean(DeviceDomain domain, List<EventDomain> events);
 
     @Named(value = "mapToBeanSummary")
@@ -33,5 +35,13 @@ public interface DeviceMapper {
                 coordinate,
                 transformer.wgs84ToBd09(coordinate),
                 transformer.wgs84ToGcj02(coordinate));
+    }
+
+    default List<DeviceBean.Report> getReports(List<EventDomain> events) {
+        return events.stream().map(e -> DeviceBean.Report.builder()
+                .time(e.getTime())
+                .content(e.getDetails().get("content"))
+                .build())
+                .collect(Collectors.toList());
     }
 }

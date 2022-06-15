@@ -49,6 +49,7 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .addFilter(new JwtAuthenticationTokenFilter(authenticationManager(), jwtService))
                 .addFilter(new JwtAuthorizationFilter(authenticationManager(), jwtService))
                 .addFilter(new AppKeyAuthorizationFilter(authenticationManager()))
+                .addFilterAfter(new SecurityContextFilter(), AppKeyAuthorizationFilter.class)
                 // no need session
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
