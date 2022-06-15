@@ -2,7 +2,9 @@ package top.fengpingtech.solen.app.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionTemplate;
 import top.fengpingtech.solen.app.domain.*;
 import top.fengpingtech.solen.app.repository.ConnectionRepository;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
@@ -10,13 +12,12 @@ import top.fengpingtech.solen.app.repository.EventRepository;
 import top.fengpingtech.solen.server.EventProcessor;
 import top.fengpingtech.solen.server.model.*;
 
-import javax.transaction.Transactional;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static top.fengpingtech.solen.app.domain.CoordinateSystem.WGS84;
 
 @Service
-@Transactional
 public class EventProcessorImpl implements EventProcessor {
     private static final Logger logger = LoggerFactory.getLogger(EventProcessorImpl.class);
 
@@ -26,19 +27,33 @@ public class EventProcessorImpl implements EventProcessor {
 
     private final EventRepository eventRepository;
 
+    private final TransactionTemplate transactionTemplate;
+
     public EventProcessorImpl(DeviceRepository deviceRepository,
-                              ConnectionRepository connectionRepository, EventRepository eventRepository) {
+                              ConnectionRepository connectionRepository, EventRepository eventRepository,
+                              TransactionTemplate transactionTemplate) {
         this.deviceRepository = deviceRepository;
         this.connectionRepository = connectionRepository;
         this.eventRepository = eventRepository;
+        this.transactionTemplate = transactionTemplate;
     }
 
     @Override
     public void processEvents(List<Event> events) {
-        try {
-            processEventsInternal(events);
-        } catch (Throwable e) {
-            logger.error("error while process events: {}", events, e);
+        Map<String, List<Event>> groups = events.stream().collect(Collectors.groupingBy(Event::getDeviceId));
+
+        for (Map.Entry<String, List<Event>> entry : groups.entrySet()) {
+            for (int i = 0; i < 5; i ++) {
+                try {
+                    transactionTemplate.execute(action -> {
+                        processEventsInternal(entry.getValue());
+                        return null;
+                    });
+                    return;
+                } catch (Throwable e) {
+                    logger.error("error while process events with take {}: {}", i, events, e);
+                }
+            }
         }
     }
 
@@ -53,6 +68,10 @@ public class EventProcessorImpl implements EventProcessor {
                     break;
                 case DISCONNECT:
                     eventDomain = processDisconnect(event);
+                    Optional.ofNullable(eventDomain).ifPresent(list::add);
+                    break;
+                case STATUS_UPDATE:
+                    eventDomain = processStatusUpdate((StatusEvent) event);
                     Optional.ofNullable(eventDomain).ifPresent(list::add);
                     break;
                 case ATTRIBUTE_UPDATE:
@@ -75,6 +94,24 @@ public class EventProcessorImpl implements EventProcessor {
         }
 
         eventRepository.saveAll(list);
+    }
+
+    private EventDomain processStatusUpdate(StatusEvent event) {
+        Optional<DeviceDomain> optionalDeviceDomain = deviceRepository.findById(event.getDeviceId());
+
+        if (!optionalDeviceDomain.isPresent()) {
+            return null;
+        }
+
+        DeviceDomain device = optionalDeviceDomain.get();
+
+        return EventDomain.builder()
+                .eventId(event.getEventId())
+                .device(device)
+                .time(event.getTime())
+                .type(event.getType())
+                .details(Collections.singletonMap("status", device.getStatus().name()))
+                .build();
     }
 
     private EventDomain processLocationChange(LocationEvent event) {
@@ -124,39 +161,44 @@ public class EventProcessorImpl implements EventProcessor {
 
         Map<String, String> details = new HashMap<>();
 
-        if (!event.getInputStat().equals(deviceDomain.getInputStat())) {
+        if (event.getInputStat() != null && !event.getInputStat().equals(deviceDomain.getInputStat())) {
             details.put("inputStat", String.valueOf(event.getInputStat()));
             deviceDomain.setInputStat(event.getInputStat());
         }
 
-        if (!event.getOutputStat().equals(deviceDomain.getOutputStat())) {
+        if (event.getOutputStat() != null && !event.getOutputStat().equals(deviceDomain.getOutputStat())) {
             details.put("outputStat", String.valueOf(event.getOutputStat()));
             deviceDomain.setOutputStat(event.getOutputStat());
         }
 
-        if (!event.getRssi().equals(deviceDomain.getRssi())) {
+        if (event.getRssi() != null && !event.getRssi().equals(deviceDomain.getRssi())) {
             details.put("rssi", String.valueOf(event.getRssi()));
             deviceDomain.setRssi(event.getRssi());
         }
 
-        if (!event.getVoltage().equals(deviceDomain.getVoltage())) {
+        if (event.getVoltage() != null && !event.getVoltage().equals(deviceDomain.getVoltage())) {
             details.put("voltage", String.valueOf(event.getVoltage()));
             deviceDomain.setVoltage(event.getVoltage());
         }
 
-        if (!event.getTemperature().equals(deviceDomain.getTemperature())) {
+        if (event.getTemperature() != null && !event.getTemperature().equals(deviceDomain.getTemperature())) {
             details.put("temperature", String.valueOf(event.getTemperature()));
             deviceDomain.setTemperature(event.getTemperature());
         }
 
-        if (!event.getGravity().equals(deviceDomain.getGravity())) {
+        if (event.getGravity() != null && !event.getGravity().equals(deviceDomain.getGravity())) {
             details.put("gravity", String.valueOf(event.getGravity()));
             deviceDomain.setGravity(event.getGravity());
         }
 
-        if (!event.getUptime().equals(deviceDomain.getUptime())) {
+        if (event.getUptime() != null && !event.getUptime().equals(deviceDomain.getUptime())) {
             details.put("uptime", String.valueOf(event.getUptime()));
             deviceDomain.setUptime(event.getUptime());
+        }
+
+        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
+            details.put("iccId", event.getIccId());
+            deviceDomain.setIccId(event.getIccId());
         }
 
         if (details.isEmpty()) {
@@ -212,14 +254,6 @@ public class EventProcessorImpl implements EventProcessor {
                 .time(event.getTime())
                 .eventId(event.getEventId())
                 .build() : null;
-
-//                    EventDomain.builder()
-//                            .device(deviceDomain)
-//                            .type(EventType.ATTRIBUTE_UPDATE)
-//                            .time(event.getTime())
-//                            .eventId(event.getEventId())
-//                            .details(Collections.singletonMap("status", ConnectionStatus.DISCONNECTED.name()))
-//                            .build()
     }
 
     private EventDomain processConnect(ConnectionEvent event) {
@@ -251,12 +285,5 @@ public class EventProcessorImpl implements EventProcessor {
                         .type(event.getType())
                         .time(event.getTime())
                         .build();
-//                EventDomain.builder()
-//                        .eventId(event.getEventId())
-//                        .device(deviceDomain)
-//                        .type(EventType.ATTRIBUTE_UPDATE)
-//                        .time(event.getTime())
-//                        .details(Collections.singletonMap("status", ConnectionStatus.NORMAL.name()))
-//                        .build()
     }
 }
