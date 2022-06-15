@@ -16,11 +16,11 @@ public interface DeviceMapper {
     @Mapping(target = "coordinates", expression = "java(getCoordinates(domain))")
     DeviceBean mapToBean(DeviceDomain domain, List<EventDomain> events);
 
-    @Named(value = "mapToBean4List")
+    @Named(value = "mapToBeanSummary")
     @Mapping(target = "coordinates", expression = "java(getCoordinates(domain))")
     DeviceBean mapToBeanSummary(DeviceDomain domain);
 
-    @IterableMapping(qualifiedByName = "mapToBean4List")
+    @IterableMapping(qualifiedByName = "mapToBeanSummary")
     List<DeviceBean> mapToBean(List<DeviceDomain> domain);
 
     default List<Coordinate> getCoordinates(DeviceDomain domain) {
