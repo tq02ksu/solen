@@ -4,15 +4,17 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss,SSS
     time-zone: Asia/Shanghai
-  mvc:
-    date-format: yyyy-MM-dd HH:mm:ss
   datasource:
     url: jdbc:hsqldb:file:data/solen-data
     username: sa
+  mvc:
+    format:
+      date-time: yyyy-MM-dd HH:mm:ss
   sql:
     init:
       mode: always
-      schema-locations: [ classpath:schema.sql ]
+      schema-locations: [ classpath:schema.sql, classpath:data.sql ]
+
 solen:
   server:
     port: 7889
@@ -37,7 +39,7 @@ logging:
   path: log
   level:
     top.fengpingtech.solen: debug
-    io.netty: info
+    io.netty: debug
     org:
       hibernate:
         SQL: debug

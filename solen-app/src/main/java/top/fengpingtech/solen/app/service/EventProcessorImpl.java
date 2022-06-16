@@ -120,8 +120,8 @@ public class EventProcessorImpl implements EventProcessor {
         if (optionalDeviceDomain.isPresent()) {
             Coordinate coordinate = new Coordinate(WGS84, event.getLng(), event.getLat());
             DeviceDomain device = optionalDeviceDomain.get();
-            if (!device.getLat().equals(event.getLat())
-                    || !device.getLng().equals(event.getLng())) {
+            if (!event.getLat().equals(device.getLat())
+                    || !event.getLng().equals(device.getLng())) {
                 device.setLng(event.getLng());
                 device.setLat(event.getLat());
                 deviceRepository.save(device);
@@ -160,6 +160,11 @@ public class EventProcessorImpl implements EventProcessor {
         DeviceDomain deviceDomain = device.get();
 
         Map<String, String> details = new HashMap<>();
+
+        if (deviceDomain.getStatus() != ConnectionStatus.NORMAL) {
+        	details.put("status", ConnectionStatus.NORMAL.name());
+        	deviceDomain.setStatus(ConnectionStatus.NORMAL);
+        }
 
         if (event.getInputStat() != null && !event.getInputStat().equals(deviceDomain.getInputStat())) {
             details.put("inputStat", String.valueOf(event.getInputStat()));
@@ -218,16 +223,26 @@ public class EventProcessorImpl implements EventProcessor {
 
     private EventDomain processMessageEvent(MessageEvent event) {
         Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
+        DeviceDomain deviceDomain = device.orElse(null);
+
+        if (deviceDomain == null) {
+        	return null;
+        }
+
+        if (event.getType() == EventType.MESSAGE_RECEIVING
+        		&& deviceDomain.getStatus() != ConnectionStatus.NORMAL) {
+        	deviceDomain.setStatus(ConnectionStatus.NORMAL);
+        	deviceRepository.save(deviceDomain);
+        }
+
         String key = event.getType() == EventType.CONTROL_SENDING ? "ctrl" : "content";
-        return device.map(deviceDomain ->
-                EventDomain.builder()
-                        .eventId(event.getEventId())
-                        .time(event.getTime())
-                        .type(event.getType())
-                        .device(deviceDomain)
-                        .details(Collections.singletonMap(key, event.getMessage()))
-                        .build())
-                .orElse(null);
+        return EventDomain.builder()
+                    .eventId(event.getEventId())
+                    .time(event.getTime())
+                    .type(event.getType())
+                    .device(deviceDomain)
+                    .details(Collections.singletonMap(key, event.getMessage()))
+                    .build();
     }
 
     private EventDomain processDisconnect(Event event) {
@@ -267,7 +282,6 @@ public class EventProcessorImpl implements EventProcessor {
         Optional<DeviceDomain> device = deviceRepository.findById(event.getDeviceId());
         DeviceDomain deviceDomain = device.orElseGet(() -> DeviceDomain.builder()
                 .deviceId(event.getDeviceId())
-                .status(ConnectionStatus.NORMAL)
                 .build());
         deviceDomain.setStatus(ConnectionStatus.NORMAL);
         deviceDomain.setLac(event.getLac());
