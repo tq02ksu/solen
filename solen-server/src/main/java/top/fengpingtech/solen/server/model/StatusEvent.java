@@ -9,7 +9,7 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class StatusEvent extends Event {
     public static final String STATUS_NORMAL = "NORMAL";
-    public static final String STATUS_DISCONNECT = "DISCONNECT";
+    public static final String STATUS_DISCONNECTED = "DISCONNECTED";
 
     private String status;
 }

@@ -67,18 +67,21 @@ public class ConnectionKeeperHandler extends ChannelDuplexHandler {
             throws Exception {
         String deviceId = ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).get();
         if (cause instanceof ReadTimeoutException && deviceId != null) {
-            logger.info("{} read timeout, closing channel", ctx.channel().id().asLongText());
+            logger.info("{}({}) read timeout, closing channel", deviceId, ctx.channel().id().asLongText());
 
             connectionHolder.remove(deviceId, ctx.channel());
         }
         super.exceptionCaught(ctx, cause);
+        ctx.pipeline().close();
     }
 
-    public Device getDevice(String deviceId) {
-        return connectionHolder.getDevice(deviceId);
-    }
-
-    List<Device> getDevices() {
-        return connectionHolder.getDevices();
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
+        String deviceId = ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).get();
+        if (deviceId != null) {
+            logger.info("{}({}) unregistered, closing channel", deviceId, ctx.channel().id().asLongText());
+            connectionHolder.remove(deviceId, ctx.channel());
+        }
+        super.channelUnregistered(ctx);
     }
 }

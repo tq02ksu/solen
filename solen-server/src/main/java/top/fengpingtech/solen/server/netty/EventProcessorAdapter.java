@@ -170,6 +170,11 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        super.exceptionCaught(ctx, cause);
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) throws Exception {
         String deviceId = ctx.channel().attr(DEVICE_ID_ATTRIBUTE_KEY).get();
         if (deviceId != null) {
             Date d = new Date();
@@ -186,9 +191,11 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
             status.setDeviceId(deviceId);
             status.setConnectionId(ctx.channel().id().asLongText());
             status.setTime(d);
-            status.setStatus(StatusEvent.STATUS_DISCONNECT);
+            status.setStatus(StatusEvent.STATUS_DISCONNECTED);
 
             delegate.processEvents(Arrays.asList(event, status));
         }
+
+        super.channelUnregistered(ctx);
     }
 }
