@@ -59,6 +59,11 @@
         <appender-ref ref="FILE_ERROR" />
     </logger>
 
+    <logger name="top.fengpingtech.solen.server.protocol" additivity="false">
+        <appender-ref ref="FILE_DEBUG"/>
+        <appender-ref ref="FILE_ERROR"/>
+    </logger>
+
     <logger name="io.netty.handler.logging.LoggingHandler" additivity="false">
         <appender-ref ref="FILE_DEBUG" />
         <appender-ref ref="FILE_ERROR" />
