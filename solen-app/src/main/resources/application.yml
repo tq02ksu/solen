@@ -36,7 +36,6 @@ solen:
       issuer: http://iot-online.fengping-tech.top
 
 logging:
-  path: log
   level:
     top.fengpingtech.solen: debug
     io.netty: debug
