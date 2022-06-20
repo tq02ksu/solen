@@ -1,2 +1,2 @@
 delete from connection;
-update device set status = 'DISCONNECT';
+update device set status = 'DISCONNECTED';
