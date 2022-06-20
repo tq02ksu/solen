@@ -72,7 +72,7 @@ public class ClientFragmentedRegisterHandler extends ChannelInboundHandlerAdapte
                 .header(13175)
                 .index(104)
                 .idCode(8389750321502775627L)
-                .deviceId("10619030001")
+                .deviceId(deviceId)
                 .cmd((short) 128)
                 .data("12345".getBytes())
                 .build();
