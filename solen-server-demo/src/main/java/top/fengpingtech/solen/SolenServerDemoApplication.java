@@ -32,16 +32,10 @@ public class SolenServerDemoApplication {
         ServerProperties properties = new ServerProperties();
         properties.setPort(54321); // 设置监听端口
         properties.setEventProcessor(events -> System.out.println("receiving events: " + events)); // 设置消息处理函数
-        properties.setEventIdGenerator(new IdGenerator() {
-            final AtomicLong counter = new AtomicLong(0);
-            @Override
-            public Long nextVal() {
-                return counter.getAndIncrement();
-            }
-        }); // 提供事件ID生成器，如果不关注也可以
         properties.setIoThreads(2); // IO线程数，一般为2-4就够
         properties.setDaemon(true);
         properties.setWorkerThreads(4); // 工作线程数，可以根据服务器处理能力和事件处理速度综合考虑，为CPU核数的2-10倍。一般不要超过500
+        properties.setReadTimeout(600);
         SolenNettyServer solenNettyServer = new SolenNettyServer(properties);
         solenNettyServer.start();
 

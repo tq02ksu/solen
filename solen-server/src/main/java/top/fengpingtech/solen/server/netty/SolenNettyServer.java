@@ -35,9 +35,12 @@ import top.fengpingtech.solen.server.protocol.TracingLogHandler;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 public class SolenNettyServer implements SolenServer {
     private static final Logger logger = LoggerFactory.getLogger(SolenNettyServer.class);
+
+    private static final int DEFAULT_TIMEOUT = 600;
 
     private final ServerProperties serverProperties;
 
@@ -108,6 +111,8 @@ public class SolenNettyServer implements SolenServer {
 //        bootstrap.childOption(ChannelOption.SO_RCVBUF, serverProperties.getReceiveBufferSize());
         executors = Arrays.asList(bossGroup, workGroup);
 
+        int timeout =  serverProperties.getReadTimeout() == null ? DEFAULT_TIMEOUT : serverProperties.getReadTimeout();
+
         bootstrap.group(bossGroup, workGroup).childHandler(
                 new ChannelInitializer<SocketChannel>() {
                     @Override
@@ -115,9 +120,9 @@ public class SolenNettyServer implements SolenServer {
                         ch.pipeline()
                                 .addLast(new TracingLogHandler())
                                 .addLast(new LoggingHandler())
-                                .addLast(new ReadTimeoutHandler(600))
+                                .addLast(new ReadTimeoutHandler(timeout))
                                 .addLast(new PacketPreprocessor())
-                                .addLast(new ReadTimeoutHandler(600))
+                                .addLast(new ReadTimeoutHandler(timeout))
                                 .addLast(new MessageEncoder())
                                 .addLast(new MessageDecoder())
                                 .addLast(new ConnectionKeeperHandler(connectionHolder))
