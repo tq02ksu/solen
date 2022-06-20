@@ -1,6 +1,6 @@
 create table if not exists device (
     device_id varchar(32) not null primary key , -- comment '设备ID'
-    status varchar(32) not null , -- default 0comment '状态, '
+    status varchar(32) not null , -- default 'NORMAL' comment '状态, NORMAL,  DISCONNECTED'
     lac int not null, --  default 0comment '基站lac'
     ci int not null, -- default 0 comment '基站ci'
     input_stat tinyint not null, -- default 0, -- comment '输入端状态',
@@ -14,7 +14,6 @@ create table if not exists device (
     lng double not null, -- default 0 comment '经度'
     icc_id varchar(20) not null -- default '' comment 'icc id'
 ); -- comment '设备' ;
-
 
 create table if not exists connection (
   connection_id varchar(64) not null primary key, -- comment '连接ID',
