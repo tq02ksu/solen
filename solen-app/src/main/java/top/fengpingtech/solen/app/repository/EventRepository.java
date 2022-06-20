@@ -10,7 +10,6 @@ import top.fengpingtech.solen.app.domain.EventDomain;
 import top.fengpingtech.solen.server.model.EventType;
 
 import java.util.Date;
-import java.util.Optional;
 
 @Repository
 public interface EventRepository extends JpaRepository<EventDomain, Long>, JpaSpecificationExecutor<EventDomain> {

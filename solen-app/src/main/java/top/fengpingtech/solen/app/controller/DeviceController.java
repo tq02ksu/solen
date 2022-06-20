@@ -175,23 +175,7 @@ public class DeviceController {
             throw new IllegalArgumentException("can not visit the device");
         }
 
-        deviceService.sendMessage(String.valueOf(request.getDeviceId()), request.getData());
+        deviceService.sendMessage(request.getDeviceId(), request.getData());
         return deviceMapper.mapToBeanSummary(domain);
     }
-
-//    private DeviceBean buildBean(DeviceDomain device) {
-//        DeviceBean bean = DeviceBean.builder()
-//
-//                .build();
-//
-//        if (device.getLng() != null && device.getLat() != null) {
-//            Coordinate coordinate = new Coordinate(CoordinateSystem.WGS84, device.getLng(), device.getLat());
-//            bean.setCoordinates(Arrays.asList(
-////                    coordinate ,
-////                    coordinateTransformationService.wgs84ToBd09(coordinate),
-////                    coordinateTransformationService.wgs84ToGcj02(coordinate)
-//            ));
-//        }
-//        return bean;
-//    }
 }
