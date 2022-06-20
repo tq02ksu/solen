@@ -94,7 +94,7 @@ public class EventProcessorAdapter extends ChannelDuplexHandler {
         } else if (msg.getCmd() == 129) {
             MessageEvent event = new MessageEvent();
             setEventValue(msg, event, EventType.MESSAGE_SENDING);
-            event.setMessage(String.valueOf(msg.getData()[0]));
+            event.setMessage(new String(msg.getData(), StandardCharsets.UTF_8));
             delegate.processEvents(Collections.singletonList(event));
         } else if (msg.getCmd() == 5) {
             ByteBuf data = ctx.alloc().heapBuffer(msg.getData().length).writeBytes(msg.getData());
