@@ -126,6 +126,8 @@ public class DeviceController {
         if (!authService.canVisit(domain)) {
             throw new IllegalArgumentException("can not visit the device");
         }
+        eventRepository.deleteByDevice(domain);
+
         deviceRepository.deleteById(deviceId);
 
         return deviceMapper.mapToBeanSummary(domain);
