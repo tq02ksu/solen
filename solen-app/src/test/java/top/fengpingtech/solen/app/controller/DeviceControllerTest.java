@@ -61,8 +61,4 @@ class DeviceControllerTest extends SolenApplicationTests {
                 .andReturn();
         System.out.println(result.getResponse().getContentAsString());
     }
-
-    private String md5(String s) {
-        return DigestUtils.md5DigestAsHex(s.getBytes(StandardCharsets.UTF_8));
-    }
 }

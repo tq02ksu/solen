@@ -108,10 +108,9 @@ public class DeviceController {
         }
 
         Pageable pageable = PageRequest.of(0, 10, Sort.by("time").descending());
-        Page<EventDomain> events = eventRepository.findByDeviceAndType(domain, EventType.MESSAGE_RECEIVING, pageable);
+        List<EventDomain> events = eventRepository.findByDeviceAndType(domain, EventType.MESSAGE_RECEIVING, pageable);
 
-        return deviceMapper.mapToBean(domain, events.getContent());
-
+        return deviceMapper.mapToBean(domain, events);
     }
 
     @DeleteMapping("/device/{deviceId}")
@@ -158,7 +157,7 @@ public class DeviceController {
 
     @PostMapping("/sendAscii")
     public DeviceBean sendAscii(
-            @RequestBody SendRequest request) throws Exception {
+            @RequestBody SendRequest request) {
         if (request.getData() == null) {
             throw new IllegalArgumentException("data can not be null");
         }
