@@ -14,7 +14,10 @@ spring:
     init:
       mode: always
       schema-locations: [ classpath:schema.sql, classpath:data.sql ]
-
+  jpa:
+    properties:
+      hibernate:
+        check_nullability: false
 solen:
   server:
     port: 7889
@@ -46,5 +49,6 @@ logging:
           descriptor:
             sql:
               BasicBinder: trace
+  config: classpath:solen-logback.xml
   pattern:
     level: "%5p [${spring.zipkin.service.name:${spring.application.name:}},%X{traceId:-},%X{spanId:-}]"

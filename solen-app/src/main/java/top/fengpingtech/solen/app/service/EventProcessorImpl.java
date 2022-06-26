@@ -256,7 +256,7 @@ public class EventProcessorImpl implements EventProcessor {
         // delete current connection
         connections.stream().filter(c -> c.getConnectionId().equals(event.getConnectionId()))
                 .forEach(connectionRepository::delete);
-        boolean statusChanged = connections.stream().noneMatch(c -> c.getConnectionId().equals(event.getConnectionId()));
+        boolean statusChanged = connections.size() == 1;
         DeviceDomain deviceDomain = device.get();
         if (statusChanged) {
             deviceDomain.setStatus(ConnectionStatus.DISCONNECTED);
