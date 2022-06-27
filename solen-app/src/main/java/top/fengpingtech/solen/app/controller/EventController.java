@@ -45,7 +45,7 @@ public class EventController {
             request.setPageSize(100);
         }
 
-        PageRequest page = PageRequest.of(request.getPageNo() - 1, request.getPageSize(),
+        PageRequest page = new Unpaged(request.getPageNo() - 1, request.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "eventId"));
         Specification<EventDomain> spec = (root, cq, cb) -> {
             List<Predicate> list = new ArrayList<>();
@@ -85,5 +85,17 @@ public class EventController {
             BeanUtils.copyProperties(domain, bean);
             return bean;
         }).collect(Collectors.toList());
+    }
+
+    static class Unpaged extends PageRequest {
+
+        Unpaged( int page, int size, Sort sort ) {
+            super(page, size, sort);
+        }
+
+        @Override
+        public boolean isPaged() {
+            return false;
+        }
     }
 }

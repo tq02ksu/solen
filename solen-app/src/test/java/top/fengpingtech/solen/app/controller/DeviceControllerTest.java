@@ -61,4 +61,19 @@ class DeviceControllerTest extends SolenApplicationTests {
                 .andReturn();
         System.out.println(result.getResponse().getContentAsString());
     }
+
+    @Test
+    void delete() throws Exception {
+        String deviceId = "42320041627";
+        String appKey = "admin";
+        String appSecret = "123asdsecret123asdfadmin";
+        long requestTime = System.currentTimeMillis();
+        String uri = "/api/device/" + deviceId;
+        String sign = md5(appSecret + requestTime + uri + appSecret);
+        MvcResult result = mockMvc.perform(MockMvcRequestBuilders.delete(
+                        uri + "?appKey=" + appKey + "&requestTime=" + requestTime + "&sign=" + sign))
+                .andExpect(MockMvcResultMatchers.status().isOk())
+                .andReturn();
+        System.out.println(result.getResponse().getContentAsString());
+    }
 }

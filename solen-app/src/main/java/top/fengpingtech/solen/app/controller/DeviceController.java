@@ -24,6 +24,7 @@ import top.fengpingtech.solen.app.domain.EventDomain;
 import top.fengpingtech.solen.app.mapper.DeviceMapper;
 import top.fengpingtech.solen.app.repository.DeviceRepository;
 import top.fengpingtech.solen.app.repository.EventRepository;
+import top.fengpingtech.solen.app.service.DeviceDomainService;
 import top.fengpingtech.solen.server.DeviceService;
 import top.fengpingtech.solen.server.model.EventType;
 
@@ -41,7 +42,7 @@ public class DeviceController {
 
     private final DeviceService deviceService;
 
-    private final DeviceRepository deviceRepository;
+    private final DeviceDomainService deviceDomainService;
 
     private final AuthService authService;
 
@@ -49,10 +50,10 @@ public class DeviceController {
 
     private final DeviceMapper deviceMapper;
 
-    public DeviceController(DeviceService deviceService, DeviceRepository deviceRepository,
+    public DeviceController(DeviceService deviceService, DeviceDomainService deviceDomainService,
                             AuthService authService, EventRepository eventRepository, DeviceMapper deviceMapper) {
         this.deviceService = deviceService;
-        this.deviceRepository = deviceRepository;
+        this.deviceDomainService = deviceDomainService;
         this.authService = authService;
         this.eventRepository = eventRepository;
         this.deviceMapper = deviceMapper;
@@ -88,7 +89,7 @@ public class DeviceController {
             return cb.and(list.toArray(new Predicate[0]));
         };
 
-        Page<DeviceDomain> list = deviceRepository.findAll(spec, page);
+        Page<DeviceDomain> list = deviceDomainService.findAll(spec, page);
         return PageableResponse.<DeviceBean>builder()
                 .total(list.getTotalElements())
                 .data(deviceMapper.mapToBean(list.getContent()))
@@ -97,7 +98,7 @@ public class DeviceController {
 
     @GetMapping("/device/{deviceId}")
     public DeviceBean detail(@PathVariable ("deviceId") String deviceId) {
-        Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
+        Optional<DeviceDomain> device = deviceDomainService.findById(deviceId);
 
         if (!device.isPresent()) {
             throw new IllegalArgumentException("device not found!");
@@ -117,7 +118,7 @@ public class DeviceController {
     public Object delete(
             @PathVariable("deviceId") String deviceId,
             @RequestParam(required = false, defaultValue = "false") boolean force) {
-        Optional<DeviceDomain> device = deviceRepository.findById(deviceId);
+        Optional<DeviceDomain> device = deviceDomainService.findById(deviceId);
         if (!device.isPresent()) {
             throw new IllegalArgumentException("device not found!");
         }
@@ -125,9 +126,8 @@ public class DeviceController {
         if (!authService.canVisit(domain)) {
             throw new IllegalArgumentException("can not visit the device");
         }
-        eventRepository.deleteByDevice(domain);
 
-        deviceRepository.deleteById(deviceId);
+        deviceDomainService.delete(domain);
 
         return deviceMapper.mapToBeanSummary(domain);
     }
@@ -139,7 +139,7 @@ public class DeviceController {
 
     @PostMapping("/sendControl")
     public DeviceBean sendControl(@RequestBody SendRequest request) {
-        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
+        Optional<DeviceDomain> device = deviceDomainService.findById(request.getDeviceId());
         if (!device.isPresent()) {
             throw new IllegalArgumentException("device not found!");
         }
@@ -165,7 +165,7 @@ public class DeviceController {
         if (request.getDeviceId() == null) {
             throw new IllegalArgumentException("deviceId can not be null");
         }
-        Optional<DeviceDomain> device = deviceRepository.findById(request.getDeviceId());
+        Optional<DeviceDomain> device = deviceDomainService.findById(request.getDeviceId());
         if (!device.isPresent()) {
             throw new IllegalArgumentException("device not found!");
         }

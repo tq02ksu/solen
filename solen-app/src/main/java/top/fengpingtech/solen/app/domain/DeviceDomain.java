@@ -75,6 +75,4 @@ public class DeviceDomain {
     @Convert(converter = EmptyStringNotNullConverter.class)
     private String iccId;
 
-    @OneToMany
-    private List<ConnectionDomain> connection;
 }

@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface ConnectionRepository extends JpaRepository<ConnectionDomain, String> {
     List<ConnectionDomain> findByDevice(DeviceDomain deviceDomain);
+
+    void deleteByDevice(DeviceDomain device);
 }
