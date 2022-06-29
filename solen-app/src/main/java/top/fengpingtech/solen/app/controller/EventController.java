@@ -1,6 +1,5 @@
 package top.fengpingtech.solen.app.controller;
 
-import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -18,7 +17,6 @@ import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api")
@@ -45,7 +43,7 @@ public class EventController {
             request.setPageSize(100);
         }
 
-        PageRequest page = new Unpaged(request.getPageNo() - 1, request.getPageSize(),
+        PageRequest page = PageRequest.of(request.getPageNo() - 1, request.getPageSize(),
                 Sort.by(Sort.Direction.DESC, "eventId"));
         Specification<EventDomain> spec = (root, cq, cb) -> {
             List<Predicate> list = new ArrayList<>();
@@ -77,25 +75,5 @@ public class EventController {
 
         Page<EventDomain> events = eventRepository.findAll(spec, page);
         return eventMapper.mapToBean(events.getContent());
-    }
-
-    private List<EventBean> convert(List<EventDomain> content) {
-        return content.stream().map(domain -> {
-            EventBean bean = new EventBean();
-            BeanUtils.copyProperties(domain, bean);
-            return bean;
-        }).collect(Collectors.toList());
-    }
-
-    static class Unpaged extends PageRequest {
-
-        Unpaged( int page, int size, Sort sort ) {
-            super(page, size, sort);
-        }
-
-        @Override
-        public boolean isPaged() {
-            return false;
-        }
     }
 }
