@@ -71,7 +71,9 @@ class DeviceControllerTest extends SolenApplicationTests {
         String uri = "/api/device/" + deviceId;
         String sign = md5(appSecret + requestTime + uri + appSecret);
         MvcResult result = mockMvc.perform(MockMvcRequestBuilders.delete(
-                        uri + "?appKey=" + appKey + "&requestTime=" + requestTime + "&sign=" + sign))
+                        uri + "?appKey=" + appKey + "&requestTime=" + requestTime + "&sign=" + sign)
+                        .header("Origin", "http://49.232.206.218:31180")
+                )
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andReturn();
         System.out.println(result.getResponse().getContentAsString());
