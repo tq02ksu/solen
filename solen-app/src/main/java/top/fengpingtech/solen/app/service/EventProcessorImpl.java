@@ -43,7 +43,7 @@ public class EventProcessorImpl implements EventProcessor {
         Map<String, List<Event>> groups = events.stream().collect(Collectors.groupingBy(Event::getDeviceId));
 
         for (Map.Entry<String, List<Event>> entry : groups.entrySet()) {
-            for (int i = 0; i < 5; i ++) {
+            for (int i = 0; i < 5; i++) {
                 try {
                     transactionTemplate.execute(action -> {
                         processEventsInternal(entry.getValue());
@@ -162,8 +162,8 @@ public class EventProcessorImpl implements EventProcessor {
         Map<String, String> details = new HashMap<>();
 
         if (deviceDomain.getStatus() != ConnectionStatus.NORMAL) {
-        	details.put("status", ConnectionStatus.NORMAL.name());
-        	deviceDomain.setStatus(ConnectionStatus.NORMAL);
+            details.put("status", ConnectionStatus.NORMAL.name());
+            deviceDomain.setStatus(ConnectionStatus.NORMAL);
         }
 
         if (event.getInputStat() != null && !event.getInputStat().equals(deviceDomain.getInputStat())) {
@@ -176,35 +176,35 @@ public class EventProcessorImpl implements EventProcessor {
             deviceDomain.setOutputStat(event.getOutputStat());
         }
 
-        if (event.getRssi() != null && !event.getRssi().equals(deviceDomain.getRssi())) {
-            details.put("rssi", String.valueOf(event.getRssi()));
-            deviceDomain.setRssi(event.getRssi());
-        }
-
-        if (event.getVoltage() != null && !event.getVoltage().equals(deviceDomain.getVoltage())) {
-            details.put("voltage", String.valueOf(event.getVoltage()));
-            deviceDomain.setVoltage(event.getVoltage());
-        }
+//        if (event.getRssi() != null && !event.getRssi().equals(deviceDomain.getRssi())) {
+//            details.put("rssi", String.valueOf(event.getRssi()));
+//            deviceDomain.setRssi(event.getRssi());
+//        }
+//
+//        if (event.getVoltage() != null && !event.getVoltage().equals(deviceDomain.getVoltage())) {
+//            details.put("voltage", String.valueOf(event.getVoltage()));
+//            deviceDomain.setVoltage(event.getVoltage());
+//        }
 
         if (event.getTemperature() != null && !event.getTemperature().equals(deviceDomain.getTemperature())) {
             details.put("temperature", String.valueOf(event.getTemperature()));
             deviceDomain.setTemperature(event.getTemperature());
         }
 
-        if (event.getGravity() != null && !event.getGravity().equals(deviceDomain.getGravity())) {
-            details.put("gravity", String.valueOf(event.getGravity()));
-            deviceDomain.setGravity(event.getGravity());
-        }
+//        if (event.getGravity() != null && !event.getGravity().equals(deviceDomain.getGravity())) {
+//            details.put("gravity", String.valueOf(event.getGravity()));
+//            deviceDomain.setGravity(event.getGravity());
+//        }
+//
+//        if (event.getUptime() != null && !event.getUptime().equals(deviceDomain.getUptime())) {
+//            details.put("uptime", String.valueOf(event.getUptime()));
+//            deviceDomain.setUptime(event.getUptime());
+//        }
 
-        if (event.getUptime() != null && !event.getUptime().equals(deviceDomain.getUptime())) {
-            details.put("uptime", String.valueOf(event.getUptime()));
-            deviceDomain.setUptime(event.getUptime());
-        }
-
-        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
-            details.put("iccId", event.getIccId());
-            deviceDomain.setIccId(event.getIccId());
-        }
+//        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
+//            details.put("iccId", event.getIccId());
+//            deviceDomain.setIccId(event.getIccId());
+//        }
 
         if (details.isEmpty()) {
             return null;
@@ -226,23 +226,23 @@ public class EventProcessorImpl implements EventProcessor {
         DeviceDomain deviceDomain = device.orElse(null);
 
         if (deviceDomain == null) {
-        	return null;
+            return null;
         }
 
         if (event.getType() == EventType.MESSAGE_RECEIVING
-        		&& deviceDomain.getStatus() != ConnectionStatus.NORMAL) {
-        	deviceDomain.setStatus(ConnectionStatus.NORMAL);
-        	deviceRepository.save(deviceDomain);
+                && deviceDomain.getStatus() != ConnectionStatus.NORMAL) {
+            deviceDomain.setStatus(ConnectionStatus.NORMAL);
+            deviceRepository.save(deviceDomain);
         }
 
         String key = event.getType() == EventType.CONTROL_SENDING ? "ctrl" : "content";
         return EventDomain.builder()
-                    .eventId(event.getEventId())
-                    .time(event.getTime())
-                    .type(event.getType())
-                    .device(deviceDomain)
-                    .details(Collections.singletonMap(key, event.getMessage()))
-                    .build();
+                .eventId(event.getEventId())
+                .time(event.getTime())
+                .type(event.getType())
+                .device(deviceDomain)
+                .details(Collections.singletonMap(key, event.getMessage()))
+                .build();
     }
 
     private EventDomain processDisconnect(Event event) {
@@ -263,7 +263,7 @@ public class EventProcessorImpl implements EventProcessor {
             deviceRepository.save(deviceDomain);
         }
 
-        return statusChanged ?  EventDomain.builder()
+        return statusChanged ? EventDomain.builder()
                 .device(deviceDomain)
                 .type(event.getType())
                 .time(event.getTime())
