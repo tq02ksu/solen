@@ -201,18 +201,14 @@ public class EventProcessorImpl implements EventProcessor {
             deviceDomain.setUptime(event.getUptime());
         }
 
-        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
+        if (event.getIccId() != null && !event.getIccId().equals(deviceDomain.getIccId())) {
 //            details.put("iccId", event.getIccId());
             deviceDomain.setIccId(event.getIccId());
         }
 
-        if (details.isEmpty()) {
-            return null;
-        }
-
         deviceRepository.save(deviceDomain);
 
-        return EventDomain.builder()
+        return details.isEmpty() ? null : EventDomain.builder()
                 .eventId(event.getEventId())
                 .time(event.getTime())
                 .type(event.getType())
@@ -294,10 +290,10 @@ public class EventProcessorImpl implements EventProcessor {
         connectionRepository.save(domain);
 
         return EventDomain.builder()
-                        .eventId(event.getEventId())
-                        .device(deviceDomain)
-                        .type(event.getType())
-                        .time(event.getTime())
-                        .build();
+                .eventId(event.getEventId())
+                .device(deviceDomain)
+                .type(event.getType())
+                .time(event.getTime())
+                .build();
     }
 }
