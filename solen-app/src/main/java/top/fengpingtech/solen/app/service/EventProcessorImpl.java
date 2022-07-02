@@ -176,35 +176,35 @@ public class EventProcessorImpl implements EventProcessor {
             deviceDomain.setOutputStat(event.getOutputStat());
         }
 
-//        if (event.getRssi() != null && !event.getRssi().equals(deviceDomain.getRssi())) {
+        if (event.getRssi() != null && !event.getRssi().equals(deviceDomain.getRssi())) {
 //            details.put("rssi", String.valueOf(event.getRssi()));
-//            deviceDomain.setRssi(event.getRssi());
-//        }
-//
-//        if (event.getVoltage() != null && !event.getVoltage().equals(deviceDomain.getVoltage())) {
+            deviceDomain.setRssi(event.getRssi());
+        }
+
+        if (event.getVoltage() != null && !event.getVoltage().equals(deviceDomain.getVoltage())) {
 //            details.put("voltage", String.valueOf(event.getVoltage()));
-//            deviceDomain.setVoltage(event.getVoltage());
-//        }
+            deviceDomain.setVoltage(event.getVoltage());
+        }
 
         if (event.getTemperature() != null && !event.getTemperature().equals(deviceDomain.getTemperature())) {
             details.put("temperature", String.valueOf(event.getTemperature()));
             deviceDomain.setTemperature(event.getTemperature());
         }
 
-//        if (event.getGravity() != null && !event.getGravity().equals(deviceDomain.getGravity())) {
+        if (event.getGravity() != null && !event.getGravity().equals(deviceDomain.getGravity())) {
 //            details.put("gravity", String.valueOf(event.getGravity()));
-//            deviceDomain.setGravity(event.getGravity());
-//        }
-//
-//        if (event.getUptime() != null && !event.getUptime().equals(deviceDomain.getUptime())) {
-//            details.put("uptime", String.valueOf(event.getUptime()));
-//            deviceDomain.setUptime(event.getUptime());
-//        }
+            deviceDomain.setGravity(event.getGravity());
+        }
 
-//        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
+        if (event.getUptime() != null && !event.getUptime().equals(deviceDomain.getUptime())) {
+//            details.put("uptime", String.valueOf(event.getUptime()));
+            deviceDomain.setUptime(event.getUptime());
+        }
+
+        if (event.getIccId() != null && !event.getIccId() .equals(deviceDomain.getIccId())) {
 //            details.put("iccId", event.getIccId());
-//            deviceDomain.setIccId(event.getIccId());
-//        }
+            deviceDomain.setIccId(event.getIccId());
+        }
 
         if (details.isEmpty()) {
             return null;
