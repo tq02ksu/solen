@@ -1,8 +1,8 @@
 create table if not exists device (
     device_id varchar(32) not null primary key , -- comment '设备ID'
     status varchar(32) not null , -- default 'NORMAL' comment '状态, NORMAL,  DISCONNECTED'
-    lac int not null, --  default 0comment '基站lac'
-    ci int not null, -- default 0 comment '基站ci'
+    lac bigint not null, --  default 0comment '基站lac, 超过int'
+    ci bigint not null, -- default 0 comment '基站ci, 超过int'
     input_stat tinyint not null, -- default 0, -- comment '输入端状态',
     output_stat tinyint not null, -- default 0, -- comment '输出端状态',
     rssi tinyint not null, -- default 0, -- comment '信号强度',
