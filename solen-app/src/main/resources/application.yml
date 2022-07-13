@@ -5,7 +5,7 @@ spring:
     date-format: yyyy-MM-dd HH:mm:ss,SSS
     time-zone: Asia/Shanghai
   datasource:
-    url: jdbc:hsqldb:file:data/solen-data
+    url: jdbc:hsqldb:file:data/solen-data?hsqldb.defrag_limit=40
     username: sa
   mvc:
     format:
