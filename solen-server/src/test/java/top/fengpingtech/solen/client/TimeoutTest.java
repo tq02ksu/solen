@@ -33,7 +33,7 @@ public class TimeoutTest {
                     });
 
             // Start the client.
-            ChannelFuture f = b.connect("localhost", 54321).sync();
+            ChannelFuture f = b.connect("fengping-tech.top", 31978).sync();
 
             Thread.sleep(100000000);
             // Wait until the connection is closed.

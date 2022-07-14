@@ -64,7 +64,7 @@ class DeviceControllerTest extends SolenApplicationTests {
 
     @Test
     void delete() throws Exception {
-        String deviceId = "42320041627";
+        String deviceId = "55520041112";
         String appKey = "admin";
         String appSecret = "123asdsecret123asdfadmin";
         long requestTime = System.currentTimeMillis();

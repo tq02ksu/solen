@@ -4,6 +4,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.fengpingtech.solen.app.auth.AuthService;
@@ -16,6 +17,7 @@ import top.fengpingtech.solen.app.repository.EventRepository;
 import javax.persistence.criteria.Predicate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -33,7 +35,7 @@ public class EventController {
         this.eventMapper = eventMapper;
     }
 
-    @RequestMapping("/event/list")
+    @GetMapping("/event/list")
     public List<EventBean> list(EventQueryRequest request) {
         if (request.getPageNo() == null) {
             request.setPageNo(1);
@@ -41,6 +43,11 @@ public class EventController {
 
         if (request.getPageSize() == null) {
             request.setPageSize(100);
+        }
+
+        if (request.getStartTime() == null) {
+            Date fiveMinAgo = new Date(System.currentTimeMillis() - 5 * 60 * 1000);
+            request.setStartTime(fiveMinAgo);
         }
 
         PageRequest page = PageRequest.of(request.getPageNo() - 1, request.getPageSize(),
