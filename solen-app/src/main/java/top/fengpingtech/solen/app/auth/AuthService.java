@@ -48,12 +48,14 @@ public class AuthService {
 
     public void fillAuthPredicate(Path<String> devicePath, CriteriaBuilder cb, List<Predicate> list) {
         Tenant tenant = getTenant();
-        if (tenant != null) {
-            Predicate[] patternPredicates = tenant.getDevicePatterns().stream()
-                    .map(s -> s.replace("**", "%"))
-                    .map(s -> cb.like(devicePath, s))
-                    .toArray(javax.persistence.criteria.Predicate[]::new);
-            list.add(cb.or(patternPredicates));
+        if (tenant == null || tenant.getRoles().contains(ROLE_ADMIN)) {
+            return;
         }
+
+        Predicate[] patternPredicates = tenant.getDevicePatterns().stream()
+                .map(s -> s.replace("**", "%"))
+                .map(s -> cb.like(devicePath, s))
+                .toArray(javax.persistence.criteria.Predicate[]::new);
+        list.add(cb.or(patternPredicates));
     }
 }
