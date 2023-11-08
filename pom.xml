@@ -16,6 +16,7 @@
     <packaging>pom</packaging>
     <modules>
         <module>solen-server</module>
+        <module>solen-conch-server</module>
         <module>solen-server-demo</module>
         <module>solen-app</module>
     </modules>
