@@ -2,10 +2,22 @@ package top.fengpingtech.solen.server.model;
 
 public enum EventType {
     /**
-     * device connect
+     * device login
      */
-    CONNECT,
+    LOGIN,
 
+    /**
+     * heartbeat
+     */
+    HEARTBEAT,
+
+    HISTORY_DATA,
+
+    ALARM_DATA,
+
+    TIMING,
+
+    REALTIME_DATA,
     /**
      * device disconnect
      */
@@ -34,5 +46,5 @@ public enum EventType {
     /**
      * 发送开关机
      */
-    CONTROL_SENDING;
+    CONTROL_SENDING, SWIPING;
 }

@@ -13,7 +13,7 @@ import java.util.Date;
 @Data
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-@EventModel(2)
+@EventModel(value = 0x0002, desc = "登录事件")
 public class LoginEvent extends Event {
     private Date loginTime;
 
@@ -29,6 +29,7 @@ public class LoginEvent extends Event {
 
     @Override
     public void fromData(byte[] data) {
+        setType(EventType.LOGIN);
 
         String s = String.format("%02x%02x-%02x-%02x %02x:%02x:%02x",
                 data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
